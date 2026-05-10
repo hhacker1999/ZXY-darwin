@@ -5,10 +5,7 @@
 //
 
 import Foundation
-import Inject
 import SwiftUI
-
-// MARK: - Poster card dimensions
 
 private enum PosterMetrics {
     static let posterWidth: CGFloat = 130
@@ -16,8 +13,6 @@ private enum PosterMetrics {
     static let cornerRadius: CGFloat = 12
     static let titleLineLimit = 2
 }
-
-// MARK: - Continue Watching card dimensions
 
 private enum CWMetrics {
     static let cardWidth: CGFloat = 300
@@ -36,10 +31,7 @@ private enum CWMetrics {
     static let progressBarRadius: CGFloat = 2
 }
 
-// MARK: - Home View
-
 struct HomeView: View {
-    @ObserveInjection var inject
     @State private var vm: HomeViewModel
 
     init(mediaUc: MediaUsecase, progressUc: ProgressUsecase) {
@@ -67,30 +59,25 @@ struct HomeView: View {
                             } else {
                                 Router.router.addToRoute(route: .seriesDetails(media.id))
                             }
-
                         }
-                            .onAppear {
-                                if vm.startRowFetchIfNeeded(item: item) {
-                                    Task {
-                                        await vm
-                                            .getMediaAndUpdateItemState(
-                                                item: item
-                                            )
-                                    }
+                        .onAppear {
+                            if vm.startRowFetchIfNeeded(item: item) {
+                                Task {
+                                    await vm
+                                        .getMediaAndUpdateItemState(
+                                            item: item
+                                        )
                                 }
                             }
+                        }
                     }
                 }
                 .padding(.bottom, AppTheme.Spacing.xxl)
             }
         }
-        .enableInjection()
-        .background(AppTheme.Colors.background
-        ).ignoresSafeArea(edges: .top)
+        .background(AppTheme.Colors.background).ignoresSafeArea(edges: .top)
     }
 }
-
-// MARK: - Continue Watching Section
 
 private struct ContinueWatchingSection: View {
     let state: ViewItemState<[ContinueWatchingItem]>
@@ -132,8 +119,6 @@ private struct ContinueWatchingSection: View {
         }
     }
 }
-
-// MARK: - Continue Watching Card (Apple TV style)
 
 private struct ContinueWatchingCard: View {
     let item: ContinueWatchingItem
@@ -281,6 +266,9 @@ private struct ContinueWatchingCard: View {
         }
         .frame(width: CWMetrics.cardWidth, height: CWMetrics.cardHeight)
         .background(AppTheme.Colors.backgroundTertiary)
+        .onTapGesture {
+            Router.router.addToRoute(route: !isShow ? .movieDetails(item.media.id) : .seriesDetails(item.media.id))
+        }
         .clipShape(
             RoundedRectangle(
                 cornerRadius: CWMetrics.cornerRadius,
@@ -305,8 +293,6 @@ private struct ContinueWatchingCard: View {
         }
     }
 }
-
-// MARK: - Continue Watching Shimmer Row
 
 private struct ContinueWatchingShimmerRow: View {
     var body: some View {
@@ -415,8 +401,6 @@ private struct ContinueWatchingShimmerRow: View {
     }
 }
 
-// MARK: - Discovery Row (section header + horizontal list)
-
 private struct DiscoveryRow: View {
     @Bindable var item: HomeViewDiscoveryItem
     let onTap: (AppMedia) -> Void
@@ -464,8 +448,6 @@ private struct MediaRow: View {
         }
     }
 }
-
-// MARK: - Single poster card
 
 private struct PosterCard: View {
     let media: AppMedia
@@ -534,8 +516,6 @@ private struct PosterCard: View {
         }
     }
 
-    // MARK: Placeholder / Shimmer helpers
-
     private var posterPlaceholder: some View {
         ZStack {
             AppTheme.Colors.backgroundTertiary
@@ -553,8 +533,6 @@ private struct PosterCard: View {
         MediaConfig.instance.posterURL(media.posterPath)
     }
 }
-
-// MARK: - Shimmer row (loading state)
 
 private struct ShimmerRow: View {
     var body: some View {
@@ -596,8 +574,6 @@ private struct ShimmerRow: View {
         .scrollDisabled(true)
     }
 }
-
-// MARK: - Error row
 
 private struct ErrorRow: View {
     let message: String

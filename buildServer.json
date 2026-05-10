@@ -12,8 +12,8 @@
 	"argv": [
 		"/opt/homebrew/bin/xcode-build-server"
 	],
-	"workspace": "/Users/harshkumar/programming/zxy/zxy-darwin/ZXY.xcodeproj/project.xcworkspace",
-	"build_root": "/Users/harshkumar/Library/Developer/Xcode/DerivedData/ZXY-haaepvtwfqligrdvshznudmpffmm",
-	"scheme": "LearnSwift",
+	"workspace": "/Users/harshkumar/programming/zxy-darwin/ZXY.xcodeproj/project.xcworkspace",
+	"build_root": "/Users/harshkumar/Library/Developer/Xcode/DerivedData/ZXY-hhzpakxcoxrpskfnspqwyggywpfp",
+	"scheme": "ZXY",
 	"kind": "xcode"
 }
