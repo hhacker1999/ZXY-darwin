@@ -1,6 +1,5 @@
 //
 //  SharedModels.swift
-//  LearnSwift
 //
 //  Ported from Flutter: app/lib/usecase/resource/models.dart
 //

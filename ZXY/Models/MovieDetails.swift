@@ -1,6 +1,5 @@
 //
 //  MovieDetails.swift
-//  LearnSwift
 //
 //  Ported from Flutter: app/lib/usecase/resource/movie_details.dart
 //

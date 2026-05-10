@@ -1,6 +1,5 @@
 //
 //  LibraryCustomizationSection.swift
-//  LearnSwift
 //
 //  Lets the user reorder, rename, add and remove library rows that show on
 //  the home screen, then save them via `updateProfileList`.

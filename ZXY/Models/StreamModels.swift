@@ -1,6 +1,5 @@
 //
 //  StreamModels.swift
-//  LearnSwift
 //
 //  Ported from Flutter: app/lib/usecase/stream/model.dart
 //

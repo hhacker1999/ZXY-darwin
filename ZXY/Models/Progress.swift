@@ -1,6 +1,5 @@
 //
 //  Progress.swift
-//  LearnSwift
 //
 //  Ported from Flutter: app/lib/usecase/progress/model.dart
 //

@@ -1,6 +1,5 @@
 //
 //  Filter+Discover.swift
-//  LearnSwift
 //
 //  Discover helpers — parity with Flutter `LibraryFilter.defaultFilter` / `copyWith`.
 //

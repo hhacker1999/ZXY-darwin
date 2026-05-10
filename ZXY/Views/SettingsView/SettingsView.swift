@@ -1,6 +1,5 @@
 //
 //  SettingsView.swift
-//  LearnSwift
 //
 //  SwiftUI port of `app/lib/views/settings_view/settings_view.dart`. The
 //  Profiles (admin) section is intentionally omitted for now.

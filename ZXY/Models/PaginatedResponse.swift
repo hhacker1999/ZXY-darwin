@@ -1,6 +1,5 @@
 //
 //  PaginatedResponse.swift
-//  LearnSwift
 //
 //  Created by Harsh Kumar on 01/04/26.
 //

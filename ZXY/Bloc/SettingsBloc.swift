@@ -1,6 +1,5 @@
 //
 //  SettingsBloc.swift
-//  LearnSwift
 //
 //  Mirrors `app/lib/bloc/settings_bloc.dart` — user-tunable preferences
 //  (language, theme, video player, etc.) persisted via SecureStorage.

@@ -1,6 +1,5 @@
 //
 //  AccountCardView.swift
-//  LearnSwift
 //
 //  Account info + Switch profile / Trakt / Logout / Delete actions.
 //

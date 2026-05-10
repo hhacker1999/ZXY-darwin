@@ -1,6 +1,5 @@
 //
 //  SettingsViewModel.swift
-//  LearnSwift
 //
 //  Mirrors `app/lib/views/settings_view/settings_view_model.dart`. Holds
 //  per-page state for the settings screen + side-effects (auth/library/sources).

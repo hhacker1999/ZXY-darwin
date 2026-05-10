@@ -1,6 +1,5 @@
 //
 //  ShimmerView.swift
-//  LearnSwift
 //
 //  Created by Harsh Kumar on 05/04/26.
 //

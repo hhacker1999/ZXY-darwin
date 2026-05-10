@@ -1,6 +1,5 @@
 //
 //  AppTheme.swift
-//  LearnSwift
 //
 //  Created by Harsh Kumar on 29/03/26.
 //

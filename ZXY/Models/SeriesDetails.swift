@@ -1,6 +1,5 @@
 //
 //  SeriesDetails.swift
-//  LearnSwift
 //
 //  Ported from Flutter: app/lib/usecase/resource/tv_details.dart
 //
