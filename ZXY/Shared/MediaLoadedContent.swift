@@ -938,10 +938,12 @@ private struct SeasonEpisodeSection: View {
         ]
         return LazyVGrid(columns: columns, alignment: .leading, spacing: spacing) {
             ForEach(Array(episodes.enumerated()), id: \.offset) { _, episode in
+                let progressKey = "\(seriesVm.id):\(seasonNumber):\(episode.episodeNumber)"
                 EpisodeCard(
                     episode: episode,
                     seasonNumber: seasonNumber,
                     isMobile: isMobile,
+                    progress: seriesVm.progressState[progressKey],
                     onTap: {
                         loadStreamsAndShow(seasonNumber: seasonNumber, episodeNumber: episode.episodeNumber)
                     }
@@ -970,19 +972,44 @@ private struct EpisodeCard: View {
     let episode: Episode
     let seasonNumber: Int
     let isMobile: Bool
+    let progress: WatchProgress?
     let onTap: () -> Void
 
     // Overall card aspect ratio (width / height). Matches the prior
     // combined thumbnail + info ratio so the card footprint is unchanged.
     private let cardAspect: CGFloat = 300.0 / 258.0
 
-    private var runtimeLabel: String? {
-        guard let rt = episode.runtime, rt > 0 else { return nil }
-        let h = rt / 60
-        let m = rt % 60
+    private var progressFraction: Double {
+        guard let p = progress else { return 0 }
+        return min(max(p.progress / 100.0, 0), 1)
+    }
+
+    private var hasProgress: Bool {
+        progressFraction > 0
+    }
+
+    private var isWatched: Bool {
+        progress?.isWatched ?? false
+    }
+
+    private static func formatRuntime(minutes: Int) -> String {
+        let h = minutes / 60
+        let m = minutes % 60
         if h == 0 { return "\(m)m" }
         if m == 0 { return "\(h)h" }
         return "\(h)h \(m)m"
+    }
+
+    private var runtimeLabel: String? {
+        guard let rt = episode.runtime, rt > 0 else { return nil }
+        if hasProgress {
+            let remaining = max(
+                0,
+                Int((Double(rt) * (1.0 - progressFraction)).rounded())
+            )
+            return "\(Self.formatRuntime(minutes: remaining)) left"
+        }
+        return Self.formatRuntime(minutes: rt)
     }
 
     private var airDateValue: Date? {
@@ -1091,6 +1118,11 @@ private struct EpisodeCard: View {
                             }
                         }
 
+                        if hasProgress {
+                            episodeProgressBar
+                                .padding(.leading, 10)
+                        }
+
                         Spacer(minLength: 8)
 
                         Image(systemName: "ellipsis")
@@ -1103,12 +1135,16 @@ private struct EpisodeCard: View {
                 .padding(.bottom, 12)
                 .frame(width: w, alignment: .leading)
 
-                // Upcoming badge (top-right)
-                if isUpcoming {
+                // Status badge (top-right): upcoming takes priority over watched
+                if isUpcoming || isWatched {
                     VStack {
                         HStack {
                             Spacer()
-                            upcomingBadge
+                            if isUpcoming {
+                                upcomingBadge
+                            } else {
+                                watchedBadge
+                            }
                         }
                         Spacer()
                     }
@@ -1189,6 +1225,31 @@ private struct EpisodeCard: View {
             )
     }
 
+    private var watchedBadge: some View {
+        HStack(spacing: 4) {
+            Image(systemName: "checkmark")
+                .font(.system(size: 10, weight: .bold))
+            Text("WATCHED")
+                .font(.system(size: 10, weight: .bold))
+                .tracking(0.8)
+        }
+        .foregroundStyle(.white)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
+        .background(
+            Capsule(style: .continuous)
+                .fill(.ultraThinMaterial)
+                .overlay(
+                    Capsule(style: .continuous)
+                        .fill(AppTheme.Colors.success.opacity(0.55))
+                )
+                .overlay(
+                    Capsule(style: .continuous)
+                        .strokeBorder(Color.white.opacity(0.25), lineWidth: 1)
+                )
+        )
+    }
+
     private var thumbnailPlaceholder: some View {
         ZStack {
             AppTheme.Colors.backgroundTertiary
@@ -1196,5 +1257,23 @@ private struct EpisodeCard: View {
                 .font(.system(size: 28))
                 .foregroundStyle(AppTheme.Colors.elementDim)
         }
+    }
+
+    private var episodeProgressBar: some View {
+        let trackWidth: CGFloat = 48
+        let trackHeight: CGFloat = 5
+        return ZStack(alignment: .leading) {
+            Capsule(style: .continuous)
+                .fill(Color.white.opacity(0.22))
+                .frame(width: trackWidth, height: trackHeight)
+
+            Capsule(style: .continuous)
+                .fill(Color.white.opacity(0.95))
+                .frame(
+                    width: max(trackHeight, trackWidth * progressFraction),
+                    height: trackHeight
+                )
+        }
+        .frame(width: trackWidth, height: trackHeight)
     }
 }

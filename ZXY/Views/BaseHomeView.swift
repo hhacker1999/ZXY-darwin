@@ -72,7 +72,7 @@ struct BaseHomeview: View {
             }
             .listStyle(.sidebar)
             .navigationTitle("Main Menu") // good for accessibility and macOS defaults
-            .navigationSplitViewColumnWidth(min: 188, ideal: 204, max: 228)
+            .navigationSplitViewColumnWidth(min: 232, ideal: 256, max: 296)
 
         } detail: {
             switch selectedPage {
