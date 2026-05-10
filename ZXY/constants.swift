@@ -31,9 +31,9 @@ class MediaConfig {
         return URL(string: "\(baseURL)w\(width)\(path)")
     }
 
-    func stillURL(_ path: String, width: Int = 400) -> URL? {
+    func stillURL(_ path: String, width: String = "w300") -> URL? {
         guard !path.isEmpty else { return nil }
-        return URL(string: "\(baseURL)w\(width)\(path)")
+        return URL(string: "\(baseURL)\(width)\(path)")
     }
 }
 

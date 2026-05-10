@@ -1016,7 +1016,7 @@ private struct EpisodeCard: View {
                 Group {
                     if let stillPath = episode.stillPath, !stillPath.isEmpty {
                         AsyncImage(
-                            url: MediaConfig.instance.stillURL(stillPath)
+                            url: MediaConfig.instance.stillURL(stillPath,width: "original")
                         ) { phase in
                             switch phase {
                             case let .success(image):
