@@ -1,0 +1,24 @@
+{
+  "originHash" : "58b77755b440c3e18af151dd92a51caff4c9f5fcd96daa3a848f8d4933872ef9",
+  "pins" : [
+    {
+      "identity" : "inject",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/krzysztofzablocki/Inject.git",
+      "state" : {
+        "revision" : "f53380e986a8b056e37d7ce9ca68de610b8415ef",
+        "version" : "1.6.0"
+      }
+    },
+    {
+      "identity" : "mpvkit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/edde746/MPVKit.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "e9dc70092d8763c5cbee5ea72906cebc42f8dac8"
+      }
+    }
+  ],
+  "version" : 3
+}
