@@ -7,8 +7,8 @@ struct MovieView: View {
     @State var vm: MovieViewModel
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
-    init(id: Int, mediaUc: MediaUsecase, streamUc: StreamUsecase) {
-        vm = MovieViewModel(id: id, mediaUc: mediaUc, streamUc: streamUc)
+    init(id: Int, mediaUc: MediaUsecase, streamUc: StreamUsecase, progressUc: ProgressUsecase) {
+        vm = MovieViewModel(id: id, mediaUc: mediaUc, streamUc: streamUc, progressUc: progressUc)
     }
 
     private var isMobile: Bool {
@@ -60,8 +60,16 @@ struct MovieView: View {
         .task {
             await vm.initialise()
         }
+        .onChange(of: Router.router.mainRouteState) { old, _ in
+            let oldRoute = old[old.count - 1]
+            if case let .mpvVideoView(args) = oldRoute {
+                if args.mediaId == "\(vm.id)" {
+                    Task {
+                        await vm.fetchMovieProgress(loadOverlay: true)
+                    }
+                }
+            }
+        }
         .navigationBarBackButtonHidden(true)
-        .enableInjection()
     }
 }
-

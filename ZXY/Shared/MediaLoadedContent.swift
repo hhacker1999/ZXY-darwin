@@ -882,7 +882,7 @@ private struct SeasonEpisodeSection: View {
             }
         }
         .sheet(isPresented: $showStreamSheet) {
-            StreamSheet(state: seriesVm.episodeStreamState, episodeNo: seriesVm.episodeNo, seasonNo: seriesVm.seasonNo, media: media)
+            StreamSheet(state: seriesVm.episodeStreamState, episodeNo: seriesVm.selectedEpisode, seasonNo: seriesVm.seasonNo, media: media)
                 .frame(minWidth: 500)
             #if os(iOS)
                 .presentationDetents([.medium, .large])
@@ -962,7 +962,7 @@ private struct SeasonEpisodeSection: View {
         guard let imdbId = imdbId else { return }
         showStreamSheet = true
         Task {
-            await seriesVm.getEpisodeStreams(
+            await seriesVm.onEpisodeSelect(
                 imdbId: imdbId,
                 season: seasonNumber,
                 episode: episodeNumber

@@ -9,32 +9,38 @@ class SeriesViewModel {
     let progressUc: ProgressUsecase
     let userBloc: UserBloc = .bloc
     let id: Int
-    init(id: Int, mediaUc: MediaUsecase, streamUc: StreamUsecase, progressUc: ProgressUsecase) {
+    init(id: Int, mediaUc: MediaUsecase, streamUc: StreamUsecase, progressUc: ProgressUsecase, episodeNo: Int = -1, seasonNo: Int = -1) {
         self.id = id
         self.mediaUc = mediaUc
         self.progressUc = progressUc
         self.streamUc = streamUc
+        selectedEpisode = episodeNo != -1 ? episodeNo : 1
+        selectedSeason = seasonNo != -1 ? seasonNo : 1
+        isExplicitSeasonEpisode = seasonNo == -1 && episodeNo == -1
     }
 
+    var selectedEpisode: Int
+    var selectedSeason: Int
+
     @ObservationIgnored
-    var episodeNo: Int = -1
-    @ObservationIgnored
-    var seasonNo: Int = -1
+    let isExplicitSeasonEpisode: Bool
 
     var seriesState: ViewItemState<SeriesDetails> = .initial
     var episodeStreamState: ViewItemState<[ResolutionItem]> = .initial
     var progressState: [String: WatchProgress] = [:]
 
+    @ObservationIgnored
+    var streamsTask: Task<Void, Never>?
+
     func initialise() async {
         seriesState = .loading
         do {
             let seriesDetails = try await mediaUc.getSeriesDetails(id: id)
-            let progress = try await progressUc.getProgressShow(showId: id)
-            var tempProgress: [String: WatchProgress] = [:]
-            for progress in progress {
-                tempProgress[progress.mediaId] = progress
+            await fetchShowProgress()
+            if !isExplicitSeasonEpisode {
+                updateCurrentSeasonAndEpisodeFromProgress(details: seriesDetails)
             }
-            progressState = tempProgress
+            getCurrentEpisodesStream()
             seriesState = .loaded(seriesDetails)
         } catch let err as HttpError {
             seriesState = .error(err.error())
@@ -43,31 +49,97 @@ class SeriesViewModel {
         }
     }
 
-    func getEpisodeStreams(imdbId: String, season: Int, episode: Int) async {
-        episodeNo = episode
-        seasonNo = season
-        episodeStreamState = .loading
+    func fetchShowProgress(loadOverlay: Bool = false, afterVideoEnds: Bool = false) async {
+        guard case let .loaded(details) = seriesState else {
+            return
+        }
+
+        if loadOverlay {
+            ToastProgressBloc.bloc.enableLoading()
+        }
+        defer {
+            if loadOverlay {
+                ToastProgressBloc.bloc.disableLoading()
+            }
+        }
         do {
-            let response = try await streamUc.getSeriesStreams(
-                id: imdbId,
-                season: season,
-                episode: episode
-            )
-            var items: [ResolutionItem] = []
-            for item in response.uhd {
-                items.append(item)
+            let progress = try await progressUc.getProgressShow(showId: id)
+            var tempProgress: [String: WatchProgress] = [:]
+            for progress in progress {
+                tempProgress[progress.mediaId] = progress
             }
-            for item in response.fhd {
-                items.append(item)
+            progressState = tempProgress
+
+            let id = "\(details.id):\(selectedSeason):\(selectedEpisode)"
+            if afterVideoEnds, progressState[id]?.isWatched ?? false {
+                updateCurrentSeasonAndEpisodeFromProgress(details: details)
+                getCurrentEpisodesStream()
             }
-            for item in response.hd {
-                items.append(item)
-            }
-            episodeStreamState = .loaded(items)
         } catch let err as HttpError {
-            episodeStreamState = .error(err.error())
+            ToastProgressBloc.bloc.showToast(message: err.error(), isError: true)
         } catch {
-            episodeStreamState = .error(error.localizedDescription)
+            ToastProgressBloc.bloc.showToast(message: error.localizedDescription, isError: true)
+        }
+    }
+
+    func updateCurrentSeasonAndEpisodeFromProgress(details: SeriesDetails) {
+        for season in details.seasons {
+            for episode in season.episodes {
+                let id = "\(details.id):\(season.seasonNumber):\(episode.episodeNumber)"
+                if let episodeProgress = progressState[id] {
+                    if !episodeProgress.isWatched {
+                        selectedSeason = season.seasonNumber
+                        selectedEpisode = episode.episodeNumber
+                        return
+                    }
+                } else {
+                    selectedSeason = season.seasonNumber
+                    selectedEpisode = episode.episodeNumber
+                    return
+                }
+            }
+        }
+    }
+
+    func onEpisodeSelect(season: Int, episode: Int) {
+        selectedEpisode = episode
+        selectedSeason = season
+        getCurrentEpisodesStream()
+    }
+
+    private func getCurrentEpisodesStream() {
+        guard case let .loaded(details) = seriesState else {
+            return
+        }
+
+        streamsTask?.cancel()
+        streamsTask = Task {
+            episodeStreamState = .loading
+            do {
+                let response = try await streamUc.getSeriesStreams(
+                    id: details.externalIds.imdbId ?? "",
+                    season: selectedSeason,
+                    episode: selectedEpisode
+                )
+                if Task.isCancelled {
+                    return
+                }
+                var items: [ResolutionItem] = []
+                for item in response.uhd {
+                    items.append(item)
+                }
+                for item in response.fhd {
+                    items.append(item)
+                }
+                for item in response.hd {
+                    items.append(item)
+                }
+                episodeStreamState = .loaded(items)
+            } catch let err as HttpError {
+                episodeStreamState = .error(err.error())
+            } catch {
+                episodeStreamState = .error(error.localizedDescription)
+            }
         }
     }
 }

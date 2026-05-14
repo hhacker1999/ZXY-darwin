@@ -52,9 +52,7 @@ class ProgressUsecase {
         }
     }
 
-    // MARK: - Movie Progress
-
-    func getMovieProgress(movieId: String) async throws -> WatchProgress? {
+    func getMovieProgress(movieId: Int) async throws -> WatchProgress? {
         do {
             let url = URL(
                 string: "\(Constants.baseUrl)/movie/\(movieId)/progress"

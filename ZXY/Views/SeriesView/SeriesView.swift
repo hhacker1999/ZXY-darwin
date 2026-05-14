@@ -60,9 +60,20 @@ struct SeriesView: View {
         .task {
             await vm.initialise()
         }
+        .onDisappear {
+            vm.streamsTask?.cancel()
+        }
+        .onChange(of: Router.router.mainRouteState) { old, _ in
+            let oldRoute = old[old.count - 1]
+            if case let .mpvVideoView(args) = oldRoute {
+                if args.mediaId == "\(vm.id)" {
+                    Task {
+                        await vm.fetchShowProgress(loadOverlay: true, afterVideoEnds: true)
+                    }
+                }
+            }
+        }
         .navigationBarBackButtonHidden(true)
         .enableInjection()
     }
 }
-
-
