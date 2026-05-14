@@ -1,4 +1,5 @@
 struct MediaDetails {
+    let id: String
     let name: String
     let runtime: Int
     let cast: [Cast]
@@ -19,6 +20,7 @@ struct MediaDetails {
     let imdbId: String?
 
     init(from details: MovieDetails) {
+        id = "\(details.id)"
         name = details.originalTitle
         runtime = details.runtime
         cast = details.credits != nil && details.credits!.cast != nil ? details.credits!.cast! : []
@@ -50,6 +52,7 @@ struct MediaDetails {
         }
         averageRuntime = count == 0 ? 0 : Int(temp / count)
 
+        id = "\(details.id)"
         name = details.originalName
         runtime = averageRuntime
         cast = details.credits?.cast ?? []

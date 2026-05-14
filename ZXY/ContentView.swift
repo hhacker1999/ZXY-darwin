@@ -33,8 +33,12 @@ struct ContentView: View {
                         MovieView(id: id, mediaUc: deps.mediaUc, streamUc: deps.streamUc)
                     case let .seriesDetails(id):
                         SeriesView(id: id, mediaUc: deps.mediaUc, streamUc: deps.streamUc, progressUc: deps.progressUc)
-                    case let .mpvVideoView(streams, index):
-                        MpvPlayerView(streams: streams, selectedStreamIndex: index, streamUc: deps.streamUc)
+                    case let .mpvVideoView(args):
+                        if args.seasonNo != -1 && args.episodeNo != -1 {
+                            MpvPlayerView(streams: args.resItems, selectedStreamIndex: args.selectedIndex, streamUc: deps.streamUc, progressUc: deps.progressUc, mediaId: args.mediaId, seasonNo: args.seasonNo, episodeNo: args.episodeNo, name: args.name)
+                        } else {
+                            MpvPlayerView(streams: args.resItems, selectedStreamIndex: args.selectedIndex, streamUc: deps.streamUc, progressUc: deps.progressUc, mediaId: args.mediaId, name: args.name)
+                        }
                     default:
                         Text("Invalid route")
                     }

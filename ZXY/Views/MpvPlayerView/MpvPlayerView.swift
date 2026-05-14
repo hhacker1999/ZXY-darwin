@@ -12,12 +12,40 @@ struct MpvPlayerView: View {
     init(
         streams: [ResolutionItem],
         selectedStreamIndex: Int,
-        streamUc: StreamUsecase
+        streamUc: StreamUsecase,
+        progressUc: ProgressUsecase,
+        mediaId: String,
+        name: String
     ) {
         vm = MpvViewModel(
             streams: streams,
             selectedStreamIndex: selectedStreamIndex,
-            streamUc: streamUc
+            streamUc: streamUc,
+            progressUc: progressUc,
+            mediaId: mediaId,
+            name: name
+        )
+    }
+
+    init(
+        streams: [ResolutionItem],
+        selectedStreamIndex: Int,
+        streamUc: StreamUsecase,
+        progressUc: ProgressUsecase,
+        mediaId: String,
+        seasonNo: Int,
+        episodeNo: Int,
+        name: String
+    ) {
+        vm = MpvViewModel(
+            streams: streams,
+            selectedStreamIndex: selectedStreamIndex,
+            streamUc: streamUc,
+            progressUc: progressUc,
+            mediaId: mediaId,
+            seasonNo: seasonNo,
+            episodeNo: episodeNo,
+            name: name
         )
     }
 
@@ -36,7 +64,7 @@ struct MpvPlayerView: View {
                 .focused($currentFocus, equals: .video)
                 .overlay {
                     OverlayView(
-                        title: "Title",
+                        title: "\(vm.name)\(vm.seasonNo != -1 ? "(S\(String(format: "%02d", vm.seasonNo))" : "")\(vm.episodeNo != -1 ? ":E\(String(format: "%02d", vm.episodeNo)))" : "")",
                         vm: vm,
                         onBack: {
                             Router.router.popRoute()
@@ -111,8 +139,8 @@ struct LoadingOverlayView: View {
                     Text(
                         vm.loading
                             ? vm.downloadSpeed != 0
-                                ? String(format: "%.2f Mbps", vm.downloadSpeed)
-                                : "Loading"
+                            ? String(format: "%.2f Mbps", vm.downloadSpeed)
+                            : "Loading"
                             : "Fetching Streams"
                     )
                     .font(

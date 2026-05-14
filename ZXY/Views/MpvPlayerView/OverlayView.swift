@@ -330,7 +330,7 @@ struct OverlayView: View {
                         .foregroundStyle(.white.opacity(0.7))
                         .frame(width: 24)
 
-                    Text("Toggle Info")
+                    Text("Toggle Stats")
                         .font(.system(size: 14, weight: .medium))
                         .foregroundStyle(.white)
                 }

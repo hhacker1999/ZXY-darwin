@@ -40,19 +40,41 @@ struct MPVMetalPlayerView: NSViewControllerRepresentable {
         print("Deinit called inside of metal player view")
         nsViewController.cleanup()
     }
-
-    // func makeCoordinator() -> MpvViewModel {
-    //     coordinator
-    // }
 }
 
 @MainActor
 @Observable
 final class MpvViewModel: MPVPlayerDelegate {
-    init(streams: [ResolutionItem], selectedStreamIndex: Int, streamUc: StreamUsecase) {
+    init(streams: [ResolutionItem], selectedStreamIndex: Int, streamUc: StreamUsecase,
+         progressUc: ProgressUsecase,
+         initialProgress: Double = 0, mediaId: String, name: String)
+    {
         self.streams = streams
         self.streamUc = streamUc
         self.selectedStreamIndex = selectedStreamIndex
+        self.mediaId = mediaId
+        isShow = false
+        episodeNo = -1
+        seasonNo = -1
+        self.initialProgress = initialProgress
+        self.progressUc = progressUc
+        self.name = name
+    }
+
+    init(streams: [ResolutionItem], selectedStreamIndex: Int, streamUc: StreamUsecase,
+         progressUc: ProgressUsecase,
+         initialProgress: Double = 0, mediaId: String, seasonNo: Int, episodeNo: Int, name: String)
+    {
+        self.streams = streams
+        self.streamUc = streamUc
+        self.selectedStreamIndex = selectedStreamIndex
+        self.mediaId = mediaId
+        isShow = true
+        self.episodeNo = episodeNo
+        self.seasonNo = seasonNo
+        self.initialProgress = initialProgress
+        self.progressUc = progressUc
+        self.name = name
     }
 
     deinit {
@@ -62,7 +84,26 @@ final class MpvViewModel: MPVPlayerDelegate {
         NSCursor.unhide()
     }
 
+    @ObservationIgnored
     let streamUc: StreamUsecase
+
+    @ObservationIgnored
+    let progressUc: ProgressUsecase
+
+    @ObservationIgnored
+    let mediaId: String
+    @ObservationIgnored
+    let name: String
+    @ObservationIgnored
+    let seasonNo: Int
+    @ObservationIgnored
+    let episodeNo: Int
+    @ObservationIgnored
+    let isShow: Bool
+    @ObservationIgnored
+    var initialProgress: Double
+    @ObservationIgnored
+    var progressTask: Task<Void, Never>?
 
     @ObservationIgnored
     weak var player: MPVMetalViewController?
@@ -88,6 +129,9 @@ final class MpvViewModel: MPVPlayerDelegate {
     var currentPos: Duration = .zero
     var currentPlayHeadPos: Duration = .zero
     var cachePos: Duration = .zero
+
+    @ObservationIgnored
+    var lastProgressPosition: Duration = .zero
 
     @ObservationIgnored
     var cacheDur: Double = 0
@@ -119,6 +163,37 @@ final class MpvViewModel: MPVPlayerDelegate {
     var fetchingStreams: Bool = false
     var hasError: Bool = false
     var hasEnded: Bool = false
+
+    func setupProgressTask() {
+        progressTask = Task { [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .seconds(10))
+                if let self = self {
+                    if self.lastProgressPosition == self.currentPos {
+                        continue
+                    }
+
+                    let currentPos = self.currentPos
+                    let s1 = Double(currentPos.components.seconds)
+                    let s2 = Double(self.duration.components.seconds)
+
+                    if s2 < 0 || s1 < 0 {
+                        continue
+                    }
+
+                    let currentProgress = (s1 / s2) * 100
+                    if self.isShow {
+                        try? await progressUc.updateWatchProgressShow(showId: self.mediaId, season: self.seasonNo, episode: self.episodeNo, progress: currentProgress)
+                    } else {
+                        try? await progressUc.updateWatchProgressMovie(movieId: self.mediaId, progress: currentProgress)
+                    }
+                    self.lastProgressPosition = currentPos
+                } else {
+                    return
+                }
+            }
+        }
+    }
 
     func onTrackList(tracks: [Track]) {
         audioTracks.removeAll()
@@ -212,6 +287,8 @@ final class MpvViewModel: MPVPlayerDelegate {
 
     func cleanUp() {
         overlayTask?.cancel()
+        progressTask?.cancel()
+        progressTask = nil
         overlayTask = nil
         player?.cleanup()
     }
@@ -231,6 +308,15 @@ final class MpvViewModel: MPVPlayerDelegate {
         guard index >= 0, index < streams.count, index != selectedStreamIndex else { return }
         selectedStreamIndex = index
         loading = true
+        player?.stop()
+
+        let s1 = Double(currentPos.components.seconds)
+        let s2 = Double(duration.components.seconds)
+
+        if s2 > 0, s1 > 0 {
+            initialProgress = (s1 / s2) * 100
+        }
+
         Task { [weak self] in
             guard let self = self else {
                 return
@@ -307,7 +393,13 @@ final class MpvViewModel: MPVPlayerDelegate {
         player.toggleHDR(hdrEnabled)
     }
 
-    func onFileLoaded() {}
+    func onFileLoaded() {
+        // NOTE: Start from where we left off
+        if initialProgress != 0 {
+            let seekSeconds = Double(duration.components.seconds) * (initialProgress / 100)
+            player?.seek(relative: seekSeconds)
+        }
+    }
 
     func onFileEnd() {
         hasEnded = true
@@ -392,6 +484,7 @@ final class MpvViewModel: MPVPlayerDelegate {
                     await self.getAndLoadFinalUrl()
                 }
                 isMpvLoaded = true
+                setupProgressTask()
             }
         default: break
         }

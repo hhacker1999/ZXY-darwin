@@ -124,8 +124,6 @@ class ProgressUsecase {
         }
     }
 
-    // MARK: - Show Progress
-
     func getProgressShow(showId: Int) async throws -> [WatchProgress] {
         do {
             let url = URL(

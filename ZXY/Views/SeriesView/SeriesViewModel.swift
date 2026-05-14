@@ -16,6 +16,11 @@ class SeriesViewModel {
         self.streamUc = streamUc
     }
 
+    @ObservationIgnored
+    var episodeNo: Int = -1
+    @ObservationIgnored
+    var seasonNo: Int = -1
+
     var seriesState: ViewItemState<SeriesDetails> = .initial
     var episodeStreamState: ViewItemState<[ResolutionItem]> = .initial
     var progressState: [String: WatchProgress] = [:]
@@ -39,6 +44,8 @@ class SeriesViewModel {
     }
 
     func getEpisodeStreams(imdbId: String, season: Int, episode: Int) async {
+        episodeNo = episode
+        seasonNo = season
         episodeStreamState = .loading
         do {
             let response = try await streamUc.getSeriesStreams(

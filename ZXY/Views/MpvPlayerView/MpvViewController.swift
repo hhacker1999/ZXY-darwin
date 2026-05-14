@@ -287,6 +287,10 @@ final class MPVMetalViewController: NSViewController {
         command("seek", args: [String(time), "relative"])
     }
 
+    func stop() {
+        command("stop", args: [])
+    }
+
     private func getDouble(_ name: String) -> Double {
         guard mpv != nil else { return 0.0 }
         var data = Double()
@@ -391,8 +395,8 @@ final class MPVMetalViewController: NSViewController {
                                     else { return }
                                     let maxEDRRange =
                                         NSScreen.main?
-                                        .maximumPotentialExtendedDynamicRangeColorComponentValue
-                                        ?? 1.0
+                                            .maximumPotentialExtendedDynamicRangeColorComponentValue
+                                            ?? 1.0
                                     // display screen support HDR and current playing HDR video
                                     self.hdrAvailable =
                                         maxEDRRange > 1.0 && sigPeak > 1.0
@@ -622,8 +626,7 @@ final class MPVMetalViewController: NSViewController {
                                     cString: stringPtrPtr.pointee
                                 )
                                 // print("found json tracks\(jsonString)")
-                                if let jsonData = jsonString.data(using: .utf8)
-                                {
+                                if let jsonData = jsonString.data(using: .utf8) {
                                     do {
                                         let allTracks = try JSONDecoder()
                                             .decode(
@@ -634,7 +637,7 @@ final class MPVMetalViewController: NSViewController {
                                         DispatchQueue.main.async {
                                             [weak self] in
                                             guard let self = self,
-                                                self.mpv != nil
+                                                  self.mpv != nil
                                             else { return }
 
                                             self.playDelegate?.onTrackList(

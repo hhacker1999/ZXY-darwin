@@ -47,7 +47,8 @@ struct MediaLoadedContent: View {
                             seasons: details.seasons,
                             imdbId: details.imdbId,
                             seriesVm: seriesVm,
-                            isMobile: isMobile
+                            isMobile: isMobile,
+                            media: details
                         )
                         .padding(.horizontal, AppTheme.Spacing.md)
 
@@ -311,7 +312,7 @@ private struct MediaInfoPosterView: View {
                 .padding(.vertical, AppTheme.Spacing.md)
         }
         .sheet(isPresented: $showStreamSheet) {
-            StreamSheet(state: streamState)
+            StreamSheet(state: streamState, episodeNo: -1, seasonNo: -1, media: details)
                 .frame(minWidth: 500)
             #if os(iOS)
                 .presentationDetents([.medium, .large])
@@ -363,7 +364,7 @@ private struct MediaInfoBannerView: View {
 
     private var logoPath: String? {
         guard let images = details.images else { return nil }
-        guard let logos = images.logos else {return nil}
+        guard let logos = images.logos else { return nil }
         let englishLogo = logos.first {
             $0.iso639_1 == "en" && !$0.filePath.hasSuffix(".svg")
         }
@@ -533,7 +534,7 @@ private struct MediaInfoBannerView: View {
         }
         .frame(width: width, height: height)
         .sheet(isPresented: $showStreamSheet) {
-            StreamSheet(state: streamState)
+            StreamSheet(state: streamState, episodeNo: -1, seasonNo: -1, media: details)
                 .frame(minWidth: 500)
             #if os(iOS)
                 .presentationDetents([.medium, .large])
@@ -677,6 +678,9 @@ private struct PlayStreamButton: View {
 
 private struct StreamSheet: View {
     let state: ViewItemState<[ResolutionItem]>
+    let episodeNo: Int
+    let seasonNo: Int
+    let media: MediaDetails
     @Environment(\.dismiss) private var dismiss
 
     private var itemCount: Int {
@@ -797,7 +801,7 @@ private struct StreamSheet: View {
         List {
             ForEach(Array(streams.enumerated()), id: \.offset) { index, stream in
                 StreamRow(stream: stream) {
-                    Router.router.addToRoute(route: .mpvVideoView(streams, index))
+                    Router.router.addToRoute(route: .mpvVideoView(MPVViewArgs(resItems: streams, selectedIndex: index, mediaId: media.id, episodeNo: episodeNo, seasonNo: seasonNo, name: media.name)))
                 }
                 .listRowBackground(Color.clear)
                 .listRowSeparatorTint(AppTheme.Colors.divider)
@@ -857,6 +861,7 @@ private struct SeasonEpisodeSection: View {
     let imdbId: String?
     let seriesVm: SeriesViewModel
     let isMobile: Bool
+    let media: MediaDetails
 
     @State private var selectedSeasonIndex: Int = 0
     @State private var showStreamSheet: Bool = false
@@ -877,7 +882,7 @@ private struct SeasonEpisodeSection: View {
             }
         }
         .sheet(isPresented: $showStreamSheet) {
-            StreamSheet(state: seriesVm.episodeStreamState)
+            StreamSheet(state: seriesVm.episodeStreamState, episodeNo: seriesVm.episodeNo, seasonNo: seriesVm.seasonNo, media: media)
                 .frame(minWidth: 500)
             #if os(iOS)
                 .presentationDetents([.medium, .large])
@@ -934,7 +939,7 @@ private struct SeasonEpisodeSection: View {
         let spacing: CGFloat = isMobile ? 14 : 18
         let minCardWidth: CGFloat = isMobile ? 260 : 340
         let columns = [
-            GridItem(.adaptive(minimum: minCardWidth), spacing: spacing, alignment: .top)
+            GridItem(.adaptive(minimum: minCardWidth), spacing: spacing, alignment: .top),
         ]
         return LazyVGrid(columns: columns, alignment: .leading, spacing: spacing) {
             ForEach(Array(episodes.enumerated()), id: \.offset) { _, episode in
@@ -975,8 +980,8 @@ private struct EpisodeCard: View {
     let progress: WatchProgress?
     let onTap: () -> Void
 
-    // Overall card aspect ratio (width / height). Matches the prior
-    // combined thumbnail + info ratio so the card footprint is unchanged.
+    /// Overall card aspect ratio (width / height). Matches the prior
+    /// combined thumbnail + info ratio so the card footprint is unchanged.
     private let cardAspect: CGFloat = 300.0 / 258.0
 
     private var progressFraction: Double {
@@ -1043,7 +1048,7 @@ private struct EpisodeCard: View {
                 Group {
                     if let stillPath = episode.stillPath, !stillPath.isEmpty {
                         AsyncImage(
-                            url: MediaConfig.instance.stillURL(stillPath,width: "original")
+                            url: MediaConfig.instance.stillURL(stillPath, width: "original")
                         ) { phase in
                             switch phase {
                             case let .success(image):
