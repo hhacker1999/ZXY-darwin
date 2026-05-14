@@ -7,6 +7,7 @@ struct MediaLoadedContent: View {
     let details: MediaDetails
     let isMobile: Bool
     var streamState: ViewItemState<[ResolutionItem]> = .initial
+    var movieProgress: Double = 0
     var seriesVm: SeriesViewModel? = nil
 
     private var castList: [Cast] {
@@ -28,14 +29,18 @@ struct MediaLoadedContent: View {
                             details: details,
                             width: width,
                             height: headerHeight,
-                            streamState: streamState
+                            streamState: streamState,
+                            movieProgress: movieProgress,
+                            seriesVm: seriesVm
                         )
                     } else {
                         MediaInfoBannerView(
                             details: details,
                             width: width,
                             height: headerHeight,
-                            streamState: streamState
+                            streamState: streamState,
+                            movieProgress: movieProgress,
+                            seriesVm: seriesVm
                         )
                     }
 
@@ -45,7 +50,6 @@ struct MediaLoadedContent: View {
                     if !details.seasons.isEmpty, let seriesVm = seriesVm {
                         SeasonEpisodeSection(
                             seasons: details.seasons,
-                            imdbId: details.imdbId,
                             seriesVm: seriesVm,
                             isMobile: isMobile,
                             media: details
@@ -128,8 +132,39 @@ private struct MediaInfoPosterView: View {
     let width: CGFloat
     let height: CGFloat
     var streamState: ViewItemState<[ResolutionItem]> = .initial
+    var movieProgress: Double = 0
+    var seriesVm: SeriesViewModel? = nil
 
     @State private var showStreamSheet = false
+
+    private var effectiveStreamState: ViewItemState<[ResolutionItem]> {
+        if let seriesVm = seriesVm { return seriesVm.episodeStreamState }
+        return streamState
+    }
+
+    private var effectiveSeasonNo: Int { seriesVm?.selectedSeason ?? -1 }
+    private var effectiveEpisodeNo: Int { seriesVm?.selectedEpisode ?? -1 }
+
+    private var playProgressFraction: Double {
+        let raw: Double
+        if let seriesVm = seriesVm {
+            let key = "\(details.id):\(seriesVm.selectedSeason):\(seriesVm.selectedEpisode)"
+            raw = seriesVm.progressState[key]?.progress ?? 0
+        } else {
+            raw = movieProgress
+        }
+        return min(max(raw / 100.0, 0), 1)
+    }
+
+    private var playButtonTitle: String {
+        let verb = playProgressFraction > 0 ? "Resume" : "Play"
+        if seriesVm != nil {
+            let s = String(format: "%02d", effectiveSeasonNo)
+            let e = String(format: "%02d", effectiveEpisodeNo)
+            return "\(verb) S\(s):E\(e)"
+        }
+        return verb
+    }
 
     private var logoPath: String? {
         guard let images = details.images else { return nil }
@@ -272,9 +307,13 @@ private struct MediaInfoPosterView: View {
                     ratingsRow
 
                     // Play button
-                    if details.isMovie {
+                    if details.isMovie || seriesVm != nil {
                         Spacer().frame(height: 14)
-                        PlayStreamButton(action: { showStreamSheet = true })
+                        PlayStreamButton(
+                            title: playButtonTitle,
+                            progressFraction: playProgressFraction,
+                            action: { showStreamSheet = true }
+                        )
                     }
                 }
                 .padding(.horizontal, AppTheme.Spacing.md)
@@ -312,8 +351,13 @@ private struct MediaInfoPosterView: View {
                 .padding(.vertical, AppTheme.Spacing.md)
         }
         .sheet(isPresented: $showStreamSheet) {
-            StreamSheet(state: streamState, episodeNo: -1, seasonNo: -1, media: details)
-                .frame(minWidth: 500)
+            StreamSheet(
+                state: effectiveStreamState,
+                episodeNo: effectiveEpisodeNo,
+                seasonNo: effectiveSeasonNo,
+                media: details
+            )
+            .frame(minWidth: 500)
             #if os(iOS)
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
@@ -359,8 +403,39 @@ private struct MediaInfoBannerView: View {
     let width: CGFloat
     let height: CGFloat
     var streamState: ViewItemState<[ResolutionItem]> = .initial
+    var movieProgress: Double = 0
+    var seriesVm: SeriesViewModel? = nil
 
     @State private var showStreamSheet = false
+
+    private var effectiveStreamState: ViewItemState<[ResolutionItem]> {
+        if let seriesVm = seriesVm { return seriesVm.episodeStreamState }
+        return streamState
+    }
+
+    private var effectiveSeasonNo: Int { seriesVm?.selectedSeason ?? -1 }
+    private var effectiveEpisodeNo: Int { seriesVm?.selectedEpisode ?? -1 }
+
+    private var playProgressFraction: Double {
+        let raw: Double
+        if let seriesVm = seriesVm {
+            let key = "\(details.id):\(seriesVm.selectedSeason):\(seriesVm.selectedEpisode)"
+            raw = seriesVm.progressState[key]?.progress ?? 0
+        } else {
+            raw = movieProgress
+        }
+        return min(max(raw / 100.0, 0), 1)
+    }
+
+    private var playButtonTitle: String {
+        let verb = playProgressFraction > 0 ? "Resume" : "Play"
+        if seriesVm != nil {
+            let s = String(format: "%02d", effectiveSeasonNo)
+            let e = String(format: "%02d", effectiveEpisodeNo)
+            return "\(verb) S\(s):E\(e)"
+        }
+        return verb
+    }
 
     private var logoPath: String? {
         guard let images = details.images else { return nil }
@@ -505,9 +580,13 @@ private struct MediaInfoBannerView: View {
                     .frame(maxWidth: width * 0.5, alignment: .leading)
 
                 // Play button
-                if details.isMovie {
+                if details.isMovie || seriesVm != nil {
                     Spacer().frame(height: AppTheme.Spacing.lg)
-                    PlayStreamButton(action: { showStreamSheet = true })
+                    PlayStreamButton(
+                        title: playButtonTitle,
+                        progressFraction: playProgressFraction,
+                        action: { showStreamSheet = true }
+                    )
                 }
             }
             .padding(.horizontal, AppTheme.Spacing.lg)
@@ -534,8 +613,13 @@ private struct MediaInfoBannerView: View {
         }
         .frame(width: width, height: height)
         .sheet(isPresented: $showStreamSheet) {
-            StreamSheet(state: streamState, episodeNo: -1, seasonNo: -1, media: details)
-                .frame(minWidth: 500)
+            StreamSheet(
+                state: effectiveStreamState,
+                episodeNo: effectiveEpisodeNo,
+                seasonNo: effectiveSeasonNo,
+                media: details
+            )
+            .frame(minWidth: 500)
             #if os(iOS)
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
@@ -641,16 +725,25 @@ private struct GlassCircularButton: View {
 // MARK: - Play Stream Button
 
 private struct PlayStreamButton: View {
+    var title: String = "Play"
+    var progressFraction: Double = 0
     let action: () -> Void
     @State private var isHovered = false
 
+    private var hasProgress: Bool { progressFraction > 0 }
+
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 10) {
-                Image(systemName: "play.fill")
-                    .font(.system(size: 16, weight: .semibold))
-                Text("Play")
-                    .font(.system(size: 16, weight: .semibold))
+            VStack(alignment: .leading, spacing: 6) {
+                HStack(spacing: 10) {
+                    Image(systemName: "play.fill")
+                        .font(.system(size: 16, weight: .semibold))
+                    Text(title)
+                        .font(.system(size: 16, weight: .semibold))
+                }
+                if hasProgress {
+                    playProgressBar
+                }
             }
             .foregroundStyle(AppTheme.Colors.buttonPrimaryLabel)
             .padding(.horizontal, 28)
@@ -671,6 +764,21 @@ private struct PlayStreamButton: View {
         .onHover { hovering in
             isHovered = hovering
         }
+    }
+
+    private var playProgressBar: some View {
+        let trackWidth: CGFloat = 120
+        let trackHeight: CGFloat = 4
+        let fillWidth = max(trackHeight, trackWidth * progressFraction)
+        return ZStack(alignment: .leading) {
+            Capsule(style: .continuous)
+                .fill(AppTheme.Colors.buttonPrimaryLabel.opacity(0.3))
+                .frame(width: trackWidth, height: trackHeight)
+            Capsule(style: .continuous)
+                .fill(AppTheme.Colors.buttonPrimaryLabel)
+                .frame(width: fillWidth, height: trackHeight)
+        }
+        .frame(width: trackWidth, height: trackHeight)
     }
 }
 
@@ -801,6 +909,7 @@ private struct StreamSheet: View {
         List {
             ForEach(Array(streams.enumerated()), id: \.offset) { index, stream in
                 StreamRow(stream: stream) {
+                    dismiss()
                     Router.router.addToRoute(route: .mpvVideoView(MPVViewArgs(resItems: streams, selectedIndex: index, mediaId: media.id, episodeNo: episodeNo, seasonNo: seasonNo, name: media.name)))
                 }
                 .listRowBackground(Color.clear)
@@ -854,11 +963,8 @@ private struct StreamRow: View {
     }
 }
 
-// MARK: - Season & Episode Section
-
 private struct SeasonEpisodeSection: View {
     let seasons: [Season]
-    let imdbId: String?
     let seriesVm: SeriesViewModel
     let isMobile: Bool
     let media: MediaDetails
@@ -882,7 +988,7 @@ private struct SeasonEpisodeSection: View {
             }
         }
         .sheet(isPresented: $showStreamSheet) {
-            StreamSheet(state: seriesVm.episodeStreamState, episodeNo: seriesVm.selectedEpisode, seasonNo: seriesVm.seasonNo, media: media)
+            StreamSheet(state: seriesVm.episodeStreamState, episodeNo: seriesVm.selectedEpisode, seasonNo: seriesVm.selectedSeason, media: media)
                 .frame(minWidth: 500)
             #if os(iOS)
                 .presentationDetents([.medium, .large])
@@ -890,8 +996,6 @@ private struct SeasonEpisodeSection: View {
             #endif
         }
     }
-
-    // MARK: Season Picker
 
     private var seasonPicker: some View {
         Menu {
@@ -933,8 +1037,6 @@ private struct SeasonEpisodeSection: View {
         .buttonStyle(.plain)
     }
 
-    // MARK: Episode Grid
-
     private func episodeCarousel(episodes: [Episode], seasonNumber: Int) -> some View {
         let spacing: CGFloat = isMobile ? 14 : 18
         let minCardWidth: CGFloat = isMobile ? 260 : 340
@@ -959,19 +1061,13 @@ private struct SeasonEpisodeSection: View {
     }
 
     private func loadStreamsAndShow(seasonNumber: Int, episodeNumber: Int) {
-        guard let imdbId = imdbId else { return }
         showStreamSheet = true
-        Task {
-            await seriesVm.onEpisodeSelect(
-                imdbId: imdbId,
-                season: seasonNumber,
-                episode: episodeNumber
-            )
-        }
+        seriesVm.onEpisodeSelect(
+            season: seasonNumber,
+            episode: episodeNumber
+        )
     }
 }
-
-// MARK: - Episode Card
 
 private struct EpisodeCard: View {
     let episode: Episode

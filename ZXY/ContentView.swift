@@ -30,7 +30,7 @@ struct ContentView: View {
                 BaseHomeview(deps: deps).navigationDestination(for: Route.self) { route in
                     switch route {
                     case let .movieDetails(id):
-                        MovieView(id: id, mediaUc: deps.mediaUc, streamUc: deps.streamUc)
+                        MovieView(id: id, mediaUc: deps.mediaUc, streamUc: deps.streamUc, progressUc: deps.progressUc)
                     case let .seriesDetails(id):
                         SeriesView(id: id, mediaUc: deps.mediaUc, streamUc: deps.streamUc, progressUc: deps.progressUc)
                     case let .mpvVideoView(args):

@@ -20,13 +20,16 @@ class MovieViewModel {
     var streamsState: ViewItemState<[ResolutionItem]> = .initial
     var progress: Double = 0
 
+    @ObservationIgnored
+    var streamTask: Task<Void, Never>?
+
     func initialise() async {
         movieState = .loading
         do {
             let movieDetails = try await mediaUc.getMovieDetails(id: id)
             await fetchMovieProgress()
             movieState = .loaded(movieDetails)
-            Task {
+            streamTask = Task {
                 await getStreams(imdbId: movieDetails.imdbId)
             }
         } catch let err as HttpError {
@@ -59,6 +62,9 @@ class MovieViewModel {
         streamsState = .loading
         do {
             let streams = try await streamUc.getMovieStreams(id: imdbId)
+            if Task.isCancelled {
+                return
+            }
             streamsState = .loaded(streams)
         } catch let err as HttpError {
             streamsState = .error(err.error())

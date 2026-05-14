@@ -53,12 +53,16 @@ struct MovieView: View {
                 MediaLoadedContent(
                     details: MediaDetails(from: details),
                     isMobile: isMobile,
-                    streamState: vm.streamsState
+                    streamState: vm.streamsState,
+                    movieProgress: vm.progress
                 )
             }
         }
         .task {
             await vm.initialise()
+        }
+        .onDisappear {
+            vm.streamTask?.cancel()
         }
         .onChange(of: Router.router.mainRouteState) { old, _ in
             let oldRoute = old[old.count - 1]

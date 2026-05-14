@@ -16,7 +16,7 @@ class SeriesViewModel {
         self.streamUc = streamUc
         selectedEpisode = episodeNo != -1 ? episodeNo : 1
         selectedSeason = seasonNo != -1 ? seasonNo : 1
-        isExplicitSeasonEpisode = seasonNo == -1 && episodeNo == -1
+        isExplicitSeasonEpisode = seasonNo != -1 && episodeNo != -1
     }
 
     var selectedEpisode: Int
@@ -30,18 +30,21 @@ class SeriesViewModel {
     var progressState: [String: WatchProgress] = [:]
 
     @ObservationIgnored
+    var seriesDetails: SeriesDetails? = nil
+
+    @ObservationIgnored
     var streamsTask: Task<Void, Never>?
 
     func initialise() async {
         seriesState = .loading
         do {
-            let seriesDetails = try await mediaUc.getSeriesDetails(id: id)
-            await fetchShowProgress()
+            seriesDetails = try await mediaUc.getSeriesDetails(id: id)
+            await fetchShowProgress(loadOverlay: false, afterVideoEnds: false)
             if !isExplicitSeasonEpisode {
-                updateCurrentSeasonAndEpisodeFromProgress(details: seriesDetails)
+                updateCurrentSeasonAndEpisodeFromProgress()
             }
             getCurrentEpisodesStream()
-            seriesState = .loaded(seriesDetails)
+            seriesState = .loaded(seriesDetails!)
         } catch let err as HttpError {
             seriesState = .error(err.error())
         } catch {
@@ -50,7 +53,7 @@ class SeriesViewModel {
     }
 
     func fetchShowProgress(loadOverlay: Bool = false, afterVideoEnds: Bool = false) async {
-        guard case let .loaded(details) = seriesState else {
+        guard let d = seriesDetails else {
             return
         }
 
@@ -70,9 +73,9 @@ class SeriesViewModel {
             }
             progressState = tempProgress
 
-            let id = "\(details.id):\(selectedSeason):\(selectedEpisode)"
+            let id = "\(d.id):\(selectedSeason):\(selectedEpisode)"
             if afterVideoEnds, progressState[id]?.isWatched ?? false {
-                updateCurrentSeasonAndEpisodeFromProgress(details: details)
+                updateCurrentSeasonAndEpisodeFromProgress()
                 getCurrentEpisodesStream()
             }
         } catch let err as HttpError {
@@ -82,7 +85,11 @@ class SeriesViewModel {
         }
     }
 
-    func updateCurrentSeasonAndEpisodeFromProgress(details: SeriesDetails) {
+    func updateCurrentSeasonAndEpisodeFromProgress() {
+        guard let details = seriesDetails else {
+            return
+        }
+
         for season in details.seasons {
             for episode in season.episodes {
                 let id = "\(details.id):\(season.seasonNumber):\(episode.episodeNumber)"
@@ -108,7 +115,7 @@ class SeriesViewModel {
     }
 
     private func getCurrentEpisodesStream() {
-        guard case let .loaded(details) = seriesState else {
+        guard let details = seriesDetails else {
             return
         }
 
