@@ -1059,11 +1059,11 @@ private struct SeasonEpisodeSection: View {
     }
 
     private func loadStreamsAndShow(seasonNumber: Int, episodeNumber: Int) {
-        showStreamSheet = true
         seriesVm.onEpisodeSelect(
-            season: seasonNumber,
-            episode: episodeNumber
-        )
+                season: seasonNumber,
+                episode: episodeNumber
+                )
+        showStreamSheet = true
     }
 }
 

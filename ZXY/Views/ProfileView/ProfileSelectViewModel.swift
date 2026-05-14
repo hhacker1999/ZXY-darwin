@@ -74,7 +74,7 @@ class ProfileSelectViewModel {
 
             // Set this is as logged in profile in userbloc
             UserBloc.bloc.profile = updateProfile
-            router.routerState = .home([])
+            router.routerState = .home
         } catch let error as HttpError {
             err = error.error()
         } catch {

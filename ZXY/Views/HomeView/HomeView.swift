@@ -75,6 +75,26 @@ struct HomeView: View {
                 .padding(.bottom, AppTheme.Spacing.xxl)
             }
         }
+        .onChange(of: Router.router.mainRouteState) { old, new in
+            guard let oldRoute = old.last else {
+                return
+            }
+
+            let newRoute = new.last
+            let returnedFromDetails: Bool
+            switch oldRoute {
+            case .movieDetails, .seriesDetails:
+                returnedFromDetails = true
+            default:
+                returnedFromDetails = false
+            }
+            if newRoute == nil && returnedFromDetails {
+                print("We came back from details page")
+                Task {
+                    await vm.initialiseContinueWatching()
+                }
+            }
+        }
         .background(AppTheme.Colors.background).ignoresSafeArea(edges: .top)
     }
 }
@@ -100,17 +120,17 @@ private struct ContinueWatchingSection: View {
                     }
                     .padding(.horizontal, AppTheme.Spacing.md)
 
-                    // ── Horizontal list ─────────────────────────
                     ScrollView(.horizontal, showsIndicators: false) {
                         LazyHStack(spacing: AppTheme.Spacing.sm + 2) {
-                            ForEach(
-                                Array(items.enumerated()),
-                                id: \.offset
-                            ) { _, item in
+                            ForEach(items, id: \.progress.mediaId) { item in
                                 ContinueWatchingCard(item: item)
                             }
                         }
                         .padding(.horizontal, AppTheme.Spacing.md)
+                        .animation(
+                            .spring(response: 0.35, dampingFraction: 0.85),
+                            value: items.map(\.progress.mediaId)
+                        )
                     }
                 }
             }

@@ -109,6 +109,9 @@ class SeriesViewModel {
     }
 
     func onEpisodeSelect(season: Int, episode: Int) {
+        if season == selectedSeason, episode == selectedEpisode {
+            return
+        }
         selectedEpisode = episode
         selectedSeason = season
         getCurrentEpisodesStream()
@@ -119,9 +122,9 @@ class SeriesViewModel {
             return
         }
 
+        episodeStreamState = .loading
         streamsTask?.cancel()
         streamsTask = Task {
-            episodeStreamState = .loading
             do {
                 let response = try await streamUc.getSeriesStreams(
                     id: details.externalIds.imdbId ?? "",
@@ -142,10 +145,16 @@ class SeriesViewModel {
                     items.append(item)
                 }
                 episodeStreamState = .loaded(items)
-            } catch let err as HttpError {
-                episodeStreamState = .error(err.error())
             } catch {
-                episodeStreamState = .error(error.localizedDescription)
+                // 1. If the task was cancelled, don't update the state to .error
+                // This prevents the UI from flickering to an error message when switching episodes
+                guard !Task.isCancelled else { return }
+
+                if let err = error as? HttpError {
+                    episodeStreamState = .error(err.error())
+                } else {
+                    episodeStreamState = .error(error.localizedDescription)
+                }
             }
         }
     }

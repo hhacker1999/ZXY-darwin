@@ -27,7 +27,7 @@ enum RouterState: Hashable, Equatable {
     case splash
     case logIn
     case profileLogIn([Profile])
-    case home([Route])
+    case home
 }
 
 @MainActor
