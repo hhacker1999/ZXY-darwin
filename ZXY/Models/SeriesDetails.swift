@@ -6,7 +6,6 @@
 
 import Foundation
 
-// MARK: - Series Details
 
 struct SeriesDetails: Codable {
     let adult: Bool?
@@ -124,7 +123,6 @@ struct SeriesDetails: Codable {
     }
 }
 
-// MARK: - Created By
 
 struct CreatedBy: Codable {
     let id: Int?
@@ -144,7 +142,6 @@ struct CreatedBy: Codable {
     }
 }
 
-// MARK: - Episode
 
 struct Episode: Codable {
     let id: Int?
@@ -176,7 +173,6 @@ struct Episode: Codable {
     }
 }
 
-// MARK: - Network
 
 struct Network: Codable {
     let id: Int?
@@ -192,7 +188,6 @@ struct Network: Codable {
     }
 }
 
-// MARK: - Season
 
 struct Season: Codable {
     let id: String?
@@ -228,7 +223,6 @@ struct Season: Codable {
     }
 }
 
-// MARK: - Show Result (named ShowResult to avoid clash with Swift's Result)
 
 struct ShowResult: Codable {
     let adult: Bool?
@@ -284,7 +278,6 @@ struct ShowResult: Codable {
     }
 }
 
-// MARK: - Similar Shows
 
 struct SimilarShows: Codable {
     let page: Int?
@@ -307,6 +300,5 @@ struct SimilarShows: Codable {
     }
 }
 
-// MARK: - Similar Series (legacy alias)
 
 typealias SimilarSeries = SimilarShows

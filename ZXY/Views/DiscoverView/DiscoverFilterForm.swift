@@ -94,14 +94,12 @@ private enum TimePeriodSelection: Hashable, Identifiable {
     }
 }
 
-// MARK: - Navigation Routes
 
 private enum DiscoverFilterRoute: Hashable {
     case internalFilters
     case traktLists
 }
 
-// MARK: - Sheet Entry Point
 
 struct DiscoverFilterSheet: View {
     let initialFilter: Filter
@@ -131,7 +129,6 @@ struct DiscoverFilterSheet: View {
     }
 }
 
-// MARK: - Type Selection Page
 
 private struct DiscoverFilterTypeView: View {
     let initialFilter: Filter
@@ -232,7 +229,6 @@ private struct FilterOptionRow: View {
     }
 }
 
-// MARK: - Internal Filter Form
 
 private struct DiscoverInternalFilterForm: View {
     let initialFilter: Filter
@@ -466,7 +462,6 @@ private struct DiscoverInternalFilterForm: View {
     }
 }
 
-// MARK: - Genre Chip Grid
 
 private struct GenreChipGrid: View {
     let genres: [Int: Genre]
@@ -554,7 +549,6 @@ private struct GenreChip: View {
     }
 }
 
-// MARK: - Trakt List Picker
 
 private struct DiscoverTraktListPicker: View {
     let profile: Profile?

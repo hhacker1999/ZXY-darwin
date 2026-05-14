@@ -1,7 +1,6 @@
 import Inject
 import SwiftUI
 
-// MARK: - Generic Poster Metrics
 
 private enum GridMetrics {
     static let minPosterWidth: CGFloat = 140

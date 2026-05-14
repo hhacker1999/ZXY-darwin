@@ -1,7 +1,6 @@
 import Foundation
 import SwiftUI
 
-// MARK: - Settings Menu Category
 
 enum SettingsCategory: String, CaseIterable, Identifiable {
     case streams = "Video"
@@ -21,7 +20,6 @@ enum SettingsCategory: String, CaseIterable, Identifiable {
     }
 }
 
-// MARK: - Overlay View
 
 struct OverlayView: View {
     var title: String
@@ -59,7 +57,6 @@ struct OverlayView: View {
         }
     }
 
-    // MARK: - Top Bar
 
     private var topBar: some View {
         HStack(spacing: 16) {
@@ -87,7 +84,6 @@ struct OverlayView: View {
         }
     }
 
-    // MARK: - Center Controls
 
     private var centerControls: some View {
         HStack(spacing: 40) {
@@ -132,7 +128,6 @@ struct OverlayView: View {
         }
     }
 
-    // MARK: - Bottom Bar
 
     private var bottomBar: some View {
         HStack(spacing: 16) {
@@ -178,7 +173,6 @@ struct OverlayView: View {
         .liquidGlass()
     }
 
-    // MARK: - Progress Bar
 
     private var progressBar: some View {
         GeometryReader { geometry in
@@ -231,7 +225,6 @@ struct OverlayView: View {
         }
     }
 
-    // MARK: - Settings Panel
 
     private var settingsPanel: some View {
         VStack(alignment: .trailing) {
@@ -269,7 +262,6 @@ struct OverlayView: View {
         .padding(.bottom, 90)
     }
 
-    // MARK: - Settings Category List
 
     private var settingsCategoryList: some View {
         VStack(alignment: .leading, spacing: 2) {
@@ -348,7 +340,6 @@ struct OverlayView: View {
         }
     }
 
-    // MARK: - Settings Submenu
 
     private func settingsSubmenu(for category: SettingsCategory) -> some View {
         VStack(alignment: .leading, spacing: 2) {
@@ -401,7 +392,6 @@ struct OverlayView: View {
         }
     }
 
-    // MARK: - Streams Submenu
 
     private var streamsSubmenu: some View {
         ScrollView(.vertical, showsIndicators: false) {
@@ -478,7 +468,6 @@ struct OverlayView: View {
         .frame(maxHeight: 260)
     }
 
-    // MARK: - Audio Submenu
 
     private var audioSubmenu: some View {
         ScrollView(.vertical, showsIndicators: false) {
@@ -573,7 +562,6 @@ struct OverlayView: View {
         .frame(maxHeight: 260)
     }
 
-    // MARK: - Subtitle Submenu
 
     private var subtitleSubmenu: some View {
         ScrollView(.vertical, showsIndicators: false) {
@@ -668,7 +656,6 @@ struct OverlayView: View {
         .frame(maxHeight: 260)
     }
 
-    // MARK: - Helpers
 
     private func currentSelectionLabel(for category: SettingsCategory) -> String {
         switch category {

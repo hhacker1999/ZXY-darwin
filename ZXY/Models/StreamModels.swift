@@ -6,7 +6,6 @@
 
 import Foundation
 
-// MARK: - Stream Item
 
 struct StreamItem: Codable {
     let name: String
@@ -15,7 +14,6 @@ struct StreamItem: Codable {
     let behaviorHints: BehaviorHints
 }
 
-// MARK: - Behavior Hints
 
 struct BehaviorHints: Codable {
     let bingeGroup: String?
@@ -23,7 +21,6 @@ struct BehaviorHints: Codable {
     let filename: String?
 }
 
-// MARK: - Stream Response
 
 struct StreamResponse: Codable {
     let uhd: [ResolutionItem]
@@ -47,7 +44,6 @@ struct StreamResponse: Codable {
     }
 }
 
-// MARK: - Resolution Item
 
 struct ResolutionItem: Codable, Hashable, Equatable {
     let name: String

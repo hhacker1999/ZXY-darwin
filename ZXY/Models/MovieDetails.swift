@@ -6,7 +6,6 @@
 
 import Foundation
 
-// MARK: - Movie Details
 
 struct MovieDetails: Codable {
     let adult: Bool?
@@ -106,7 +105,6 @@ struct MovieDetails: Codable {
     }
 }
 
-// MARK: - Belongs To Collection
 
 struct BelongsToCollection: Codable {
     let id: Int?
@@ -121,7 +119,6 @@ struct BelongsToCollection: Codable {
     }
 }
 
-// MARK: - Collection
 
 struct MovieCollection: Codable {
     let id: Int
@@ -156,7 +153,6 @@ struct MovieCollection: Codable {
     }
 }
 
-// MARK: - Collection Part (named differently to avoid clash with Swift's `Part`)
 
 struct CollectionPart: Codable {
     let adult: Bool?
@@ -242,7 +238,6 @@ struct CollectionPart: Codable {
     }
 }
 
-// MARK: - Similar Movies
 
 struct SimilarMovies: Codable {
     let page: Int?

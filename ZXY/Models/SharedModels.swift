@@ -6,7 +6,6 @@
 
 import Foundation
 
-// MARK: - Genre
 
 struct Genre: Codable {
     let id: Int
@@ -23,7 +22,6 @@ struct GenreResponse: Codable {
     }
 }
 
-// MARK: - Image Configuration
 
 struct ImageConfiguration: Codable {
     let baseUrl: String
@@ -49,7 +47,6 @@ struct ImageConfigurationResponse: Codable {
     let images: ImageConfiguration
 }
 
-// MARK: - Credits
 
 struct Credits: Codable {
     let cast: [Cast]?
@@ -84,7 +81,6 @@ struct Cast: Codable {
     }
 }
 
-// MARK: - External IDs
 
 struct ExternalIds: Codable {
     let imdbId: String?
@@ -110,7 +106,6 @@ struct ExternalIds: Codable {
     }
 }
 
-// MARK: - Production Company
 
 struct ProductionCompany: Codable {
     let id: Int?
@@ -126,7 +121,6 @@ struct ProductionCompany: Codable {
     }
 }
 
-// MARK: - Production Country
 
 struct ProductionCountry: Codable {
     let iso31661: String?
@@ -138,7 +132,6 @@ struct ProductionCountry: Codable {
     }
 }
 
-// MARK: - Spoken Language
 
 struct SpokenLanguage: Codable {
     let englishName: String?

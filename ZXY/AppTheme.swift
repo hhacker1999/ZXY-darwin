@@ -43,11 +43,9 @@
 
 import SwiftUI
 
-// MARK: ─── AppTheme Namespace ──────────────────────────────────────
 
 enum AppTheme {
 
-    // MARK: Colors
     enum Colors {
 
         // ── Canvas / Backgrounds ───────────────────────────────────
@@ -115,7 +113,6 @@ enum AppTheme {
         static let infoSurface          = Color.white.opacity(0.06)
     }
 
-    // MARK: Gradients
     enum Gradients {
         /// Subtle dark gradient for the main background
         static let background = LinearGradient(
@@ -143,7 +140,6 @@ enum AppTheme {
         )
     }
 
-    // MARK: Shadows
     enum Shadows {
         /// Soft card shadow
         static let card   = Color.black.opacity(0.40)
@@ -155,7 +151,6 @@ enum AppTheme {
         static let error  = Color(hex: "#F87171").opacity(0.25)
     }
 
-    // MARK: Corner Radii
     enum Radius {
         static let xs:   CGFloat = 6
         static let sm:   CGFloat = 10
@@ -166,7 +161,6 @@ enum AppTheme {
         static let pill: CGFloat = 999
     }
 
-    // MARK: Spacing
     enum Spacing {
         static let xs:  CGFloat = 4
         static let sm:  CGFloat = 8
@@ -176,7 +170,6 @@ enum AppTheme {
         static let xxl: CGFloat = 48
     }
 
-    // MARK: Typography
     enum Typography {
         static let displayLarge  = Font.system(size: 36, weight: .bold,     design: .default)
         static let displayMedium = Font.system(size: 28, weight: .bold,     design: .default)
@@ -193,7 +186,6 @@ enum AppTheme {
     }
 }
 
-// MARK: ─── Color(hex:) ──────────────────────────────────────────────
 
 extension Color {
     init(hex: String) {

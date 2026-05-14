@@ -6,7 +6,6 @@
 
 import Foundation
 
-// MARK: - Watch Progress
 
 struct WatchProgress: Codable {
     let mediaId: String
@@ -28,7 +27,6 @@ struct WatchProgress: Codable {
     }
 }
 
-// MARK: - Continue Watching Item
 
 struct ContinueWatchingItem: Codable {
     let media: AppMedia

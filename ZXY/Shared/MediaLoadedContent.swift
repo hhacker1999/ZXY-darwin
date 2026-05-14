@@ -156,14 +156,11 @@ private struct MediaInfoPosterView: View {
         return min(max(raw / 100.0, 0), 1)
     }
 
-    private var playButtonTitle: String {
-        let verb = playProgressFraction > 0 ? "Resume" : "Play"
-        if seriesVm != nil {
-            let s = String(format: "%02d", effectiveSeasonNo)
-            let e = String(format: "%02d", effectiveEpisodeNo)
-            return "\(verb) S\(s):E\(e)"
-        }
-        return verb
+    private var playButtonSuffix: String? {
+        guard seriesVm != nil else { return nil }
+        let s = String(format: "%02d", effectiveSeasonNo)
+        let e = String(format: "%02d", effectiveEpisodeNo)
+        return "S\(s):E\(e)"
     }
 
     private var logoPath: String? {
@@ -310,7 +307,8 @@ private struct MediaInfoPosterView: View {
                     if details.isMovie || seriesVm != nil {
                         Spacer().frame(height: 14)
                         PlayStreamButton(
-                            title: playButtonTitle,
+                            label: "Play",
+                            suffix: playButtonSuffix,
                             progressFraction: playProgressFraction,
                             action: { showStreamSheet = true }
                         )
@@ -427,14 +425,11 @@ private struct MediaInfoBannerView: View {
         return min(max(raw / 100.0, 0), 1)
     }
 
-    private var playButtonTitle: String {
-        let verb = playProgressFraction > 0 ? "Resume" : "Play"
-        if seriesVm != nil {
-            let s = String(format: "%02d", effectiveSeasonNo)
-            let e = String(format: "%02d", effectiveEpisodeNo)
-            return "\(verb) S\(s):E\(e)"
-        }
-        return verb
+    private var playButtonSuffix: String? {
+        guard seriesVm != nil else { return nil }
+        let s = String(format: "%02d", effectiveSeasonNo)
+        let e = String(format: "%02d", effectiveEpisodeNo)
+        return "S\(s):E\(e)"
     }
 
     private var logoPath: String? {
@@ -583,7 +578,8 @@ private struct MediaInfoBannerView: View {
                 if details.isMovie || seriesVm != nil {
                     Spacer().frame(height: AppTheme.Spacing.lg)
                     PlayStreamButton(
-                        title: playButtonTitle,
+                        label: "Play",
+                        suffix: playButtonSuffix,
                         progressFraction: playProgressFraction,
                         action: { showStreamSheet = true }
                     )
@@ -722,10 +718,10 @@ private struct GlassCircularButton: View {
     }
 }
 
-// MARK: - Play Stream Button
 
 private struct PlayStreamButton: View {
-    var title: String = "Play"
+    var label: String = "Play"
+    var suffix: String? = nil
     var progressFraction: Double = 0
     let action: () -> Void
     @State private var isHovered = false
@@ -734,15 +730,17 @@ private struct PlayStreamButton: View {
 
     var body: some View {
         Button(action: action) {
-            VStack(alignment: .leading, spacing: 6) {
-                HStack(spacing: 10) {
-                    Image(systemName: "play.fill")
-                        .font(.system(size: 16, weight: .semibold))
-                    Text(title)
-                        .font(.system(size: 16, weight: .semibold))
-                }
+            HStack(spacing: 10) {
+                Image(systemName: "play.fill")
+                    .font(.system(size: 16, weight: .semibold))
+                Text(label)
+                    .font(.system(size: 16, weight: .semibold))
                 if hasProgress {
                     playProgressBar
+                }
+                if let suffix = suffix {
+                    Text(suffix)
+                        .font(.system(size: 16, weight: .semibold))
                 }
             }
             .foregroundStyle(AppTheme.Colors.buttonPrimaryLabel)
@@ -767,22 +765,21 @@ private struct PlayStreamButton: View {
     }
 
     private var playProgressBar: some View {
-        let trackWidth: CGFloat = 120
-        let trackHeight: CGFloat = 4
+        let trackWidth: CGFloat = 48
+        let trackHeight: CGFloat = 5
         let fillWidth = max(trackHeight, trackWidth * progressFraction)
         return ZStack(alignment: .leading) {
             Capsule(style: .continuous)
-                .fill(AppTheme.Colors.buttonPrimaryLabel.opacity(0.3))
+                .fill(AppTheme.Colors.buttonPrimaryLabel.opacity(0.22))
                 .frame(width: trackWidth, height: trackHeight)
             Capsule(style: .continuous)
-                .fill(AppTheme.Colors.buttonPrimaryLabel)
+                .fill(AppTheme.Colors.buttonPrimaryLabel.opacity(0.95))
                 .frame(width: fillWidth, height: trackHeight)
         }
         .frame(width: trackWidth, height: trackHeight)
     }
 }
 
-// MARK: - Stream Sheet
 
 private struct StreamSheet: View {
     let state: ViewItemState<[ResolutionItem]>
@@ -846,7 +843,6 @@ private struct StreamSheet: View {
         .background(AppTheme.Colors.backgroundSecondary)
     }
 
-    // MARK: Loading
 
     private var streamLoadingView: some View {
         VStack(spacing: AppTheme.Spacing.md) {
@@ -861,7 +857,6 @@ private struct StreamSheet: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
-    // MARK: Error
 
     private func streamErrorView(message: String) -> some View {
         VStack(spacing: AppTheme.Spacing.sm) {
@@ -883,7 +878,6 @@ private struct StreamSheet: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
-    // MARK: Empty
 
     private var streamEmptyView: some View {
         VStack(spacing: AppTheme.Spacing.sm) {
@@ -903,7 +897,6 @@ private struct StreamSheet: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
-    // MARK: Stream List
 
     private func streamListView(streams: [ResolutionItem]) -> some View {
         List {
@@ -921,7 +914,6 @@ private struct StreamSheet: View {
     }
 }
 
-// MARK: - Stream Row
 
 private struct StreamRow: View {
     let stream: ResolutionItem
@@ -969,8 +961,11 @@ private struct SeasonEpisodeSection: View {
     let isMobile: Bool
     let media: MediaDetails
 
-    @State private var selectedSeasonIndex: Int = 0
     @State private var showStreamSheet: Bool = false
+
+    private var selectedSeasonIndex: Int {
+        seasons.firstIndex(where: { $0.seasonNumber == seriesVm.selectedSeason }) ?? 0
+    }
 
     private var currentSeason: Season? {
         guard selectedSeasonIndex >= 0, selectedSeasonIndex < seasons.count else { return nil }
@@ -1002,7 +997,10 @@ private struct SeasonEpisodeSection: View {
             ForEach(Array(seasons.enumerated()), id: \.offset) { index, season in
                 Button(action: {
                     withAnimation(.smooth(duration: 0.25)) {
-                        selectedSeasonIndex = index
+                        seriesVm.onEpisodeSelect(
+                            season: season.seasonNumber,
+                            episode: 1
+                        )
                     }
                 }) {
                     HStack {

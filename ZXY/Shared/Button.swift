@@ -60,7 +60,6 @@ struct PrimaryButton: View {
     }
 }
 
-// MARK: - Custom spinning indicator (platform-consistent, tint-respecting)
 
 private struct SpinningIndicator: View {
     let color: Color

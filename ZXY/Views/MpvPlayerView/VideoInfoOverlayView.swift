@@ -1,6 +1,5 @@
 import SwiftUI
 
-// MARK: - Video Info Overlay
 
 struct VideoInfoOverlayView: View {
     let vm: MpvViewModel
@@ -97,7 +96,6 @@ struct VideoInfoOverlayView: View {
         .infoOverlayGlass()
     }
 
-    // MARK: - HDR Section
 
     private var hdrSection: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -147,7 +145,6 @@ struct VideoInfoOverlayView: View {
         }
     }
 
-    // MARK: - Info Row
 
     private func infoRow(icon: String, label: String, value: String) -> some View {
         HStack(spacing: 8) {
@@ -169,7 +166,6 @@ struct VideoInfoOverlayView: View {
         }
     }
 
-    // MARK: - Helpers
 
     private func formatBitRate(_ bitsPerSecond: Double) -> String {
         let mbps = bitsPerSecond / 1_000_000
@@ -190,7 +186,6 @@ struct VideoInfoOverlayView: View {
     }
 }
 
-// MARK: - Glass modifier for info overlay
 
 extension View {
     @ViewBuilder

@@ -182,7 +182,6 @@ class AuthUsecase {
         }
     }
 
-    // MARK: - Profile Management
 
     func createProfile(name: String, pin: String?, copyKey: Bool) async throws {
         do {
@@ -265,7 +264,6 @@ class AuthUsecase {
         }
     }
 
-    // MARK: - Trakt
 
     func getTraktLoginUrl() async throws -> String {
         do {
@@ -303,7 +301,6 @@ class AuthUsecase {
         }
     }
 
-    // MARK: - Account
 
     func deleteAccount() async throws {
         do {
@@ -319,7 +316,6 @@ class AuthUsecase {
         }
     }
 
-    // MARK: - Session
 
     func logout() {
         httpService.clearCookie()

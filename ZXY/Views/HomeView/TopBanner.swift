@@ -255,7 +255,6 @@ private struct BannerSlide: View {
     }
 }
 
-// MARK: - Banner Page Indicator
 
 private struct BannerPageIndicator: View {
     let count: Int
@@ -287,7 +286,6 @@ private struct BannerPageIndicator: View {
     }
 }
 
-// MARK: - Top Banner Shimmer
 
 private struct TopBannerShimmer: View {
     private let aspectRatio: CGFloat = {

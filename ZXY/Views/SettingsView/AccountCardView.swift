@@ -114,7 +114,6 @@ struct AccountCardView: View {
     static let traktRed = Color(hex: "#ED1C24")
 }
 
-// MARK: ── Account action row ────────────────────────────────────────
 struct AccountActionRow: View {
     let icon: String
     let label: String
@@ -155,7 +154,6 @@ struct AccountActionRow: View {
     }
 }
 
-// MARK: ── Trakt connected row ───────────────────────────────────────
 private struct TraktConnectedRow: View {
     let onLogout: () -> Void
 
@@ -219,7 +217,6 @@ private struct TraktConnectedRow: View {
     }
 }
 
-// MARK: ── Trakt login/relogin row ───────────────────────────────────
 private struct TraktLoginRow: View {
     let label: String
     let onTap: () -> Void

@@ -152,7 +152,6 @@ private struct EditingItem: Identifiable {
     let name: String
 }
 
-// MARK: ── Item row ──────────────────────────────────────────────────
 private struct LibraryItemRow: View {
     let item: LibraryItem
     let isFirst: Bool
@@ -230,7 +229,6 @@ private struct IconButton: View {
     }
 }
 
-// MARK: ── Edit dialog ───────────────────────────────────────────────
 private struct LibraryItemEditDialog: View {
     let title: String
     let initialName: String
@@ -306,7 +304,6 @@ private struct LibraryItemEditDialog: View {
     }
 }
 
-// MARK: ── Array safe-subscript ──────────────────────────────────────
 private extension Array {
     subscript(safe index: Int) -> Element? {
         indices.contains(index) ? self[index] : nil

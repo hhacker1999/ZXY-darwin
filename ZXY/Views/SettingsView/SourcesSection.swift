@@ -56,7 +56,6 @@ struct SourcesSection: View {
     }
 }
 
-// MARK: ── Service row ───────────────────────────────────────────────
 private struct ServiceRow: View {
     let service: ProfileService
     let onToggle: (Bool) -> Void
@@ -99,7 +98,6 @@ private struct ServiceRow: View {
     }
 }
 
-// MARK: ── Service value dialog ──────────────────────────────────────
 private struct ServiceValueDialog: View {
     let service: ProfileService
     let onSave: (String) -> Void
