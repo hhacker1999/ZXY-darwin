@@ -95,7 +95,8 @@ struct HomeView: View {
                 }
             }
         }
-        .background(AppTheme.Colors.background).ignoresSafeArea(edges: .top)
+        .background(AppTheme.Colors.background)
+        // .ignoresSafeArea(edges: .top)
     }
 }
 

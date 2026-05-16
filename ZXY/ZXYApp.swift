@@ -31,6 +31,5 @@ struct ZXYApp: App {
                     #endif
                 }
         }
-        .windowStyle(.hiddenTitleBar)
     }
 }

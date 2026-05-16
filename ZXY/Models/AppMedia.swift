@@ -21,6 +21,7 @@ struct AppMedia: Codable {
     let genreIds: [Int]?
     let imdbRating: Double
     let images: Images
+    let videos: Videos
 
     enum CodingKeys: String, CodingKey {
         case adult
@@ -40,6 +41,38 @@ struct AppMedia: Codable {
         case genreIds = "genre_ids"
         case imdbRating = "imdb_rating"
         case images
+        case videos
+    }
+}
+
+struct Videos: Codable {
+    let results: [VideoMedia]?
+
+    /// First YouTube official trailer key (site == "YouTube", type == "Trailer").
+    var youtubeTrailerKey: String? {
+        guard let results = results else { return nil }
+        let match = results.first { v in
+            v.site == "YouTube" && v.type == "Trailer"
+        }
+        guard let key = match?.key, !key.isEmpty else { return nil }
+        return key
+    }
+}
+
+struct VideoMedia: Codable {
+    let name: String
+    let key: String
+    let site: String
+    let type: String
+    let official: Bool
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        name = (try? container.decode(String.self, forKey: .name)) ?? ""
+        key = (try? container.decode(String.self, forKey: .key)) ?? ""
+        site = (try? container.decode(String.self, forKey: .site)) ?? ""
+        type = (try? container.decode(String.self, forKey: .type)) ?? ""
+        official = (try? container.decode(Bool.self, forKey: .official)) ?? false
     }
 }
 

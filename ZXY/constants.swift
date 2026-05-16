@@ -35,6 +35,19 @@ class MediaConfig {
         guard !path.isEmpty else { return nil }
         return URL(string: "\(baseURL)\(width)\(path)")
     }
+
+    /// URL to stream a YouTube trailer/clip through the backend proxy.
+    /// The backend requires a valid profile session cookie on the request.
+    func trailerStreamURL(youtubeKey: String) -> URL? {
+        // guard !youtubeKey.isEmpty,
+        //       let encoded = youtubeKey.addingPercentEncoding(
+        //           withAllowedCharacters: .urlQueryAllowed
+        //       )
+        // else {
+        //     return nil
+        // }
+        return URL(string: "\(Constants.baseUrl)/yt_stream?id=\(youtubeKey)")
+    }
 }
 
 enum Constants {
@@ -46,9 +59,9 @@ enum Constants {
     /// Colors
     static let bgColor = Color("bgColor")
 
-    static let baseUrl = "https://zxyapi.tooharsh.co.in"
-    //    static let baseUrl = "https://zxy-staging.tooharsh.co.in"
-    //    static let baseUrl = "http://192.168.1.30:6969"
+    /// static let baseUrl = "https://zxyapi.tooharsh.co.in"
+    static let baseUrl = "https://zxy-staging.tooharsh.co.in"
+    // static let baseUrl = "http://localhost:6969"
 
     static let tmdbImgBaseUrl = ""
 }

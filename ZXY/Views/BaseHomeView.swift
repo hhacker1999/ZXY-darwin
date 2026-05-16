@@ -71,7 +71,8 @@ struct BaseHomeview: View {
                 }
             }
             .listStyle(.sidebar)
-            .navigationTitle("Main Menu") // good for accessibility and macOS defaults
+            .navigationTitle("ZXY")
+            // .navigationBarBackButtonHidden(true)
             .navigationSplitViewColumnWidth(min: 232, ideal: 256, max: 296)
 
         } detail: {
@@ -88,6 +89,8 @@ struct BaseHomeview: View {
                 SettingsView(authUc: deps.authUc)
             }
         }
+        // .toolbar(removing: .sidebarToggle)
+        // .toolbar(.hidden, for: .windowToolbar)
         .accentColor(.white)
     }
 }

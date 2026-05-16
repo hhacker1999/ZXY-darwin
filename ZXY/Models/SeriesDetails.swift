@@ -6,7 +6,6 @@
 
 import Foundation
 
-
 struct SeriesDetails: Codable {
     let adult: Bool?
     let backdropPath: String?
@@ -43,6 +42,7 @@ struct SeriesDetails: Codable {
     let externalIds: ExternalIds
     let credits: Credits?
     let images: Images?
+    let videos: Videos?
     let similar: SimilarShows?
     let recommendations: SimilarShows?
     let imdbRating: Double
@@ -76,7 +76,7 @@ struct SeriesDetails: Codable {
         case voteCount = "vote_count"
         case seasons
         case externalIds = "external_ids"
-        case credits, images, similar, recommendations
+        case credits, images, similar, recommendations, videos
         case imdbRating = "imdb_rating"
     }
 
@@ -117,12 +117,12 @@ struct SeriesDetails: Codable {
         externalIds = try container.decode(ExternalIds.self, forKey: .externalIds)
         credits = try container.decodeIfPresent(Credits.self, forKey: .credits)
         images = try container.decodeIfPresent(Images.self, forKey: .images)
+        videos = try container.decodeIfPresent(Videos.self, forKey: .videos)
         similar = try container.decodeIfPresent(SimilarShows.self, forKey: .similar)
         recommendations = try container.decodeIfPresent(SimilarShows.self, forKey: .recommendations)
         imdbRating = (try? container.decode(Double.self, forKey: .imdbRating)) ?? 0
     }
 }
-
 
 struct CreatedBy: Codable {
     let id: Int?
@@ -141,7 +141,6 @@ struct CreatedBy: Codable {
         case profilePath = "profile_path"
     }
 }
-
 
 struct Episode: Codable {
     let id: Int?
@@ -173,7 +172,6 @@ struct Episode: Codable {
     }
 }
 
-
 struct Network: Codable {
     let id: Int?
     let logoPath: String?
@@ -187,7 +185,6 @@ struct Network: Codable {
         case originCountry = "origin_country"
     }
 }
-
 
 struct Season: Codable {
     let id: String?
@@ -222,7 +219,6 @@ struct Season: Codable {
         voteAverage = try container.decodeIfPresent(Double.self, forKey: .voteAverage)
     }
 }
-
 
 struct ShowResult: Codable {
     let adult: Bool?
@@ -278,7 +274,6 @@ struct ShowResult: Codable {
     }
 }
 
-
 struct SimilarShows: Codable {
     let page: Int?
     let results: [ShowResult]
@@ -299,6 +294,5 @@ struct SimilarShows: Codable {
         totalResults = try container.decodeIfPresent(Int.self, forKey: .totalResults)
     }
 }
-
 
 typealias SimilarSeries = SimilarShows

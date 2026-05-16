@@ -16,7 +16,7 @@ struct TopBannerSection: View {
         switch state {
         case .initial, .loading:
             TopBannerShimmer()
-        case .loaded(let items):
+        case let .loaded(items):
             if !items.isEmpty {
                 TopBannerCarousel(items: items)
                     .enableInjection()
@@ -29,7 +29,11 @@ struct TopBannerSection: View {
 
 private struct TopBannerCarousel: View {
     let items: [AppMedia]
-    @State private var currentPage: Int = 0
+    @State private var scrolledIndex: Int? = 0
+    /// Mirrors `scrolledIndex` but never goes back to nil during scroll
+    /// gestures, so UI (like the mute button) doesn't flicker.
+    @State private var stableActiveIndex: Int = 0
+    @State private var isGestureActive: Bool = false
 
     private let aspectRatio: CGFloat = {
         #if os(ios)
@@ -39,39 +43,101 @@ private struct TopBannerCarousel: View {
         #endif
     }()
 
+    /// True if any banner slide has a YouTube trailer available.
+    /// Used to decide whether to show the mute button at all.
+    private var anySlideHasTrailer: Bool {
+        items.contains { $0.videos.youtubeTrailerKey != nil }
+    }
+
     var body: some View {
-        ZStack {
-            Color.clear.aspectRatio(aspectRatio, contentMode: .fit)
-            GeometryReader { geo in
-                let bannerHeight = geo.size.width / aspectRatio
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 0) {
-                        ForEach(
-                            Array(items.enumerated()),
-                            id: \.offset
-                        ) { index, media in
-                            BannerSlide(
-                                media: media,
-                                width: geo.size.width,
-                                height: bannerHeight
-                            )
-                            .tag(index)
+        ZStack(alignment: .topTrailing) {
+            BannerSlide(
+                media: items[stableActiveIndex],
+                aspectRatio: aspectRatio
+            )
+            .id(stableActiveIndex)
+            .transition(
+                .opacity
+            )
+            .aspectRatio(aspectRatio, contentMode: .fit)
+        }
+        .onTrackpadSwipe(onSwipe: { event in
+            if event.phase == .began {
+                isGestureActive = true
+            }
+
+            if isGestureActive && event.phase == .changed {
+                let offset = event.scrollingDeltaX
+
+                if offset > 15 {
+                    isGestureActive = false
+                    withAnimation(.easeInOut(duration: 0.4)) {
+                        if stableActiveIndex == 0 {
+                            stableActiveIndex = items.count - 1
+                        } else {
+                            stableActiveIndex -= 1
                         }
                     }
-                    .frame(height: bannerHeight)
-                    .scrollTargetLayout()
                 }
-                .scrollTargetBehavior(.viewAligned(limitBehavior: .always))
-                .aspectRatio(aspectRatio, contentMode: .fit)
+
+                if offset < -15 {
+                    isGestureActive = false
+                    withAnimation(.easeInOut(duration: 0.4)) {
+                        if stableActiveIndex == items.count - 1 {
+                            stableActiveIndex = 0
+                        } else {
+                            stableActiveIndex += 1
+                        }
+                    }
+                }
             }
+
+            if event.phase == .ended || event.phase == .cancelled {
+                isGestureActive = false
+            }
+
+        })
+        .contentShape(Rectangle())
+    }
+}
+
+private struct MuteToggleButton: View {
+    @Binding var isMuted: Bool
+
+    private let buttonSize: CGFloat = 44
+    private let iconSize: CGFloat = 18
+
+    var body: some View {
+        Button {
+            isMuted.toggle()
+        } label: {
+            Image(
+                systemName: isMuted
+                    ? "speaker.slash.fill"
+                    : "speaker.wave.2.fill"
+            )
+            .font(.system(size: iconSize, weight: .semibold))
+            .foregroundStyle(Color.white)
+            .frame(width: buttonSize, height: buttonSize)
+            .background(
+                Circle()
+                    .fill(Color.black.opacity(0.5))
+            )
+            .overlay(
+                Circle()
+                    .stroke(Color.white.opacity(0.25), lineWidth: 0.5)
+            )
+            .shadow(color: .black.opacity(0.4), radius: 6, x: 0, y: 2)
+            .contentShape(Circle())
         }
+        .buttonStyle(.plain)
+        .help(isMuted ? "Unmute trailer" : "Mute trailer")
     }
 }
 
 private struct BannerSlide: View {
     let media: AppMedia
-    let width: CGFloat
-    let height: CGFloat
+    let aspectRatio: Double
 
     private var isShow: Bool {
         media.type == "show"
@@ -99,15 +165,15 @@ private struct BannerSlide: View {
     private var genreNames: [String] {
         let genreMap =
             isShow
-            ? MediaConfig.instance.showGenres
-            : MediaConfig.instance.movieGenres
+                ? MediaConfig.instance.showGenres
+                : MediaConfig.instance.movieGenres
         guard let genreIds = media.genreIds else {
             return []
         }
         return
             genreIds
-            .prefix(3)
-            .compactMap { genreMap[$0]?.name }
+                .prefix(3)
+                .compactMap { genreMap[$0]?.name }
     }
 
     /// Type + genres info line: "TV Show · Thriller · Drama"
@@ -118,117 +184,143 @@ private struct BannerSlide: View {
         return parts.joined(separator: " · ")
     }
 
+    /// First official-style YouTube trailer key, if any
+    private var youtubeTrailerKey: String? {
+        media.videos.youtubeTrailerKey
+    }
+
     var body: some View {
-        ZStack(alignment: .bottomLeading) {
-            // ── Background poster image ────────────────────
-            AsyncImage(
-                url: {
-                    #if os(ios)
-                        return MediaConfig.instance.posterURL(
-                            media.posterPath,
-                            width: 780
-                        )
-                    #else
-                        return MediaConfig.instance.backdropURL(
-                            media.backdropPath,
-                            width: "original"
-                        )
-                    #endif
-                }()
-            ) { phase in
-                switch phase {
-                case .success(let image):
-                    image
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                case .failure:
-                    bannerPlaceholder
-                case .empty:
-                    ShimmerView()
-                @unknown default:
-                    bannerPlaceholder
-                }
-            }
-            .frame(width: width, height: height)
-            .clipped()
-
-            // ── Bottom gradient ────────────────────────────
-            LinearGradient(
-                stops: [
-                    .init(color: .clear, location: 0.0),
-                    .init(
-                        color: Color.black.opacity(0.2),
-                        location: 0.4
-                    ),
-                    .init(
-                        color: Color.black.opacity(0.7),
-                        location: 0.7
-                    ),
-                    .init(
-                        color: AppTheme.Colors.background,
-                        location: 1.0
-                    ),
-                ],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .frame(height: height * 0.55)
-
-            // ── Content overlay ────────────────────────────
-            VStack(alignment: .leading, spacing: 0) {
-                Spacer()
-                // Logo or Title
-                if let path = logoPath, !path.isEmpty {
-                    AsyncImage(
-                        url: MediaConfig.instance.logoURL(path)
-                    ) { phase in
-                        switch phase {
-                        case .success(let image):
-                            image
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(
-                                    maxWidth: 220,
-                                    maxHeight: 80
-                                )
-                                .shadow(
-                                    color: .black.opacity(0.6),
-                                    radius: 12,
-                                    x: 0,
-                                    y: 4
-                                )
-                        default:
-                            titleFallback
-                        }
+        GeometryReader { geo in
+            let height = geo.size.width / aspectRatio
+            let width = geo.size.width
+            ZStack(alignment: .bottomLeading) {
+                // ── Background poster image ────────────────────
+                AsyncImage(
+                    url: {
+                        #if os(ios)
+                            return MediaConfig.instance.posterURL(
+                                media.posterPath,
+                                width: 780
+                            )
+                        #else
+                            return MediaConfig.instance.backdropURL(
+                                media.backdropPath,
+                                width: "original"
+                            )
+                        #endif
+                    }()
+                ) { phase in
+                    switch phase {
+                    case let .success(image):
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                    case .failure:
+                        bannerPlaceholder
+                    case .empty:
+                        ShimmerView()
+                    @unknown default:
+                        bannerPlaceholder
                     }
-                } else {
-                    titleFallback
                 }
+                .frame(width: width, height: height)
+                .clipped()
 
-                Spacer().frame(height: 10)
+                // ── Trailer video (only for the slide in viewport) ─────
+                // if isActive,
+                //    let trailerKey = youtubeTrailerKey,
+                //    let trailerURL = MediaConfig.instance.trailerStreamURL(
+                //        youtubeKey: trailerKey
+                //    ),
+                //    let headers = HttpService.service.profileAuthHeaders()
+                // {
+                //     TrailerPlayerView(
+                //         url: trailerURL,
+                //         headers: headers,
+                //         isMuted: isMuted
+                //     )
+                //     .frame(width: width, height: height)
+                //     .clipped()
+                // }
+                //
+                // // ── Bottom gradient ────────────────────────────
+                // LinearGradient(
+                //     stops: [
+                //         .init(color: .clear, location: 0.0),
+                //         .init(
+                //             color: Color.black.opacity(0.2),
+                //             location: 0.4
+                //         ),
+                //         .init(
+                //             color: Color.black.opacity(0.7),
+                //             location: 0.7
+                //         ),
+                //         .init(
+                //             color: AppTheme.Colors.background,
+                //             location: 1.0
+                //         ),
+                //     ],
+                //     startPoint: .top,
+                //     endPoint: .bottom
+                // )
+                // .frame(height: height * 0.55)
 
-                // Genre info line
-                Text(infoLine)
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(Color.white.opacity(0.8))
-                    .shadow(
-                        color: .black.opacity(0.8),
-                        radius: 4,
-                        x: 0,
-                        y: 1
-                    )
+                // ── Content overlay ────────────────────────────
+                VStack(alignment: .leading, spacing: 0) {
+                    Spacer()
+                    // Logo or Title
+                    if let path = logoPath, !path.isEmpty {
+                        AsyncImage(
+                            url: MediaConfig.instance.logoURL(path)
+                        ) { phase in
+                            switch phase {
+                            case let .success(image):
+                                image
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(
+                                        maxWidth: 220,
+                                        maxHeight: 80
+                                    )
+                                    .shadow(
+                                        color: .black.opacity(0.6),
+                                        radius: 12,
+                                        x: 0,
+                                        y: 4
+                                    )
+                            default:
+                                titleFallback
+                            }
+                        }
+                    } else {
+                        titleFallback
+                    }
 
-                Text(media.overview).font(AppTheme.Typography.bodySmall)
-                    .foregroundStyle(AppTheme.Colors.elementSubtle)
+                    Spacer().frame(height: 10)
 
-                Spacer().frame(height: 40)
-            }
-            .frame(
-                maxWidth: max(width * 0.5, 450),
-                alignment: .bottomLeading
-            )
-            .padding(.horizontal, AppTheme.Spacing.md)
-        }.frame(maxWidth: width)
+                    // Genre info line
+                    Text(infoLine)
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(Color.white.opacity(0.8))
+                        .shadow(
+                            color: .black.opacity(0.8),
+                            radius: 4,
+                            x: 0,
+                            y: 1
+                        )
+
+                    Text(media.overview).font(AppTheme.Typography.bodySmall)
+                        .foregroundStyle(AppTheme.Colors.elementSubtle)
+
+                    Spacer().frame(height: 40)
+                }
+                .frame(
+                    maxWidth: max(width * 0.5, 450),
+                    alignment: .bottomLeading
+                )
+                .padding(.horizontal, AppTheme.Spacing.md)
+            }.frame(maxWidth: width)
+        }
     }
 
     private var titleFallback: some View {
@@ -255,14 +347,13 @@ private struct BannerSlide: View {
     }
 }
 
-
 private struct BannerPageIndicator: View {
     let count: Int
     let current: Int
 
     var body: some View {
         HStack(spacing: 4) {
-            ForEach(0..<count, id: \.self) { index in
+            ForEach(0 ..< count, id: \.self) { index in
                 let isActive = index == current
                 RoundedRectangle(
                     cornerRadius: 3,
@@ -285,7 +376,6 @@ private struct BannerPageIndicator: View {
         }
     }
 }
-
 
 private struct TopBannerShimmer: View {
     private let aspectRatio: CGFloat = {
@@ -356,7 +446,7 @@ private struct TopBannerShimmer: View {
                         .fill(Color.white.opacity(0.2))
                         .frame(width: 20, height: 6)
 
-                        ForEach(0..<4, id: \.self) { _ in
+                        ForEach(0 ..< 4, id: \.self) { _ in
                             Circle()
                                 .fill(Color.white.opacity(0.1))
                                 .frame(width: 6, height: 6)

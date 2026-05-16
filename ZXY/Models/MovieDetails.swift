@@ -6,7 +6,6 @@
 
 import Foundation
 
-
 struct MovieDetails: Codable {
     let adult: Bool?
     let externalIds: ExternalIds
@@ -38,6 +37,7 @@ struct MovieDetails: Codable {
     let voteAverage: Double
     let voteCount: Int?
     let images: Images?
+    let videos: Videos?
     let similar: SimilarMovies?
     let recommendations: SimilarMovies?
     let imdbRating: Double
@@ -63,7 +63,7 @@ struct MovieDetails: Codable {
         case status, tagline, title, video
         case voteAverage = "vote_average"
         case voteCount = "vote_count"
-        case images, similar, recommendations
+        case images, similar, recommendations, videos
         case imdbRating = "imdb_rating"
     }
 
@@ -99,12 +99,12 @@ struct MovieDetails: Codable {
         voteAverage = (try? container.decode(Double.self, forKey: .voteAverage)) ?? 0
         voteCount = try container.decodeIfPresent(Int.self, forKey: .voteCount)
         images = try container.decodeIfPresent(Images.self, forKey: .images)
+        videos = try container.decodeIfPresent(Videos.self, forKey: .videos)
         similar = try container.decodeIfPresent(SimilarMovies.self, forKey: .similar)
         recommendations = try container.decodeIfPresent(SimilarMovies.self, forKey: .recommendations)
         imdbRating = (try? container.decode(Double.self, forKey: .imdbRating)) ?? 0
     }
 }
-
 
 struct BelongsToCollection: Codable {
     let id: Int?
@@ -118,7 +118,6 @@ struct BelongsToCollection: Codable {
         case backdropPath = "backdrop_path"
     }
 }
-
 
 struct MovieCollection: Codable {
     let id: Int
@@ -152,7 +151,6 @@ struct MovieCollection: Codable {
         parts = (try? container.decode([CollectionPart].self, forKey: .parts)) ?? []
     }
 }
-
 
 struct CollectionPart: Codable {
     let adult: Bool?
@@ -237,7 +235,6 @@ struct CollectionPart: Codable {
         imdbRating = (try? container.decode(Double.self, forKey: .imdbRating)) ?? 0
     }
 }
-
 
 struct SimilarMovies: Codable {
     let page: Int?

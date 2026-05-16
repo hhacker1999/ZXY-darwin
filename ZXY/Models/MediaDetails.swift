@@ -9,6 +9,7 @@ struct MediaDetails {
     let collection: MovieCollection?
     let isMovie: Bool
     let images: Images?
+    let videos: Videos?
     let imdbRating: Double
     let voteAverage: Double
     let airOrReleaseDate: String?
@@ -39,6 +40,7 @@ struct MediaDetails {
         backdropPath = details.backdropPath
         genres = details.genres
         overView = details.overview
+        videos = details.videos
     }
 
     init(from details: SeriesDetails) {
@@ -75,5 +77,6 @@ struct MediaDetails {
         backdropPath = details.backdropPath
         genres = details.genres
         overView = details.overview
+        videos = details.videos
     }
 }

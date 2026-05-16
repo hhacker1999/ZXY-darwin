@@ -49,6 +49,15 @@ class HttpService {
         return userCookie != nil
     }
 
+    /// Returns the HTTP headers required to authenticate as the current profile.
+    /// Useful for components (e.g. AVPlayer) that cannot use `send`/`sendRaw` directly.
+    func profileAuthHeaders() -> [String: String]? {
+        guard let profileCookie = profileCookie else {
+            return nil
+        }
+        return ["Cookie": "profile_token=\(profileCookie)"]
+    }
+
     /// Build a URL with query parameters appended
     static func buildURL(_ base: String, query: [String: String]? = nil) -> URL {
         var urlString = base
