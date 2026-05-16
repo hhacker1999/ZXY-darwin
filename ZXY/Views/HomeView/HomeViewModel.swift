@@ -76,7 +76,7 @@ class HomeViewModel {
             )
 
             let trendShows = try await mediaUc.getLibraryFromFilter(
-                filter: Filter(type:"trakt", items: 5, isMovie: false, traktUrl: "trending")
+                filter: Filter(type: "trakt", items: 5, isMovie: false, traktUrl: "trending")
             )
             var tempList: [AppMedia] = []
 
@@ -85,7 +85,7 @@ class HomeViewModel {
                 trendShows.results.count,
                 trendMovies.results.count
             )
-            for index in 0..<maxCount {
+            for index in 0 ..< maxCount {
                 tempList.append(trendShows.results[index])
                 tempList.append(trendMovies.results[index])
             }
@@ -106,6 +106,52 @@ class HomeViewModel {
             continueWatchingState = .error(error.error())
         } catch {
             continueWatchingState = .error(error.localizedDescription)
+        }
+    }
+
+    func removeFromContinueWatching(item: ContinueWatchingItem) async {
+        ToastProgressBloc.bloc.enableLoading()
+        defer {
+            ToastProgressBloc.bloc.disableLoading()
+        }
+        do {
+            try await progressUc.removeContinueWatching(
+                mediaId: item.progress.mediaId
+            )
+            await initialiseContinueWatching()
+        } catch let err as HttpError {
+            ToastProgressBloc.bloc.showToast(message: err.error(), isError: true)
+        } catch {
+            ToastProgressBloc.bloc.showToast(
+                message: error.localizedDescription,
+                isError: true
+            )
+        }
+    }
+
+    func markContinueWatchingWatched(item: ContinueWatchingItem) async {
+        ToastProgressBloc.bloc.enableLoading()
+        defer {
+            ToastProgressBloc.bloc.disableLoading()
+        }
+        do {
+            if item.media.type == "show" {
+                try await progressUc.updateShowToWatched(
+                    showId: item.progress.mediaId
+                )
+            } else {
+                try await progressUc.updateMovieToWatched(
+                    movieId: item.progress.mediaId
+                )
+            }
+            await initialiseContinueWatching()
+        } catch let err as HttpError {
+            ToastProgressBloc.bloc.showToast(message: err.error(), isError: true)
+        } catch {
+            ToastProgressBloc.bloc.showToast(
+                message: error.localizedDescription,
+                isError: true
+            )
         }
     }
 

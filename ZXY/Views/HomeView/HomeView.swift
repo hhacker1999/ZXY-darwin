@@ -50,7 +50,17 @@ struct HomeView: View {
                 Spacer().frame(height: AppTheme.Spacing.lg)
                 LazyVStack(alignment: .leading, spacing: AppTheme.Spacing.lg) {
                     ContinueWatchingSection(
-                        state: vm.continueWatchingState
+                        state: vm.continueWatchingState,
+                        onRemove: { item in
+                            Task {
+                                await vm.removeFromContinueWatching(item: item)
+                            }
+                        },
+                        onMarkWatched: { item in
+                            Task {
+                                await vm.markContinueWatchingWatched(item: item)
+                            }
+                        }
                     )
                     ForEach(vm.discoveryItemState) { item in
                         DiscoveryRow(item: item) { media in
@@ -89,18 +99,20 @@ struct HomeView: View {
                 returnedFromDetails = false
             }
             if newRoute == nil && returnedFromDetails {
+                print("We came back from details page")
                 Task {
                     await vm.initialiseContinueWatching()
                 }
             }
         }
-        .background(AppTheme.Colors.background)
-        // .ignoresSafeArea(edges: .top)
+        .background(AppTheme.Colors.background).ignoresSafeArea(edges: .top)
     }
 }
 
 private struct ContinueWatchingSection: View {
     let state: ViewItemState<[ContinueWatchingItem]>
+    let onRemove: (ContinueWatchingItem) -> Void
+    let onMarkWatched: (ContinueWatchingItem) -> Void
 
     var body: some View {
         switch state {
@@ -123,7 +135,11 @@ private struct ContinueWatchingSection: View {
                     ScrollView(.horizontal, showsIndicators: false) {
                         LazyHStack(spacing: AppTheme.Spacing.sm + 2) {
                             ForEach(items, id: \.progress.mediaId) { item in
-                                ContinueWatchingCard(item: item)
+                                ContinueWatchingCard(
+                                    item: item,
+                                    onRemove: { onRemove(item) },
+                                    onMarkWatched: { onMarkWatched(item) }
+                                )
                             }
                         }
                         .padding(.horizontal, AppTheme.Spacing.md)
@@ -142,6 +158,8 @@ private struct ContinueWatchingSection: View {
 
 private struct ContinueWatchingCard: View {
     let item: ContinueWatchingItem
+    let onRemove: () -> Void
+    let onMarkWatched: () -> Void
 
     private var isShow: Bool {
         item.media.type == "show"
@@ -180,115 +198,149 @@ private struct ContinueWatchingCard: View {
     }
 
     var body: some View {
-        HStack(spacing: 0) {
-            // ── Left: Poster thumbnail ─────────────────────
-            AsyncImage(
-                url: MediaConfig.instance.posterURL(
-                    item.media.posterPath
-                )
-            ) { phase in
-                switch phase {
-                case let .success(image):
-                    image
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                case .failure:
-                    posterPlaceholder
-                case .empty:
-                    ShimmerView()
-                @unknown default:
-                    posterPlaceholder
+        ZStack(alignment: .bottomTrailing) {
+            HStack(spacing: 0) {
+                // ── Left: Poster thumbnail ─────────────────────
+                AsyncImage(
+                    url: MediaConfig.instance.posterURL(
+                        item.media.posterPath
+                    )
+                ) { phase in
+                    switch phase {
+                    case let .success(image):
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                    case .failure:
+                        posterPlaceholder
+                    case .empty:
+                        ShimmerView()
+                    @unknown default:
+                        posterPlaceholder
+                    }
                 }
-            }
-            .frame(
-                width: CWMetrics.posterWidth,
-                height: CWMetrics.posterHeight
-            )
-            .clipped()
+                .frame(
+                    width: CWMetrics.posterWidth,
+                    height: CWMetrics.posterHeight
+                )
+                .clipped()
 
-            // ── Right: Info panel ──────────────────────────
-            VStack(alignment: .leading, spacing: 0) {
-                // Title
-                Text(displayTitle)
-                    .font(.system(size: 15, weight: .bold))
-                    .foregroundStyle(Color.white)
-                    .lineLimit(1)
-                    .truncationMode(.tail)
+                // ── Right: Info panel ──────────────────────────
+                VStack(alignment: .leading, spacing: 0) {
+                    // Title
+                    Text(displayTitle)
+                        .font(.system(size: 15, weight: .bold))
+                        .foregroundStyle(Color.white)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
 
-                Spacer().frame(height: 6)
+                    Spacer().frame(height: 6)
 
-                // Subtitle lines
-                if let ep = episodeInfo {
-                    // Show: Season + Episode
-                    Text("Season \(ep.season)")
-                        .font(.system(size: 13, weight: .regular))
-                        .foregroundStyle(Color.white.opacity(0.55))
+                    // Subtitle lines
+                    if let ep = episodeInfo {
+                        // Show: Season + Episode
+                        Text("Season \(ep.season)")
+                            .font(.system(size: 13, weight: .regular))
+                            .foregroundStyle(Color.white.opacity(0.55))
 
-                    Spacer().frame(height: 2)
+                        Spacer().frame(height: 2)
 
-                    Text("Episode \(ep.episode)")
-                        .font(.system(size: 13, weight: .regular))
-                        .foregroundStyle(Color.white.opacity(0.55))
-                } else {
-                    // Movie: Year • Movie
-                    HStack(spacing: 0) {
-                        if let year = releaseYear {
-                            Text(year)
-                                .font(.system(size: 13, weight: .regular))
-                                .foregroundStyle(Color.white.opacity(0.55))
-                            Text(" · ")
+                        Text("Episode \(ep.episode)")
+                            .font(.system(size: 13, weight: .regular))
+                            .foregroundStyle(Color.white.opacity(0.55))
+                    } else {
+                        // Movie: Year • Movie
+                        HStack(spacing: 0) {
+                            if let year = releaseYear {
+                                Text(year)
+                                    .font(.system(size: 13, weight: .regular))
+                                    .foregroundStyle(Color.white.opacity(0.55))
+                                Text(" · ")
+                                    .font(.system(size: 13, weight: .regular))
+                                    .foregroundStyle(Color.white.opacity(0.55))
+                            }
+                            Text("Movie")
                                 .font(.system(size: 13, weight: .regular))
                                 .foregroundStyle(Color.white.opacity(0.55))
                         }
-                        Text("Movie")
-                            .font(.system(size: 13, weight: .regular))
-                            .foregroundStyle(Color.white.opacity(0.55))
+                    }
+
+                    Spacer()
+
+                    // Progress bar
+                    GeometryReader { geo in
+                        ZStack(alignment: .leading) {
+                            // Track
+                            RoundedRectangle(
+                                cornerRadius: CWMetrics.progressBarRadius,
+                                style: .continuous
+                            )
+                            .fill(Color.white.opacity(0.2))
+                            .frame(height: CWMetrics.progressBarHeight)
+
+                            // Fill
+                            RoundedRectangle(
+                                cornerRadius: CWMetrics.progressBarRadius,
+                                style: .continuous
+                            )
+                            .fill(Color.white)
+                            .frame(
+                                width: geo.size.width * progressFraction,
+                                height: CWMetrics.progressBarHeight
+                            )
+                        }
+                    }
+                    .frame(height: CWMetrics.progressBarHeight)
+
+                    Spacer().frame(height: 6)
+
+                    HStack(spacing: 0) {
+                        Text("\(progressPercent)% watched")
+                            .font(.system(size: 12, weight: .regular))
+                            .foregroundStyle(Color.white.opacity(0.45))
+                        Spacer(minLength: 4)
                     }
                 }
-
-                Spacer()
-
-                // Progress bar
-                GeometryReader { geo in
-                    ZStack(alignment: .leading) {
-                        // Track
-                        RoundedRectangle(
-                            cornerRadius: CWMetrics.progressBarRadius,
-                            style: .continuous
-                        )
-                        .fill(Color.white.opacity(0.2))
-                        .frame(height: CWMetrics.progressBarHeight)
-
-                        // Fill
-                        RoundedRectangle(
-                            cornerRadius: CWMetrics.progressBarRadius,
-                            style: .continuous
-                        )
-                        .fill(Color.white)
-                        .frame(
-                            width: geo.size.width * progressFraction,
-                            height: CWMetrics.progressBarHeight
-                        )
-                    }
-                }
-                .frame(height: CWMetrics.progressBarHeight)
-
-                Spacer().frame(height: 6)
-
-                // Percentage text
-                Text("\(progressPercent)% watched")
-                    .font(.system(size: 12, weight: .regular))
-                    .foregroundStyle(Color.white.opacity(0.45))
+                .padding(.horizontal, 12)
+                .padding(.vertical, 12)
+                .padding(.trailing, 28)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 12)
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(width: CWMetrics.cardWidth, height: CWMetrics.cardHeight)
+            .contentShape(
+                RoundedRectangle(
+                    cornerRadius: CWMetrics.cornerRadius,
+                    style: .continuous
+                )
+            )
+            .onTapGesture {
+                Router.router.addToRoute(
+                    route: !isShow
+                        ? .movieDetails(item.media.id)
+                        : .seriesDetails(item.media.id)
+                )
+            }
+
+            Menu {
+                Button("Remove from continue watching", role: .destructive) {
+                    onRemove()
+                }
+                Button("Mark as watched") {
+                    onMarkWatched()
+                }
+            } label: {
+                Image(systemName: "ellipsis")
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundStyle(Color.white.opacity(0.85))
+                    .frame(width: 28, height: 28)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .padding(.trailing, 10)
+            .padding(.bottom, 10)
         }
         .frame(width: CWMetrics.cardWidth, height: CWMetrics.cardHeight)
         .background(AppTheme.Colors.backgroundTertiary)
-        .onTapGesture {
-            Router.router.addToRoute(route: !isShow ? .movieDetails(item.media.id) : .seriesDetails(item.media.id))
-        }
         .clipShape(
             RoundedRectangle(
                 cornerRadius: CWMetrics.cornerRadius,
