@@ -89,7 +89,6 @@ struct HomeView: View {
                 returnedFromDetails = false
             }
             if newRoute == nil && returnedFromDetails {
-                print("We came back from details page")
                 Task {
                     await vm.initialiseContinueWatching()
                 }

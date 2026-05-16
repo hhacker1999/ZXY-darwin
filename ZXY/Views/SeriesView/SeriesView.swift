@@ -53,7 +53,11 @@ struct SeriesView: View {
                 MediaLoadedContent(
                     details: MediaDetails(from: details),
                     isMobile: isMobile,
-                    seriesVm: vm
+                    seriesVm: vm,
+                    isInLibrary: vm.isInLibrary,
+                    onBookmarkTap: {
+                        Task { await vm.updateInLibrary() }
+                    }
                 )
             }
         }

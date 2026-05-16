@@ -19,6 +19,8 @@ class MovieViewModel {
     var movieState: ViewItemState<MovieDetails> = .initial
     var streamsState: ViewItemState<[ResolutionItem]> = .initial
     var progress: Double = 0
+    var isWatched: Bool = false
+    var isInLibrary: Bool = false
 
     @ObservationIgnored
     var streamTask: Task<Void, Never>?
@@ -26,16 +28,79 @@ class MovieViewModel {
     func initialise() async {
         movieState = .loading
         do {
-            let movieDetails = try await mediaUc.getMovieDetails(id: id)
-            await fetchMovieProgress()
-            movieState = .loaded(movieDetails)
+            // `async let` schedules each request right away; nothing is awaited
+            // until the lines below, so all three are in flight together.
+            async let detailsTask = mediaUc.getMovieDetails(id: id)
+            async let progressTask = progressUc.getMovieProgress(movieId: id)
+            async let libraryTask = mediaUc.isInLibrary(tmdbId: id, tp: "movie")
+
+            let d = try await detailsTask
+
+            do {
+                let wp = try await progressTask
+                progress = wp?.progress ?? 0
+                isWatched = wp?.isWatched ?? false
+            } catch let err as HttpError {
+                ToastProgressBloc.bloc.showToast(message: err.error(), isError: true)
+            } catch {
+                ToastProgressBloc.bloc.showToast(
+                    message: error.localizedDescription,
+                    isError: true
+                )
+            }
+
+            do {
+                isInLibrary = try await libraryTask
+            } catch let err as HttpError {
+                ToastProgressBloc.bloc.showToast(message: err.error(), isError: true)
+            } catch {
+                ToastProgressBloc.bloc.showToast(
+                    message: error.localizedDescription,
+                    isError: true
+                )
+            }
+
+            movieState = .loaded(d)
             streamTask = Task {
-                await getStreams(imdbId: movieDetails.imdbId)
+                await getStreams(imdbId: d.imdbId)
             }
         } catch let err as HttpError {
             movieState = .error(err.error())
         } catch {
             movieState = .error(error.localizedDescription)
+        }
+    }
+
+    func markWatched() async {
+        ToastProgressBloc.bloc.enableLoading()
+        defer {
+            ToastProgressBloc.bloc.disableLoading()
+        }
+        do {
+            try await progressUc.updateMovieToWatched(movieId: "\(id)")
+        } catch let err as HttpError {
+            ToastProgressBloc.bloc.showToast(message: err.error(), isError: true)
+        } catch {
+            ToastProgressBloc.bloc.showToast(message: error.localizedDescription, isError: true)
+        }
+    }
+
+    func updateInLibrary() async {
+        ToastProgressBloc.bloc.enableLoading()
+        defer {
+            ToastProgressBloc.bloc.disableLoading()
+        }
+        do {
+            if isInLibrary {
+                try await mediaUc.removeFromLibrary(tmdbId: id, tp: "movie")
+            } else {
+                try await mediaUc.addToLibrary(tmdbId: id, tp: "movie")
+            }
+            isInLibrary.toggle()
+        } catch let err as HttpError {
+            ToastProgressBloc.bloc.showToast(message: err.error(), isError: true)
+        } catch {
+            ToastProgressBloc.bloc.showToast(message: error.localizedDescription, isError: true)
         }
     }
 
@@ -51,6 +116,7 @@ class MovieViewModel {
         do {
             let serverProgress = try await progressUc.getMovieProgress(movieId: id)
             progress = serverProgress?.progress ?? 0
+            isWatched = serverProgress?.isWatched ?? false
         } catch let err as HttpError {
             ToastProgressBloc.bloc.showToast(message: err.error(), isError: true)
         } catch {

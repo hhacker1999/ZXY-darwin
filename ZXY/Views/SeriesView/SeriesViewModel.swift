@@ -28,6 +28,7 @@ class SeriesViewModel {
     var seriesState: ViewItemState<SeriesDetails> = .initial
     var episodeStreamState: ViewItemState<[ResolutionItem]> = .initial
     var progressState: [String: WatchProgress] = [:]
+    var isInLibrary: Bool = false
 
     @ObservationIgnored
     var seriesDetails: SeriesDetails? = nil
@@ -38,17 +39,85 @@ class SeriesViewModel {
     func initialise() async {
         seriesState = .loading
         do {
-            seriesDetails = try await mediaUc.getSeriesDetails(id: id)
-            await fetchShowProgress(loadOverlay: false, afterVideoEnds: false)
+            // `async let` schedules each request immediately; all three overlap
+            // until the `await`s below.
+            async let detailsTask = mediaUc.getSeriesDetails(id: id)
+            async let progressTask = progressUc.getProgressShow(showId: id)
+            async let libraryTask = mediaUc.isInLibrary(tmdbId: id, tp: "show")
+
+            let details = try await detailsTask
+            seriesDetails = details
+
+            do {
+                let progressList = try await progressTask
+                var tempProgress: [String: WatchProgress] = [:]
+                for p in progressList {
+                    tempProgress[p.mediaId] = p
+                }
+                progressState = tempProgress
+            } catch let err as HttpError {
+                ToastProgressBloc.bloc.showToast(message: err.error(), isError: true)
+            } catch {
+                ToastProgressBloc.bloc.showToast(
+                    message: error.localizedDescription,
+                    isError: true
+                )
+            }
+
+            do {
+                isInLibrary = try await libraryTask
+            } catch let err as HttpError {
+                ToastProgressBloc.bloc.showToast(message: err.error(), isError: true)
+            } catch {
+                ToastProgressBloc.bloc.showToast(
+                    message: error.localizedDescription,
+                    isError: true
+                )
+            }
+
             if !isExplicitSeasonEpisode {
                 updateCurrentSeasonAndEpisodeFromProgress()
             }
             getCurrentEpisodesStream()
-            seriesState = .loaded(seriesDetails!)
+            seriesState = .loaded(details)
         } catch let err as HttpError {
             seriesState = .error(err.error())
         } catch {
             seriesState = .error(error.localizedDescription)
+        }
+    }
+
+    func updateInLibrary() async {
+        ToastProgressBloc.bloc.enableLoading()
+        defer {
+            ToastProgressBloc.bloc.disableLoading()
+        }
+        do {
+            if isInLibrary {
+                try await mediaUc.removeFromLibrary(tmdbId: id, tp: "show")
+            } else {
+                try await mediaUc.addToLibrary(tmdbId: id, tp: "show")
+            }
+            isInLibrary.toggle()
+        } catch let err as HttpError {
+            ToastProgressBloc.bloc.showToast(message: err.error(), isError: true)
+        } catch {
+            ToastProgressBloc.bloc.showToast(message: error.localizedDescription, isError: true)
+        }
+    }
+
+    func markWatched(mediaId: String) async {
+        ToastProgressBloc.bloc.enableLoading()
+        defer {
+            ToastProgressBloc.bloc.disableLoading()
+        }
+        do {
+            try await progressUc.updateShowToWatched(showId: mediaId)
+            await fetchShowProgress()
+        } catch let err as HttpError {
+            ToastProgressBloc.bloc.showToast(message: err.error(), isError: true)
+        } catch {
+            ToastProgressBloc.bloc.showToast(message: error.localizedDescription, isError: true)
         }
     }
 

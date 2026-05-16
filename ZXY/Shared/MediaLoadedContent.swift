@@ -8,7 +8,12 @@ struct MediaLoadedContent: View {
     let isMobile: Bool
     var streamState: ViewItemState<[ResolutionItem]> = .initial
     var movieProgress: Double = 0
+    var movieIsWatched: Bool = false
     var seriesVm: SeriesViewModel? = nil
+    /// Synced from `MovieViewModel` / `SeriesViewModel` for the header bookmark.
+    var isInLibrary: Bool = false
+    var onBookmarkTap: () -> Void = {}
+    var onMarkMovieWatched: () -> Void = {}
 
     private var castList: [Cast] {
         return details.cast.filter { $0.profilePath != nil && !($0.profilePath!.isEmpty) }
@@ -31,7 +36,11 @@ struct MediaLoadedContent: View {
                             height: headerHeight,
                             streamState: streamState,
                             movieProgress: movieProgress,
-                            seriesVm: seriesVm
+                            movieIsWatched: movieIsWatched,
+                            seriesVm: seriesVm,
+                            isInLibrary: isInLibrary,
+                            onBookmarkTap: onBookmarkTap,
+                            onMarkMovieWatched: onMarkMovieWatched
                         )
                     } else {
                         MediaInfoBannerView(
@@ -40,7 +49,11 @@ struct MediaLoadedContent: View {
                             height: headerHeight,
                             streamState: streamState,
                             movieProgress: movieProgress,
-                            seriesVm: seriesVm
+                            movieIsWatched: movieIsWatched,
+                            seriesVm: seriesVm,
+                            isInLibrary: isInLibrary,
+                            onBookmarkTap: onBookmarkTap,
+                            onMarkMovieWatched: onMarkMovieWatched
                         )
                     }
 
@@ -133,7 +146,15 @@ private struct MediaInfoPosterView: View {
     let height: CGFloat
     var streamState: ViewItemState<[ResolutionItem]> = .initial
     var movieProgress: Double = 0
+    var movieIsWatched: Bool = false
     var seriesVm: SeriesViewModel? = nil
+    var isInLibrary: Bool = false
+    var onBookmarkTap: () -> Void = {}
+    var onMarkMovieWatched: () -> Void = {}
+
+    private var isMovieOnly: Bool {
+        details.isMovie && seriesVm == nil
+    }
 
     @State private var showStreamSheet = false
 
@@ -238,7 +259,7 @@ private struct MediaInfoPosterView: View {
                     // Logo or title fallback
                     if let path = logoPath, !path.isEmpty {
                         AsyncImage(
-                            url: MediaConfig.instance.logoURL(path, width: 154)
+                            url: MediaConfig.instance.logoURL(path)
                         ) { phase in
                             switch phase {
                             case let .success(image):
@@ -246,13 +267,19 @@ private struct MediaInfoPosterView: View {
                                     .resizable()
                                     .aspectRatio(contentMode: .fit)
                                     .frame(
-                                        maxWidth: 160,
-                                        maxHeight: height * 0.12
+                                        maxWidth: 420,
+                                        maxHeight: 180,
+                                        alignment: .bottomLeading
                                     )
                             default:
                                 titleFallback
                             }
                         }
+                        .frame(
+                            maxWidth: 420,
+                            maxHeight: 180,
+                            alignment: .bottomLeading
+                        )
                     } else {
                         titleFallback
                     }
@@ -306,12 +333,20 @@ private struct MediaInfoPosterView: View {
                     // Play button
                     if details.isMovie || seriesVm != nil {
                         Spacer().frame(height: 14)
-                        PlayStreamButton(
-                            label: "Play",
-                            suffix: playButtonSuffix,
-                            progressFraction: playProgressFraction,
-                            action: { showStreamSheet = true }
-                        )
+                        HStack(alignment: .center, spacing: 10) {
+                            PlayStreamButton(
+                                label: "Play",
+                                suffix: playButtonSuffix,
+                                progressFraction: playProgressFraction,
+                                action: { showStreamSheet = true }
+                            )
+                            if isMovieOnly {
+                                MovieWatchedCheckButton(
+                                    isWatched: movieIsWatched,
+                                    action: onMarkMovieWatched
+                                )
+                            }
+                        }
                     }
                 }
                 .padding(.horizontal, AppTheme.Spacing.md)
@@ -327,8 +362,9 @@ private struct MediaInfoPosterView: View {
                         )
                         Spacer()
                         GlassCircularButton(
-                            icon: "bookmark",
-                            action: {}
+                            icon: isInLibrary
+                                ? "bookmark.fill" : "bookmark",
+                            action: onBookmarkTap
                         )
                     }
                     .padding(.horizontal, AppTheme.Spacing.md)
@@ -402,7 +438,15 @@ private struct MediaInfoBannerView: View {
     let height: CGFloat
     var streamState: ViewItemState<[ResolutionItem]> = .initial
     var movieProgress: Double = 0
+    var movieIsWatched: Bool = false
     var seriesVm: SeriesViewModel? = nil
+    var isInLibrary: Bool = false
+    var onBookmarkTap: () -> Void = {}
+    var onMarkMovieWatched: () -> Void = {}
+
+    private var isMovieOnly: Bool {
+        details.isMovie && seriesVm == nil
+    }
 
     @State private var showStreamSheet = false
 
@@ -505,11 +549,20 @@ private struct MediaInfoBannerView: View {
                             image
                                 .resizable()
                                 .aspectRatio(contentMode: .fit)
-                                .frame(maxWidth: 280, maxHeight: 100)
+                                .frame(
+                                    maxWidth: 420,
+                                    maxHeight: 180,
+                                    alignment: .bottomLeading
+                                )
                         default:
                             bannerTitleFallback
                         }
                     }
+                    .frame(
+                        maxWidth: 420,
+                        maxHeight: 180,
+                        alignment: .bottomLeading
+                    )
                 } else {
                     bannerTitleFallback
                 }
@@ -577,12 +630,20 @@ private struct MediaInfoBannerView: View {
                 // Play button
                 if details.isMovie || seriesVm != nil {
                     Spacer().frame(height: AppTheme.Spacing.lg)
-                    PlayStreamButton(
-                        label: "Play",
-                        suffix: playButtonSuffix,
-                        progressFraction: playProgressFraction,
-                        action: { showStreamSheet = true }
-                    )
+                    HStack(alignment: .center, spacing: 10) {
+                        PlayStreamButton(
+                            label: "Play",
+                            suffix: playButtonSuffix,
+                            progressFraction: playProgressFraction,
+                            action: { showStreamSheet = true }
+                        )
+                        if isMovieOnly {
+                            MovieWatchedCheckButton(
+                                isWatched: movieIsWatched,
+                                action: onMarkMovieWatched
+                            )
+                        }
+                    }
                 }
             }
             .padding(.horizontal, AppTheme.Spacing.lg)
@@ -597,8 +658,9 @@ private struct MediaInfoBannerView: View {
                     )
                     Spacer()
                     GlassCircularButton(
-                        icon: "bookmark",
-                        action: {}
+                        icon: isInLibrary
+                            ? "bookmark.fill" : "bookmark",
+                        action: onBookmarkTap
                     )
                 }
                 .padding(.horizontal, AppTheme.Spacing.lg)
@@ -670,6 +732,94 @@ private func genreChips(genres: [Genre]) -> some View {
                     )
             }
         }
+    }
+}
+
+private struct MovieWatchedCheckButton: View {
+    let isWatched: Bool
+    let action: () -> Void
+    @State private var isHovered = false
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 8) {
+                Image(systemName: isWatched ? "checkmark.circle.fill" : "checkmark.circle")
+                    .font(.system(size: 17, weight: .semibold))
+                    .foregroundStyle(
+                        isWatched
+                            ? Color.white
+                            : Color.white.opacity(0.9)
+                    )
+                Text(isWatched ? "Watched" : "Mark watched")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(
+                        isWatched
+                            ? Color.white
+                            : Color.white.opacity(0.88)
+                    )
+            }
+            .padding(.horizontal, 22)
+            .padding(.vertical, 12)
+            .background {
+                ZStack {
+                    Capsule(style: .continuous)
+                        .fill(backgroundFill)
+                    Capsule(style: .continuous)
+                        .strokeBorder(strokeColor, lineWidth: 1)
+                }
+                .shadow(
+                    color: shadowColor,
+                    radius: isHovered && !isWatched ? 14 : (isWatched ? 10 : 8),
+                    y: 2
+                )
+            }
+            .scaleEffect((isHovered && !isWatched) ? 1.02 : 1.0)
+            .animation(.spring(response: 0.3, dampingFraction: 0.72), value: isHovered)
+        }
+        .buttonStyle(.plain)
+        .disabled(isWatched)
+        .opacity(isWatched ? 0.92 : 1)
+        .accessibilityLabel(isWatched ? "Watched" : "Mark as watched")
+        .onHover { hovering in
+            isHovered = hovering
+        }
+    }
+
+    private var backgroundFill: LinearGradient {
+        if isWatched {
+            return LinearGradient(
+                colors: [
+                    AppTheme.Colors.success.opacity(0.52),
+                    AppTheme.Colors.success.opacity(0.2),
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        }
+        return LinearGradient(
+            colors: [
+                Color.white.opacity(0.22),
+                Color.white.opacity(0.06),
+            ],
+            startPoint: .top,
+            endPoint: .bottom
+        )
+    }
+
+    private var strokeColor: Color {
+        isWatched
+            ? AppTheme.Colors.success.opacity(0.55)
+            : Color.white.opacity(0.26)
+    }
+
+    private var shadowColor: Color {
+        if isWatched {
+            return Color.black.opacity(0.45)
+        }
+        if isHovered {
+            return Color.white.opacity(0.14)
+        }
+        return Color.black.opacity(0.4)
     }
 }
 
@@ -1047,10 +1197,16 @@ private struct SeasonEpisodeSection: View {
                 EpisodeCard(
                     episode: episode,
                     seasonNumber: seasonNumber,
+                    tmdbShowId: seriesVm.id,
                     isMobile: isMobile,
                     progress: seriesVm.progressState[progressKey],
                     onTap: {
                         loadStreamsAndShow(seasonNumber: seasonNumber, episodeNumber: episode.episodeNumber)
+                    },
+                    onMarkWatched: { mediaId in
+                        Task {
+                            await seriesVm.markWatched(mediaId: mediaId)
+                        }
                     }
                 )
             }
@@ -1070,9 +1226,11 @@ private struct SeasonEpisodeSection: View {
 private struct EpisodeCard: View {
     let episode: Episode
     let seasonNumber: Int
+    let tmdbShowId: Int
     let isMobile: Bool
     let progress: WatchProgress?
     let onTap: () -> Void
+    let onMarkWatched: (String) -> Void
 
     /// Overall card aspect ratio (width / height). Matches the prior
     /// combined thumbnail + info ratio so the card footprint is unchanged.
@@ -1224,9 +1382,23 @@ private struct EpisodeCard: View {
 
                         Spacer(minLength: 8)
 
-                        Image(systemName: "ellipsis")
-                            .font(.system(size: 14, weight: .bold))
-                            .foregroundStyle(Color.white.opacity(0.85))
+                        Menu {
+                            Button("Mark as watched") {
+                                onMarkWatched(
+                                    "\(tmdbShowId):\(seasonNumber):\(episode.episodeNumber)"
+                                )
+                            }
+                            Button("Mark season as watched") {
+                                onMarkWatched("\(tmdbShowId):\(seasonNumber)")
+                            }
+                        } label: {
+                            Image(systemName: "ellipsis")
+                                .font(.system(size: 14, weight: .bold))
+                                .foregroundStyle(Color.white.opacity(0.85))
+                                .frame(width: 28, height: 28)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
                     }
                     .padding(.top, 2)
                 }

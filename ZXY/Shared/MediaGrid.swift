@@ -154,10 +154,6 @@ private struct GridPosterCard: View {
                         .padding(8)
                 }
             }
-            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isHovered)
-            .onHover { hovering in
-                withAnimation { isHovered = hovering }
-            }
 
             // ── Title label ──────────────────────────────────
             Text(displayTitle)

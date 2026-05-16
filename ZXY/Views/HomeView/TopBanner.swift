@@ -56,6 +56,13 @@ private struct TopBannerCarousel: View {
                 aspectRatio: aspectRatio
             )
             .id(stableActiveIndex)
+            .onTapGesture {
+                Router.router.addToRoute(
+                    route: items[stableActiveIndex].type == "movie" ?
+                        .movieDetails(items[stableActiveIndex].id) :
+                        .seriesDetails(items[stableActiveIndex].id)
+                )
+            }
             .transition(
                 .opacity
             )
@@ -226,6 +233,19 @@ private struct BannerSlide: View {
                 .frame(width: width, height: height)
                 .clipped()
 
+                // ── Readability scrim (helps text on bright/white backgrounds) ──
+                LinearGradient(
+                    stops: [
+                        .init(color: .clear, location: 0.0),
+                        .init(color: .black.opacity(0.25), location: 0.45),
+                        .init(color: .black.opacity(0.7), location: 1.0),
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .frame(width: width, height: height * 0.65)
+                .allowsHitTesting(false)
+
                 // ── Trailer video (only for the slide in viewport) ─────
                 // if isActive,
                 //    let trailerKey = youtubeTrailerKey,
@@ -279,19 +299,31 @@ private struct BannerSlide: View {
                                     .resizable()
                                     .aspectRatio(contentMode: .fit)
                                     .frame(
-                                        maxWidth: 220,
-                                        maxHeight: 80
+                                        maxWidth: 420,
+                                        maxHeight: 180,
+                                        alignment: .bottomLeading
                                     )
                                     .shadow(
-                                        color: .black.opacity(0.6),
-                                        radius: 12,
+                                        color: .black.opacity(0.85),
+                                        radius: 4,
                                         x: 0,
-                                        y: 4
+                                        y: 2
+                                    )
+                                    .shadow(
+                                        color: .black.opacity(0.7),
+                                        radius: 18,
+                                        x: 0,
+                                        y: 6
                                     )
                             default:
                                 titleFallback
                             }
                         }
+                        .frame(
+                            maxWidth: 420,
+                            maxHeight: 180,
+                            alignment: .bottomLeading
+                        )
                     } else {
                         titleFallback
                     }
@@ -301,16 +333,35 @@ private struct BannerSlide: View {
                     // Genre info line
                     Text(infoLine)
                         .font(.system(size: 13, weight: .medium))
-                        .foregroundStyle(Color.white.opacity(0.8))
+                        .foregroundStyle(Color.white.opacity(0.9))
                         .shadow(
-                            color: .black.opacity(0.8),
-                            radius: 4,
+                            color: .black.opacity(0.9),
+                            radius: 3,
                             x: 0,
                             y: 1
                         )
+                        .shadow(
+                            color: .black.opacity(0.7),
+                            radius: 10,
+                            x: 0,
+                            y: 2
+                        )
 
-                    Text(media.overview).font(AppTheme.Typography.bodySmall)
+                    Text(media.overview)
+                        .font(AppTheme.Typography.bodySmall)
                         .foregroundStyle(AppTheme.Colors.elementSubtle)
+                        .shadow(
+                            color: .black.opacity(0.85),
+                            radius: 3,
+                            x: 0,
+                            y: 1
+                        )
+                        .shadow(
+                            color: .black.opacity(0.6),
+                            radius: 10,
+                            x: 0,
+                            y: 2
+                        )
 
                     Spacer().frame(height: 40)
                 }
@@ -325,16 +376,23 @@ private struct BannerSlide: View {
 
     private var titleFallback: some View {
         Text(displayTitle)
-            .font(.system(size: 28, weight: .bold))
+            .font(.system(size: 36, weight: .bold))
             .foregroundStyle(.white)
-            .multilineTextAlignment(.center)
+            .multilineTextAlignment(.leading)
             .lineLimit(2)
             .shadow(
-                color: .black.opacity(0.8),
-                radius: 8,
+                color: .black.opacity(0.9),
+                radius: 4,
                 x: 0,
                 y: 2
             )
+            .shadow(
+                color: .black.opacity(0.7),
+                radius: 16,
+                x: 0,
+                y: 4
+            )
+            .frame(maxWidth: 420, alignment: .bottomLeading)
     }
 
     private var bannerPlaceholder: some View {

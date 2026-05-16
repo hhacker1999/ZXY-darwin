@@ -54,7 +54,15 @@ struct MovieView: View {
                     details: MediaDetails(from: details),
                     isMobile: isMobile,
                     streamState: vm.streamsState,
-                    movieProgress: vm.progress
+                    movieProgress: vm.progress,
+                    movieIsWatched: vm.isWatched,
+                    isInLibrary: vm.isInLibrary,
+                    onBookmarkTap: {
+                        Task { await vm.updateInLibrary() }
+                    },
+                    onMarkMovieWatched: {
+                        Task { await vm.markWatched() }
+                    }
                 )
             }
         }
