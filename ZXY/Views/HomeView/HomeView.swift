@@ -22,7 +22,10 @@ struct HomeView: View {
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
             VStack(alignment: .leading, spacing: 0) {
-                TopBannerSection(state: vm.topBannerState).backgroundExtensionEffect()
+                TopBannerSection(state: vm.topBannerState)
+                #if os(macOS)
+                    .backgroundExtensionEffect()
+                #endif
                 Spacer().frame(height: AppTheme.Spacing.lg)
                 LazyVStack(alignment: .leading, spacing: AppTheme.Spacing.lg) {
                     ContinueWatchingSection(

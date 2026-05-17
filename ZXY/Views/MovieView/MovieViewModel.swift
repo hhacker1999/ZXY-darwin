@@ -26,6 +26,11 @@ class MovieViewModel {
     var streamTask: Task<Void, Never>?
 
     func initialise() async {
+        // Avoid shredding loaded UI when NavigationStack restores this screen after popping
+        // a stacked detail—the view's `.task` runs again on reappear on compact iPhone.
+        if case .loaded = movieState {
+            return
+        }
         movieState = .loading
         do {
             // `async let` schedules each request right away; nothing is awaited

@@ -37,6 +37,9 @@ final class DiscoverViewModel {
 
     /// First load (call from `.task` on appear — same pattern as `LibraryViewModel.initialLoad`).
     func initialLoad() async {
+        if case .loaded = itemsState {
+            return
+        }
         await getItemsFromFilter(isLoadMore: false)
     }
 

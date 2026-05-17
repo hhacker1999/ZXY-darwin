@@ -10,9 +10,6 @@ struct MediaLoadedContent: View {
     var movieProgress: Double = 0
     var movieIsWatched: Bool = false
     var seriesVm: SeriesViewModel? = nil
-    /// Synced from `MovieViewModel` / `SeriesViewModel` for the header bookmark.
-    var isInLibrary: Bool = false
-    var onBookmarkTap: () -> Void = {}
     var onMarkMovieWatched: () -> Void = {}
 
     private var castList: [Cast] {
@@ -38,8 +35,6 @@ struct MediaLoadedContent: View {
                             movieProgress: movieProgress,
                             movieIsWatched: movieIsWatched,
                             seriesVm: seriesVm,
-                            isInLibrary: isInLibrary,
-                            onBookmarkTap: onBookmarkTap,
                             onMarkMovieWatched: onMarkMovieWatched
                         )
                     } else {
@@ -51,8 +46,6 @@ struct MediaLoadedContent: View {
                             movieProgress: movieProgress,
                             movieIsWatched: movieIsWatched,
                             seriesVm: seriesVm,
-                            isInLibrary: isInLibrary,
-                            onBookmarkTap: onBookmarkTap,
                             onMarkMovieWatched: onMarkMovieWatched
                         )
                     }
@@ -136,6 +129,9 @@ struct MediaLoadedContent: View {
                 }
             }
         }
+        #if os(iOS)
+            .ignoresSafeArea(edges: isMobile ? .top : [])
+        #endif
         .enableInjection()
     }
 }
@@ -148,8 +144,6 @@ private struct MediaInfoPosterView: View {
     var movieProgress: Double = 0
     var movieIsWatched: Bool = false
     var seriesVm: SeriesViewModel? = nil
-    var isInLibrary: Bool = false
-    var onBookmarkTap: () -> Void = {}
     var onMarkMovieWatched: () -> Void = {}
 
     private var isMovieOnly: Bool {
@@ -213,46 +207,53 @@ private struct MediaInfoPosterView: View {
         VStack(alignment: .leading, spacing: 0) {
             // ── Hero poster with everything overlaid ──
             ZStack(alignment: .bottom) {
-                // Poster image
-                AsyncImage(
-                    url: MediaConfig.instance.posterURL(
-                        details.posterPath ?? "", width: 500
-                    )
-                ) { phase in
-                    switch phase {
-                    case let .success(image):
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                    case .failure:
-                        posterPlaceholder
-                    case .empty:
-                        ShimmerView()
-                    @unknown default:
-                        posterPlaceholder
+                ZStack(alignment: .bottom) {
+                    // Poster image
+                    AsyncImage(
+                        url: MediaConfig.instance.posterURL(
+                            details.posterPath ?? "", width: 500
+                        )
+                    ) { phase in
+                        switch phase {
+                        case let .success(image):
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                        case .failure:
+                            posterPlaceholder
+                        case .empty:
+                            ShimmerView()
+                        @unknown default:
+                            posterPlaceholder
+                        }
                     }
-                }
-                .frame(width: width, height: height)
-                .clipped()
+                    .frame(width: width, height: height)
+                    .clipped()
 
-                // Gradient
-                LinearGradient(
-                    stops: [
-                        .init(color: .clear, location: 0.0),
-                        .init(
-                            color: Color.black.opacity(0.3), location: 0.28
-                        ),
-                        .init(
-                            color: Color.black.opacity(0.85), location: 0.55
-                        ),
-                        .init(
-                            color: Color.black.opacity(0.97), location: 1.0
-                        ),
-                    ],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
+                    // Gradient
+                    LinearGradient(
+                        stops: [
+                            .init(color: .clear, location: 0.0),
+                            .init(
+                                color: Color.black.opacity(0.3), location: 0.28
+                            ),
+                            .init(
+                                color: Color.black.opacity(0.85), location: 0.55
+                            ),
+                            .init(
+                                color: Color.black.opacity(0.97), location: 1.0
+                            ),
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                    .frame(width: width, height: height)
+                    .allowsHitTesting(false)
+                }
+                .compositingGroup()
                 .frame(width: width, height: height)
+                .stretchableHeroBannerInScrollView()
+                .zIndex(0)
 
                 // Content pinned to bottom
                 VStack(alignment: .leading, spacing: 0) {
@@ -352,26 +353,7 @@ private struct MediaInfoPosterView: View {
                 .padding(.horizontal, AppTheme.Spacing.md)
                 .padding(.bottom, AppTheme.Spacing.lg)
                 .frame(maxWidth: .infinity, alignment: .leading)
-
-                // Back button (top-left)
-                VStack {
-                    HStack {
-                        GlassCircularButton(
-                            icon: "chevron.left",
-                            action: { Router.router.popRoute() }
-                        )
-                        Spacer()
-                        GlassCircularButton(
-                            icon: isInLibrary
-                                ? "bookmark.fill" : "bookmark",
-                            action: onBookmarkTap
-                        )
-                    }
-                    .padding(.horizontal, AppTheme.Spacing.md)
-                    .padding(.top, AppTheme.Spacing.md)
-                    Spacer()
-                }
-                .frame(width: width, height: height)
+                .zIndex(1)
             }
             .frame(width: width, height: height)
 
@@ -440,8 +422,6 @@ private struct MediaInfoBannerView: View {
     var movieProgress: Double = 0
     var movieIsWatched: Bool = false
     var seriesVm: SeriesViewModel? = nil
-    var isInLibrary: Bool = false
-    var onBookmarkTap: () -> Void = {}
     var onMarkMovieWatched: () -> Void = {}
 
     private var isMovieOnly: Bool {
@@ -503,39 +483,46 @@ private struct MediaInfoBannerView: View {
 
     var body: some View {
         ZStack(alignment: .bottomLeading) {
-            // Backdrop image
-            AsyncImage(
-                url: MediaConfig.instance.backdropURL(
-                    details.backdropPath ?? "", width: "original"
-                )
-            ) { phase in
-                switch phase {
-                case let .success(image):
-                    image
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                case .failure:
-                    bannerPlaceholder
-                case .empty:
-                    ShimmerView()
-                @unknown default:
-                    bannerPlaceholder
+            ZStack(alignment: .bottom) {
+                // Backdrop image
+                AsyncImage(
+                    url: MediaConfig.instance.backdropURL(
+                        details.backdropPath ?? "", width: "original"
+                    )
+                ) { phase in
+                    switch phase {
+                    case let .success(image):
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                    case .failure:
+                        bannerPlaceholder
+                    case .empty:
+                        ShimmerView()
+                    @unknown default:
+                        bannerPlaceholder
+                    }
                 }
-            }
-            .frame(width: width, height: height)
-            .clipped()
+                .frame(width: width, height: height)
+                .clipped()
 
-            // Gradient overlay
-            LinearGradient(
-                stops: [
-                    .init(color: .clear, location: 0.2),
-                    .init(color: Color.black.opacity(0.8), location: 0.7),
-                    .init(color: Color.black.opacity(0.95), location: 1.0),
-                ],
-                startPoint: .top,
-                endPoint: .bottom
-            )
+                // Gradient overlay
+                LinearGradient(
+                    stops: [
+                        .init(color: .clear, location: 0.2),
+                        .init(color: Color.black.opacity(0.8), location: 0.7),
+                        .init(color: Color.black.opacity(0.95), location: 1.0),
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .frame(width: width, height: height)
+                .allowsHitTesting(false)
+            }
+            .compositingGroup()
             .frame(width: width, height: height)
+            .stretchableHeroBannerInScrollView()
+            .zIndex(0)
 
             // Content
             VStack(alignment: .leading, spacing: 0) {
@@ -648,26 +635,8 @@ private struct MediaInfoBannerView: View {
             }
             .padding(.horizontal, AppTheme.Spacing.lg)
             .padding(.bottom, AppTheme.Spacing.lg)
+            .zIndex(1)
 
-            // Top buttons
-            VStack {
-                HStack {
-                    GlassCircularButton(
-                        icon: "chevron.left",
-                        action: { Router.router.popRoute() }
-                    )
-                    Spacer()
-                    GlassCircularButton(
-                        icon: isInLibrary
-                            ? "bookmark.fill" : "bookmark",
-                        action: onBookmarkTap
-                    )
-                }
-                .padding(.horizontal, AppTheme.Spacing.lg)
-                .padding(.top, AppTheme.Spacing.lg)
-                Spacer()
-            }
-            .frame(width: width, height: height)
         }
         .frame(width: width, height: height)
         .sheet(isPresented: $showStreamSheet) {
@@ -820,51 +789,6 @@ private struct MovieWatchedCheckButton: View {
             return Color.white.opacity(0.14)
         }
         return Color.black.opacity(0.4)
-    }
-}
-
-private struct GlassCircularButton: View {
-    let icon: String
-    let action: () -> Void
-    var size: CGFloat = 44
-    var iconSize: CGFloat = 20
-
-    @State private var isPressed = false
-
-    var body: some View {
-        Button {
-            action()
-        } label: {
-            ZStack {
-                Circle()
-                    .fill(.ultraThinMaterial)
-                    .overlay(
-                        Circle()
-                            .fill(Color.white.opacity(0.12))
-                    )
-                    .overlay(
-                        Circle()
-                            .stroke(Color.white.opacity(0.25), lineWidth: 1.2)
-                    )
-                Image(systemName: icon)
-                    .font(.system(size: iconSize, weight: .medium))
-                    .foregroundStyle(Color.white.opacity(0.95))
-            }
-            .frame(width: size, height: size)
-        }
-        .buttonStyle(.plain)
-        .scaleEffect(isPressed ? 0.85 : 1.0)
-        .animation(
-            .spring(response: 0.25, dampingFraction: 0.7),
-            value: isPressed
-        )
-        .onLongPressGesture(
-            minimumDuration: .infinity,
-            pressing: { pressing in
-                isPressed = pressing
-            },
-            perform: {}
-        )
     }
 }
 
@@ -1548,3 +1472,44 @@ private struct EpisodeCard: View {
         .frame(width: trackWidth, height: trackHeight)
     }
 }
+
+#if os(macOS)
+/// macOS-only: system `NavigationStack` toolbars use the window title area (grey bar).
+/// These controls sit over the hero like the hidden navigation bar on iOS.
+struct MediaDetailMacTopBar: View {
+    let showLibraryButton: Bool
+    let isInLibrary: Bool
+    let onBack: () -> Void
+    let onLibrary: () -> Void
+
+    var body: some View {
+        HStack(spacing: AppTheme.Spacing.md) {
+            Button(action: onBack) {
+                Image(systemName: "chevron.backward")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .frame(width: 36, height: 36)
+                    .background(.ultraThinMaterial, in: Circle())
+            }
+            .buttonStyle(.plain)
+            .help("Back")
+
+            Spacer(minLength: 0)
+
+            if showLibraryButton {
+                Button(action: onLibrary) {
+                    Image(systemName: isInLibrary ? "bookmark.fill" : "bookmark")
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .frame(width: 36, height: 36)
+                        .background(.ultraThinMaterial, in: Circle())
+                }
+                .buttonStyle(.plain)
+                .help(isInLibrary ? "In Library" : "Add to Library")
+            }
+        }
+        .padding(.horizontal, AppTheme.Spacing.md)
+        .padding(.vertical, AppTheme.Spacing.sm)
+    }
+}
+#endif

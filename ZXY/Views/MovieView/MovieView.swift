@@ -7,8 +7,18 @@ struct MovieView: View {
     @State var vm: MovieViewModel
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
-    init(id: Int, mediaUc: MediaUsecase, streamUc: StreamUsecase, progressUc: ProgressUsecase) {
-        vm = MovieViewModel(id: id, mediaUc: mediaUc, streamUc: streamUc, progressUc: progressUc)
+    init(
+        id: Int,
+        mediaUc: MediaUsecase,
+        streamUc: StreamUsecase,
+        progressUc: ProgressUsecase
+    ) {
+        vm = MovieViewModel(
+            id: id,
+            mediaUc: mediaUc,
+            streamUc: streamUc,
+            progressUc: progressUc
+        )
     }
 
     private var isMobile: Bool {
@@ -26,7 +36,7 @@ struct MovieView: View {
             switch vm.movieState {
             case .initial, .loading:
                 MediaViewShimmer(isMobile: isMobile)
-            case let .error(err):
+            case .error(let err):
                 VStack(spacing: AppTheme.Spacing.md) {
                     Button {
                         Router.router.popRoute()
@@ -49,17 +59,13 @@ struct MovieView: View {
                         .font(AppTheme.Typography.bodyMedium)
                         .foregroundStyle(AppTheme.Colors.elementSubtle)
                 }
-            case let .loaded(details):
+            case .loaded(let details):
                 MediaLoadedContent(
                     details: MediaDetails(from: details),
                     isMobile: isMobile,
                     streamState: vm.streamsState,
                     movieProgress: vm.progress,
                     movieIsWatched: vm.isWatched,
-                    isInLibrary: vm.isInLibrary,
-                    onBookmarkTap: {
-                        Task { await vm.updateInLibrary() }
-                    },
                     onMarkMovieWatched: {
                         Task { await vm.markWatched() }
                     }
@@ -73,8 +79,10 @@ struct MovieView: View {
             vm.streamTask?.cancel()
         }
         .onChange(of: Router.router.mainRouteState) { old, _ in
-            let oldRoute = old[old.count - 1]
-            if case let .mpvVideoView(args) = oldRoute {
+            guard let oldRoute = old.last else {
+                return
+            }
+            if case .mpvVideoView(let args) = oldRoute {
                 if args.mediaId == "\(vm.id)" {
                     Task {
                         await vm.fetchMovieProgress(loadOverlay: true)
@@ -82,6 +90,46 @@ struct MovieView: View {
                 }
             }
         }
-        .navigationBarBackButtonHidden(true)
+        #if os(macOS)
+            .overlay(alignment: .top) {
+                switch vm.movieState {
+                case .error:
+                    EmptyView()
+                default:
+                    MediaDetailMacTopBar(
+                        showLibraryButton: {
+                            if case .loaded = vm.movieState { return true }
+                            return false
+                        }(),
+                        isInLibrary: vm.isInLibrary,
+                        onBack: { Router.router.popRoute() },
+                        onLibrary: { Task { await vm.updateInLibrary() } }
+                    )
+                }
+            }
+            .navigationBarBackButtonHidden(true)
+            .navigationTitle("")
+            .toolbarBackground(.hidden, for: .automatic)
+            .toolbarBackground(.hidden, for: .windowToolbar)
+        #else
+            .toolbar {
+                if case .loaded = vm.movieState {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            Task { await vm.updateInLibrary() }
+                        } label: {
+                            Label(
+                                vm.isInLibrary
+                                    ? "In Library" : "Add to Library",
+                                systemImage: vm.isInLibrary
+                                    ? "bookmark.fill" : "bookmark"
+                            )
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+            }
+            .toolbarBackground(.hidden, for: .navigationBar)
+        #endif
     }
 }

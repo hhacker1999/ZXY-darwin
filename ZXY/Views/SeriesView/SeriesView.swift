@@ -53,11 +53,7 @@ struct SeriesView: View {
                 MediaLoadedContent(
                     details: MediaDetails(from: details),
                     isMobile: isMobile,
-                    seriesVm: vm,
-                    isInLibrary: vm.isInLibrary,
-                    onBookmarkTap: {
-                        Task { await vm.updateInLibrary() }
-                    }
+                    seriesVm: vm
                 )
             }
         }
@@ -68,7 +64,9 @@ struct SeriesView: View {
             vm.streamsTask?.cancel()
         }
         .onChange(of: Router.router.mainRouteState) { old, _ in
-            let oldRoute = old[old.count - 1]
+            guard let oldRoute = old.last else {
+                return
+            }
             if case let .mpvVideoView(args) = oldRoute {
                 if args.mediaId == "\(vm.id)" {
                     Task {
@@ -77,7 +75,46 @@ struct SeriesView: View {
                 }
             }
         }
-        .navigationBarBackButtonHidden(true)
+        #if os(macOS)
+            .overlay(alignment: .top) {
+                switch vm.seriesState {
+                case .error:
+                    EmptyView()
+                default:
+                    MediaDetailMacTopBar(
+                        showLibraryButton: {
+                            if case .loaded = vm.seriesState { return true }
+                            return false
+                        }(),
+                        isInLibrary: vm.isInLibrary,
+                        onBack: { Router.router.popRoute() },
+                        onLibrary: { Task { await vm.updateInLibrary() } }
+                    )
+                }
+            }
+            .navigationBarBackButtonHidden(true)
+            .navigationTitle("")
+            .toolbarBackground(.hidden, for: .automatic)
+            .toolbarBackground(.hidden, for: .windowToolbar)
+        #else
+            .toolbar {
+                if case .loaded = vm.seriesState {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            Task { await vm.updateInLibrary() }
+                        } label: {
+                            Label(
+                                vm.isInLibrary ? "In Library" : "Add to Library",
+                                systemImage: vm.isInLibrary
+                                    ? "bookmark.fill" : "bookmark"
+                            )
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+            }
+            .toolbarBackground(.hidden, for: .navigationBar)
+        #endif
         .enableInjection()
     }
 }

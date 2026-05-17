@@ -39,6 +39,9 @@ class Router {
 
     var routerState: RouterState = .splash
 
+    /// Backs `NavigationStack(path:)` (see `ContentView`). User-driven pops—including the
+    /// interactive swipe back—and the system bar back button rewrite this array through the
+    /// same `Binding` as `addToRoute` / `popRoute`, so router state stays aligned with the UI.
     var mainRouteState: [Route] = []
 
     func addToRoute(route: Route) {

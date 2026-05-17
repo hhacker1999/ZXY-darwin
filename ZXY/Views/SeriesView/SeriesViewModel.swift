@@ -37,6 +37,9 @@ class SeriesViewModel {
     var streamsTask: Task<Void, Never>?
 
     func initialise() async {
+        if case .loaded = seriesState {
+            return
+        }
         seriesState = .loading
         do {
             // `async let` schedules each request immediately; all three overlap

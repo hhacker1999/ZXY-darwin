@@ -194,5 +194,8 @@ struct MediaViewShimmer: View {
                 }
             }
         }
+        #if os(iOS)
+            .ignoresSafeArea(edges: isMobile ? .top : [])
+        #endif
     }
 }

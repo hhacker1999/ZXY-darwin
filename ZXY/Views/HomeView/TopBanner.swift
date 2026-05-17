@@ -198,55 +198,86 @@ private struct BannerSlide: View {
         media.videos.youtubeTrailerKey
     }
 
+    private var logoMaxWidth: CGFloat {
+        #if os(iOS)
+            300
+        #else
+            420
+        #endif
+    }
+
+    private var logoMaxHeight: CGFloat {
+        #if os(iOS)
+            108
+        #else
+            180
+        #endif
+    }
+
+    /// Tighter on iPhone only; mac keeps original bottom inset so copy stays put.
+    private var overlayBottomSpacing: CGFloat {
+        #if os(iOS)
+            AppTheme.Spacing.sm
+        #else
+            40
+        #endif
+    }
+
     var body: some View {
         GeometryReader { geo in
             let height = geo.size.width / aspectRatio
             let width = geo.size.width
             ZStack(alignment: .bottomLeading) {
-                // ── Background poster image ────────────────────
-                AsyncImage(
-                    url: {
-                        #if os(iOS)
-                            return MediaConfig.instance.posterURL(
-                                media.posterPath,
-                                width: 780
-                            )
-                        #else
-                            return MediaConfig.instance.backdropURL(
-                                media.backdropPath,
-                                width: "original"
-                            )
-                        #endif
-                    }()
-                ) { phase in
-                    switch phase {
-                    case let .success(image):
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                    case .failure:
-                        bannerPlaceholder
-                    case .empty:
-                        ShimmerView()
-                    @unknown default:
-                        bannerPlaceholder
+                ZStack(alignment: .bottom) {
+                    // ── Background poster image ────────────────────
+                    AsyncImage(
+                        url: {
+                            #if os(iOS)
+                                return MediaConfig.instance.posterURL(
+                                    media.posterPath,
+                                    width: 780
+                                )
+                            #else
+                                return MediaConfig.instance.backdropURL(
+                                    media.backdropPath,
+                                    width: "original"
+                                )
+                            #endif
+                        }()
+                    ) { phase in
+                        switch phase {
+                        case let .success(image):
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                        case .failure:
+                            bannerPlaceholder
+                        case .empty:
+                            ShimmerView()
+                        @unknown default:
+                            bannerPlaceholder
+                        }
                     }
-                }
-                .frame(width: width, height: height)
-                .clipped()
+                    .frame(width: width, height: height)
+                    .clipped()
 
-                // ── Readability scrim (helps text on bright/white backgrounds) ──
-                LinearGradient(
-                    stops: [
-                        .init(color: .clear, location: 0.0),
-                        .init(color: .black.opacity(0.25), location: 0.45),
-                        .init(color: .black.opacity(0.7), location: 1.0),
-                    ],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-                .frame(width: width, height: height * 0.65)
-                .allowsHitTesting(false)
+                    // ── Readability scrim (helps text on bright/white backgrounds) ──
+                    LinearGradient(
+                        stops: [
+                            .init(color: .clear, location: 0.0),
+                            .init(color: .black.opacity(0.25), location: 0.45),
+                            .init(color: .black.opacity(0.7), location: 1.0),
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                    .frame(width: width, height: height * 0.65)
+                    .allowsHitTesting(false)
+                }
+                .compositingGroup()
+                .frame(width: width, height: height)
+                .stretchableHeroBannerInScrollView()
+                .zIndex(0)
 
                 // ── Trailer video (only for the slide in viewport) ─────
                 // if isActive,
@@ -301,8 +332,8 @@ private struct BannerSlide: View {
                                     .resizable()
                                     .aspectRatio(contentMode: .fit)
                                     .frame(
-                                        maxWidth: 420,
-                                        maxHeight: 180,
+                                        maxWidth: logoMaxWidth,
+                                        maxHeight: logoMaxHeight,
                                         alignment: .bottomLeading
                                     )
                                     .shadow(
@@ -322,8 +353,8 @@ private struct BannerSlide: View {
                             }
                         }
                         .frame(
-                            maxWidth: 420,
-                            maxHeight: 180,
+                            maxWidth: logoMaxWidth,
+                            maxHeight: logoMaxHeight,
                             alignment: .bottomLeading
                         )
                     } else {
@@ -365,14 +396,16 @@ private struct BannerSlide: View {
                             y: 2
                         )
 
-                    Spacer().frame(height: 40)
+                    Spacer().frame(height: overlayBottomSpacing)
                 }
                 .frame(
                     maxWidth: max(width * 0.5, 450),
                     alignment: .bottomLeading
                 )
                 .padding(.horizontal, AppTheme.Spacing.md)
-            }.frame(maxWidth: width)
+                .zIndex(1)
+            }
+            .frame(maxWidth: width)
         }
     }
 
@@ -451,27 +484,33 @@ private struct TopBannerShimmer: View {
             let bannerHeight = geo.size.width / aspectRatio
 
             ZStack(alignment: .bottom) {
-                ShimmerView()
-                    .frame(width: geo.size.width, height: bannerHeight)
+                ZStack(alignment: .bottom) {
+                    ShimmerView()
+                        .frame(width: geo.size.width, height: bannerHeight)
 
-                // Gradient overlay
-                LinearGradient(
-                    stops: [
-                        .init(color: .clear, location: 0.0),
-                        .init(
-                            color: AppTheme.Colors.background
-                                .opacity(0.5),
-                            location: 0.6
-                        ),
-                        .init(
-                            color: AppTheme.Colors.background,
-                            location: 1.0
-                        ),
-                    ],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-                .frame(height: bannerHeight * 0.5)
+                    // Gradient overlay
+                    LinearGradient(
+                        stops: [
+                            .init(color: .clear, location: 0.0),
+                            .init(
+                                color: AppTheme.Colors.background
+                                    .opacity(0.5),
+                                location: 0.6
+                            ),
+                            .init(
+                                color: AppTheme.Colors.background,
+                                location: 1.0
+                            ),
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                    .frame(width: geo.size.width, height: bannerHeight * 0.5)
+                }
+                .compositingGroup()
+                .frame(width: geo.size.width, height: bannerHeight)
+                .stretchableHeroBannerInScrollView()
+                .zIndex(0)
 
                 // Skeleton content
                 VStack(spacing: 12) {
@@ -514,6 +553,7 @@ private struct TopBannerShimmer: View {
                     }
                 }
                 .padding(.bottom, 16)
+                .zIndex(1)
             }
             .frame(height: bannerHeight)
         }

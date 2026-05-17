@@ -19,12 +19,19 @@ class SearchViewModel {
     }
 
     func loadResults(keyword: String) async {
-        self.keyword = keyword
+        let trimmed = keyword.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        // Same trimmed query — skip full reload when onSubmit/tasks fire repeatedly.
+        if case .loaded = itemsState, self.keyword == trimmed {
+            return
+        }
+
+        self.keyword = trimmed
         itemsState = .loading
 
         do {
-            async let showsResTask = mediaUc.searchShows(page: 1, keyword: keyword)
-            async let moviesResTask = mediaUc.searchMovies(page: 1, keyword: keyword)
+            async let showsResTask = mediaUc.searchShows(page: 1, keyword: trimmed)
+            async let moviesResTask = mediaUc.searchMovies(page: 1, keyword: trimmed)
 
             let (showsRes, moviesRes) = try await (showsResTask, moviesResTask)
 
