@@ -36,7 +36,7 @@ private struct TopBannerCarousel: View {
     @State private var isGestureActive: Bool = false
 
     private let aspectRatio: CGFloat = {
-        #if os(ios)
+        #if os(iOS)
             return 0.64
         #else
             return 1.78
@@ -68,6 +68,7 @@ private struct TopBannerCarousel: View {
             )
             .aspectRatio(aspectRatio, contentMode: .fit)
         }
+        #if os(macOS)
         .onTrackpadSwipe(onSwipe: { event in
             if event.phase == .began {
                 isGestureActive = true
@@ -104,6 +105,7 @@ private struct TopBannerCarousel: View {
             }
 
         })
+        #endif
         .contentShape(Rectangle())
     }
 }
@@ -204,7 +206,7 @@ private struct BannerSlide: View {
                 // ── Background poster image ────────────────────
                 AsyncImage(
                     url: {
-                        #if os(ios)
+                        #if os(iOS)
                             return MediaConfig.instance.posterURL(
                                 media.posterPath,
                                 width: 780
@@ -437,7 +439,7 @@ private struct BannerPageIndicator: View {
 
 private struct TopBannerShimmer: View {
     private let aspectRatio: CGFloat = {
-        #if os(ios)
+        #if os(iOS)
             return 0.65
         #else
             return 1.8

@@ -59,8 +59,10 @@ enum Constants {
     /// Colors
     static let bgColor = Color("bgColor")
 
-    /// static let baseUrl = "https://zxyapi.tooharsh.co.in"
+    // static let baseUrl = "https://zxyapi.tooharsh.co.in"
+
     static let baseUrl = "https://zxy-staging.tooharsh.co.in"
+
     // static let baseUrl = "http://localhost:6969"
 
     static let tmdbImgBaseUrl = ""

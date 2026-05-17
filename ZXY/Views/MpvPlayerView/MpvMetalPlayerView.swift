@@ -25,30 +25,64 @@ enum MPVProperty {
     static let downloadSpeed = "cache-speed"
 }
 
-struct MPVMetalPlayerView: NSViewControllerRepresentable {
-    var coordinator: MpvViewModel
-    func makeNSViewController(context _: Context) -> some NSViewController {
-        let mpv = MPVMetalViewController()
-        mpv.playDelegate = coordinator
-        coordinator.player = mpv
-        return mpv
-    }
+#if os(macOS)
+    struct MPVMetalPlayerView: NSViewControllerRepresentable {
+        var coordinator: MpvViewModel
+        func makeNSViewController(context _: Context) -> some NSViewController {
+            let mpv = MPVMetalViewController()
+            mpv.playDelegate = coordinator
+            coordinator.player = mpv
+            return mpv
+        }
 
-    func updateNSViewController(_: NSViewControllerType, context _: Context) {}
+        func updateNSViewController(_: NSViewControllerType, context _: Context)
+        {}
 
-    static func dismantleNSViewController(_ nsViewController: MPVMetalViewController, coordinator _: MpvViewModel) {
-        print("Deinit called inside of metal player view")
-        nsViewController.cleanup()
+        static func dismantleNSViewController(
+            _ nsViewController: MPVMetalViewController,
+            coordinator _: MpvViewModel
+        ) {
+            print("Deinit called inside of metal player view")
+            nsViewController.cleanup()
+        }
     }
-}
+#else
+
+    struct MPVMetalPlayerView: UIViewControllerRepresentable {
+        var coordinator: MpvViewModel
+
+        func makeUIViewController(context _: Context) -> some UIViewController {
+            let mpv = MPVMetalViewController()
+            mpv.playDelegate = coordinator
+            coordinator.player = mpv
+            return mpv
+        }
+
+        func updateUIViewController(_: UIViewControllerType, context _: Context)
+        {}
+
+        static func dismantleUIViewController(
+            _ uiViewController: MPVMetalViewController,
+            coordinator _: MpvViewModel
+        ) {
+            print("Deinit called inside of metal player view (iOS)")
+            uiViewController.cleanup()
+        }
+    }
+#endif
 
 @MainActor
 @Observable
 final class MpvViewModel: MPVPlayerDelegate {
-    init(streams: [ResolutionItem], selectedStreamIndex: Int, streamUc: StreamUsecase,
-         progressUc: ProgressUsecase,
-         initialProgress: Double = 0, mediaId: String, name: String)
-    {
+    init(
+        streams: [ResolutionItem],
+        selectedStreamIndex: Int,
+        streamUc: StreamUsecase,
+        progressUc: ProgressUsecase,
+        initialProgress: Double = 0,
+        mediaId: String,
+        name: String
+    ) {
         self.streams = streams
         self.streamUc = streamUc
         self.selectedStreamIndex = selectedStreamIndex
@@ -61,10 +95,17 @@ final class MpvViewModel: MPVPlayerDelegate {
         self.name = name
     }
 
-    init(streams: [ResolutionItem], selectedStreamIndex: Int, streamUc: StreamUsecase,
-         progressUc: ProgressUsecase,
-         initialProgress: Double = 0, mediaId: String, seasonNo: Int, episodeNo: Int, name: String)
-    {
+    init(
+        streams: [ResolutionItem],
+        selectedStreamIndex: Int,
+        streamUc: StreamUsecase,
+        progressUc: ProgressUsecase,
+        initialProgress: Double = 0,
+        mediaId: String,
+        seasonNo: Int,
+        episodeNo: Int,
+        name: String
+    ) {
         self.streams = streams
         self.streamUc = streamUc
         self.selectedStreamIndex = selectedStreamIndex
@@ -81,7 +122,10 @@ final class MpvViewModel: MPVPlayerDelegate {
         print("--------------------------------------------------")
         print("Deinit called inside the MPV View model")
         print("--------------------------------------------------")
-        NSCursor.unhide()
+
+        #if os(macOS)
+            NSCursor.unhide()
+        #endif
     }
 
     @ObservationIgnored
@@ -183,9 +227,17 @@ final class MpvViewModel: MPVPlayerDelegate {
 
                     let currentProgress = (s1 / s2) * 100
                     if self.isShow {
-                        try? await progressUc.updateWatchProgressShow(showId: self.mediaId, season: self.seasonNo, episode: self.episodeNo, progress: currentProgress)
+                        try? await progressUc.updateWatchProgressShow(
+                            showId: self.mediaId,
+                            season: self.seasonNo,
+                            episode: self.episodeNo,
+                            progress: currentProgress
+                        )
                     } else {
-                        try? await progressUc.updateWatchProgressMovie(movieId: self.mediaId, progress: currentProgress)
+                        try? await progressUc.updateWatchProgressMovie(
+                            movieId: self.mediaId,
+                            progress: currentProgress
+                        )
                     }
                     self.lastProgressPosition = currentPos
                 } else {
@@ -217,12 +269,12 @@ final class MpvViewModel: MPVPlayerDelegate {
         }
         audioTracks = tempAudioTracks
         subtitleTracks = tempSubTracks
-        for i in 0 ..< tempAudioTracks.count {
+        for i in 0..<tempAudioTracks.count {
             if tempAudioTracks[i].selected {
                 selectAudioTrack = i
             }
         }
-        for i in 0 ..< tempSubTracks.count {
+        for i in 0..<tempSubTracks.count {
             if tempSubTracks[i].selected {
                 selectSubTrack = i
             }
@@ -230,19 +282,21 @@ final class MpvViewModel: MPVPlayerDelegate {
     }
 
     func playUrl(_ url: URL) {
-        player?.loadFile(url)
+        player?.mpv.loadFile(url)
         paused = false
     }
 
     func play() {
-        player?.play()
+        player?.mpv.play()
         paused = false
     }
 
     func onUserInteraction() {
         if !overlayVisible {
             overlayVisible = true
-            NSCursor.unhide()
+            #if os(macOS)
+                NSCursor.unhide()
+            #endif
         }
         overlayTask?.cancel()
         overlayTask = Task { [weak self] in
@@ -256,7 +310,10 @@ final class MpvViewModel: MPVPlayerDelegate {
             if !Task.isCancelled {
                 self.overlayVisible = false
                 self.videoInFocus = true
-                NSCursor.hide()
+
+                #if os(macOS)
+                    NSCursor.hide()
+                #endif
             }
         }
     }
@@ -272,13 +329,13 @@ final class MpvViewModel: MPVPlayerDelegate {
 
     func pause() {
         paused = true
-        player?.pause()
+        player?.mpv.pause()
     }
 
     func seek(relative time: TimeInterval) {
         onUserInteraction()
         currentPlayHeadPos += Duration.seconds(time)
-        player?.seek(relative: time)
+        player?.mpv.seek(relative: time)
     }
 
     func toggleVideoInfoOverlay() {
@@ -296,19 +353,20 @@ final class MpvViewModel: MPVPlayerDelegate {
     func toggleMute() {
         onUserInteraction()
         if mute {
-            player?.setFlag("mute", false)
+            player?.mpv.setFlag("mute", false)
         } else {
-            player?.setFlag("mute", true)
+            player?.mpv.setFlag("mute", true)
         }
         mute.toggle()
     }
 
     func switchStream(to index: Int) {
         onUserInteraction()
-        guard index >= 0, index < streams.count, index != selectedStreamIndex else { return }
+        guard index >= 0, index < streams.count, index != selectedStreamIndex
+        else { return }
         selectedStreamIndex = index
         loading = true
-        player?.stop()
+        player?.mpv.stop()
 
         let s1 = Double(currentPos.components.seconds)
         let s2 = Double(duration.components.seconds)
@@ -328,11 +386,11 @@ final class MpvViewModel: MPVPlayerDelegate {
     func setAudioTrack(index: Int) {
         onUserInteraction()
         if index == -1 {
-            player?.setString("aid", "no")
+            player?.mpv.setString("aid", "no")
             selectAudioTrack = -1
         } else if index >= 0, index < audioTracks.count {
             let track = audioTracks[index]
-            player?.setInt64("aid", Int64(track.id))
+            player?.mpv.setInt64("aid", Int64(track.id))
             selectAudioTrack = index
         }
     }
@@ -340,11 +398,11 @@ final class MpvViewModel: MPVPlayerDelegate {
     func setSubtitleTrack(index: Int) {
         onUserInteraction()
         if index == -1 {
-            player?.setString("sid", "no")
+            player?.mpv.setString("sid", "no")
             selectSubTrack = -1
         } else if index >= 0, index < subtitleTracks.count {
             let track = subtitleTracks[index]
-            player?.setInt64("sid", Int64(track.id))
+            player?.mpv.setInt64("sid", Int64(track.id))
             selectSubTrack = index
         }
     }
@@ -353,7 +411,7 @@ final class MpvViewModel: MPVPlayerDelegate {
         // NOTE: It means that drag just started
         if !isDragging {
             isDragging = true
-            player?.pause()
+            player?.mpv.pause()
             paused = true
         }
         onUserInteraction()
@@ -363,18 +421,20 @@ final class MpvViewModel: MPVPlayerDelegate {
     func onDragEnd() {
         isDragging = false
         let durationDiff = currentPlayHeadPos - currentPos
-        player?.seek(relative: Double(durationDiff.components.seconds))
-        player?.play()
+        player?.mpv.seek(relative: Double(durationDiff.components.seconds))
+        player?.mpv.play()
         paused = false
     }
 
     func getAndLoadFinalUrl() async {
         do {
-            let finalUrl = try await streamUc.getStreamUrl(tempUrl: streams[selectedStreamIndex].url)
+            let finalUrl = try await streamUc.getStreamUrl(
+                tempUrl: streams[selectedStreamIndex].url
+            )
             print("--------------------------------------------------")
             print("final url we got is \(finalUrl)")
             print("--------------------------------------------------")
-            player?.loadFile(URL(string: finalUrl)!)
+            player?.mpv.loadFile(URL(string: finalUrl)!)
         } catch {
             print("--------------------------------------------------")
             print("error getting final url \(error.localizedDescription)")
@@ -390,14 +450,15 @@ final class MpvViewModel: MPVPlayerDelegate {
             return
         }
         hdrEnabled.toggle()
-        player.toggleHDR(hdrEnabled)
+        player.mpv.toggleHDR(enabled: hdrEnabled)
     }
 
     func onFileLoaded() {
         // NOTE: Start from where we left off
         if initialProgress != 0 {
-            let seekSeconds = Double(duration.components.seconds) * (initialProgress / 100)
-            player?.seek(relative: seekSeconds)
+            let seekSeconds =
+                Double(duration.components.seconds) * (initialProgress / 100)
+            player?.mpv.seek(relative: seekSeconds)
         }
     }
 
@@ -409,7 +470,7 @@ final class MpvViewModel: MPVPlayerDelegate {
         hasError = true
     }
 
-    func propertyChange(mpv _: OpaquePointer, propertyName: String, data: Any?) {
+    func propertyChange(propertyName: String, data: Any?) {
         guard let player else { return }
         switch propertyName {
         case MPVProperty.pausedForCache:
@@ -436,7 +497,7 @@ final class MpvViewModel: MPVPlayerDelegate {
                 sigPeak = peak
             }
             if let player = self.player {
-                hdrAvailable = player.hdrAvailable
+                hdrAvailable = player.mpv.hdrAvailable
             }
         case MPVProperty.videoParamsColormatrix:
             if let value = data as? String {
@@ -453,7 +514,9 @@ final class MpvViewModel: MPVPlayerDelegate {
         case MPVProperty.seeking:
             if let value = data as? Bool {
                 if value {
-                    if currentPlayHeadPos.components.seconds > cachePos.components.seconds {
+                    if currentPlayHeadPos.components.seconds
+                        > cachePos.components.seconds
+                    {
                         loading = true
                     }
                 } else {
@@ -476,7 +539,7 @@ final class MpvViewModel: MPVPlayerDelegate {
             }
         case "loaded":
             if !isMpvLoaded {
-                player.setVolume(volume)
+                player.mpv.setVolume(volume)
                 Task { [weak self] in
                     guard let self = self else {
                         return
