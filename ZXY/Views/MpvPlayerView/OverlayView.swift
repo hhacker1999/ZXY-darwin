@@ -1,11 +1,11 @@
 import Foundation
 import SwiftUI
 
-
 enum SettingsCategory: String, CaseIterable, Identifiable {
     case streams = "Video"
     case audio = "Audio"
     case subtitles = "Subtitles"
+    case crop = "Crop"
 
     var id: String {
         rawValue
@@ -16,17 +16,18 @@ enum SettingsCategory: String, CaseIterable, Identifiable {
         case .streams: return "film"
         case .audio: return "speaker.wave.3.fill"
         case .subtitles: return "captions.bubble.fill"
+        case .crop: return "aspectratio"
         }
     }
 }
-
 
 struct OverlayView: View {
     var title: String
     let vm: MpvViewModel
     var onBack: (() -> Void)?
+    /// iOS: presents stats in a sheet; must not toggle `showVideoInfoOverlay`.
+    var onShowVideoStatsSheet: (() -> Void)? = nil
 
-    @State private var showSettings: Bool = false
     @State private var selectedCategory: SettingsCategory? = nil
 
     var body: some View {
@@ -46,7 +47,7 @@ struct OverlayView: View {
                     .padding(.horizontal, 24)
                     .padding(.bottom, 24)
             }
-            if showSettings {
+            if vm.settingsPanelOpen {
                 settingsPanel
                     .transition(
                         .opacity.combined(
@@ -57,6 +58,13 @@ struct OverlayView: View {
         }
     }
 
+    private var statsMenuButtonTitle: String {
+        #if os(iOS)
+            "Show Stats"
+        #else
+            "Toggle Stats"
+        #endif
+    }
 
     private var topBar: some View {
         HStack(spacing: 16) {
@@ -83,7 +91,6 @@ struct OverlayView: View {
             Spacer()
         }
     }
-
 
     private var centerControls: some View {
         HStack(spacing: 40) {
@@ -128,7 +135,6 @@ struct OverlayView: View {
         }
     }
 
-
     private var bottomBar: some View {
         HStack(spacing: 16) {
             // Time elapsed
@@ -150,18 +156,13 @@ struct OverlayView: View {
             // Settings button
             Button(action: {
                 withAnimation(.smooth(duration: 0.35)) {
-                    if showSettings {
-                        showSettings = false
-                        selectedCategory = nil
-                    } else {
-                        showSettings = true
-                        selectedCategory = nil
-                    }
+                    vm.toggleSettingsPanel()
+                    selectedCategory = nil
                 }
             }) {
                 Image(systemName: "gearshape.fill")
                     .font(.system(size: 16, weight: .medium))
-                    .foregroundStyle(.white.opacity(showSettings ? 1.0 : 0.8))
+                    .foregroundStyle(.white.opacity(vm.settingsPanelOpen ? 1.0 : 0.8))
                     .frame(width: 40, height: 40)
                     .contentShape(Rectangle())
             }
@@ -172,7 +173,6 @@ struct OverlayView: View {
         .padding(.vertical, 8)
         .liquidGlass()
     }
-
 
     private var progressBar: some View {
         GeometryReader { geometry in
@@ -225,7 +225,6 @@ struct OverlayView: View {
         }
     }
 
-
     private var settingsPanel: some View {
         VStack(alignment: .trailing) {
             Spacer()
@@ -261,7 +260,6 @@ struct OverlayView: View {
         .padding(.horizontal, 24)
         .padding(.bottom, 90)
     }
-
 
     private var settingsCategoryList: some View {
         VStack(alignment: .leading, spacing: 2) {
@@ -311,10 +309,14 @@ struct OverlayView: View {
             }
 
             Spacer().frame(height: 2)
-            Button(action: { [weak vm] in
-                if let vm = vm {
+            Button(action: {
+                vm.closeSettingsPanel()
+                selectedCategory = nil
+                #if os(iOS)
+                    onShowVideoStatsSheet?()
+                #else
                     vm.toggleVideoInfoOverlay()
-                }
+                #endif
             }) {
                 HStack(spacing: 12) {
                     Image(systemName: "info.circle.fill")
@@ -322,7 +324,7 @@ struct OverlayView: View {
                         .foregroundStyle(.white.opacity(0.7))
                         .frame(width: 24)
 
-                    Text("Toggle Stats")
+                    Text(statsMenuButtonTitle)
                         .font(.system(size: 14, weight: .medium))
                         .foregroundStyle(.white)
                 }
@@ -339,7 +341,6 @@ struct OverlayView: View {
             Spacer().frame(height: 8)
         }
     }
-
 
     private func settingsSubmenu(for category: SettingsCategory) -> some View {
         VStack(alignment: .leading, spacing: 2) {
@@ -386,12 +387,13 @@ struct OverlayView: View {
                 audioSubmenu
             case .subtitles:
                 subtitleSubmenu
+            case .crop:
+                cropSubmenu
             }
 
             Spacer().frame(height: 8)
         }
     }
-
 
     private var streamsSubmenu: some View {
         ScrollView(.vertical, showsIndicators: false) {
@@ -467,7 +469,6 @@ struct OverlayView: View {
         }
         .frame(maxHeight: 260)
     }
-
 
     private var audioSubmenu: some View {
         ScrollView(.vertical, showsIndicators: false) {
@@ -562,6 +563,55 @@ struct OverlayView: View {
         .frame(maxHeight: 260)
     }
 
+    private var cropSubmenu: some View {
+        ScrollView(.vertical, showsIndicators: false) {
+            VStack(alignment: .leading, spacing: 2) {
+                ForEach(LetterboxingMode.allCases) { mode in
+                    let isSelected = vm.letterboxingMode == mode
+
+                    Button(action: {
+                        withAnimation(.easeOut(duration: 0.2)) {
+                            vm.setLetterboxingMode(mode)
+                        }
+                    }) {
+                        HStack(spacing: 12) {
+                            Image(
+                                systemName: isSelected
+                                    ? "checkmark.circle.fill" : "circle"
+                            )
+                            .font(.system(size: 15, weight: .medium))
+                            .foregroundStyle(
+                                isSelected ? .white : .white.opacity(0.3)
+                            )
+                            .frame(width: 20)
+
+                            Text(mode.rawValue)
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundStyle(.white)
+
+                            Spacer()
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .contentShape(Rectangle())
+                        .background(
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(
+                                    isSelected ? .white.opacity(0.08) : .clear
+                                )
+                        )
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+        .onScrollPhaseChange { [weak vm] _, _ in
+            if let vm = vm {
+                vm.onUserInteraction()
+            }
+        }
+        .frame(maxHeight: 260)
+    }
 
     private var subtitleSubmenu: some View {
         ScrollView(.vertical, showsIndicators: false) {
@@ -656,7 +706,6 @@ struct OverlayView: View {
         .frame(maxHeight: 260)
     }
 
-
     private func currentSelectionLabel(for category: SettingsCategory) -> String {
         switch category {
         case .streams:
@@ -676,6 +725,8 @@ struct OverlayView: View {
                 return ""
             }
             return vm.subtitleTracks[vm.selectSubTrack].lang ?? "Track \(vm.subtitleTracks[vm.selectSubTrack].id)"
+        case .crop:
+            return vm.letterboxingMode.rawValue
         }
     }
 

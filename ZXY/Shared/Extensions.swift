@@ -17,17 +17,33 @@ extension View {
         ZStack { Constants.bgColor.ignoresSafeArea(); self }
     }
 
-    /// Uniform zoom when a containing `ScrollView` rubber-bands past the top edge (hero grows
-    /// proportionally instead of empty background). Prefer only on image/scrim; pair with
-    /// `zIndex` so overlays stay above—`visualEffect` can otherwise composite on top of siblings.
+    /// Zoom the hero from the bottom anchor as the user scrolls:
+    /// - Pull past the top (`rubber-band`): grows like `(height + overscroll) / height`, capped.
+    /// - Scrolls content down (hero moves up): adds uniform zoom up to `maxScrollZoomExtra` so the
+    ///   image scales instead of only translating away—no extra vertical stretch of the layout.
+    /// Prefer only on image/scrim; pair with `zIndex` so overlays stay above.
     /// Uses `GeometryProxy.frame(in: .scrollView)`. iOS 17+ / macOS 14+.
-    func stretchableHeroBannerInScrollView(maxScale: CGFloat = 1.42) -> some View {
+    func stretchableHeroBannerInScrollView(
+        maxPullScale: CGFloat = 1.42,
+        maxScrollZoomExtra: CGFloat = 0.14,
+        /// Lower = zoom ramps over more scroll before hitting `maxScrollZoomExtra`.
+        scrollZoomSensitivity: CGFloat = 0.28
+    ) -> some View {
         visualEffect { effect, geometry in
             let frame = geometry.frame(in: .scrollView)
-            let overscroll = max(0, frame.minY)
             let height = max(geometry.size.height, 0.0001)
-            let rawScale = (height + overscroll) / height
-            let scale = min(rawScale, maxScale)
+
+            let pull = max(0, frame.minY)
+            let pullScale = min((height + pull) / height, maxPullScale)
+
+            let scrolledAboveViewport = max(0, -frame.minY)
+            let scrollZoomBoost = min(
+                scrolledAboveViewport / height * scrollZoomSensitivity,
+                maxScrollZoomExtra
+            )
+            let scrollScale = 1 + scrollZoomBoost
+
+            let scale = min(pullScale * scrollScale, maxPullScale)
             return effect.scaleEffect(scale, anchor: .bottom)
         }
     }

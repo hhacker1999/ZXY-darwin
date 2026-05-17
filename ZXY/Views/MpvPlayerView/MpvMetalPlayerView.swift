@@ -2,6 +2,17 @@ import Combine
 import Foundation
 import SwiftUI
 
+enum LetterboxingMode: String, CaseIterable, Identifiable {
+    /// Black bars when the window aspect does not match the video.
+    case letterbox = "Letterbox"
+    /// Crop instead of bars so the frame is filled.
+    case cropToFill = "Crop to fill"
+    /// Distort to fill the frame.
+    case stretch = "Stretch"
+
+    var id: String { rawValue }
+}
+
 enum MPVProperty {
     static let videoParamsColormatrix = "video-params/colormatrix"
     static let videoParamsColorlevels = "video-params/colorlevels"
@@ -168,6 +179,8 @@ final class MpvViewModel: MPVPlayerDelegate {
 
     var loading: Bool = true
     var overlayVisible = false
+    /// When true, auto-hide must not dismiss the overlay (settings UI is open).
+    var settingsPanelOpen = false
 
     var duration: Duration = .zero
     var currentPos: Duration = .zero
@@ -198,6 +211,8 @@ final class MpvViewModel: MPVPlayerDelegate {
     var subtitleTracks: [Track] = []
     var selectAudioTrack: Int = -1
     var selectSubTrack: Int = -1
+
+    var letterboxingMode: LetterboxingMode = .letterbox
 
     var currentDecoder: String = "NA"
     var volume: Double = 50
@@ -308,6 +323,9 @@ final class MpvViewModel: MPVPlayerDelegate {
                 return
             }
             if !Task.isCancelled {
+                guard !self.settingsPanelOpen else {
+                    return
+                }
                 self.overlayVisible = false
                 self.videoInFocus = true
 
@@ -316,6 +334,15 @@ final class MpvViewModel: MPVPlayerDelegate {
                 #endif
             }
         }
+    }
+
+    func toggleSettingsPanel() {
+        onUserInteraction()
+        settingsPanelOpen.toggle()
+    }
+
+    func closeSettingsPanel() {
+        settingsPanelOpen = false
     }
 
     func togglePause() {
@@ -407,6 +434,24 @@ final class MpvViewModel: MPVPlayerDelegate {
         }
     }
 
+    func setLetterboxingMode(_ mode: LetterboxingMode) {
+        onUserInteraction()
+        letterboxingMode = mode
+        applyLetterboxingToPlayer()
+    }
+
+    private func applyLetterboxingToPlayer() {
+        guard let mpv = player?.mpv else { return }
+        switch letterboxingMode {
+        case .letterbox:
+            mpv.applyLetterboxingLetterbox()
+        case .cropToFill:
+            mpv.applyLetterboxingCropToFill()
+        case .stretch:
+            mpv.applyLetterboxingStretch()
+        }
+    }
+
     func onDragStartOrUpdate(_ fraction: Double) {
         // NOTE: It means that drag just started
         if !isDragging {
@@ -454,6 +499,7 @@ final class MpvViewModel: MPVPlayerDelegate {
     }
 
     func onFileLoaded() {
+        applyLetterboxingToPlayer()
         // NOTE: Start from where we left off
         if initialProgress != 0 {
             let seekSeconds =
@@ -540,6 +586,7 @@ final class MpvViewModel: MPVPlayerDelegate {
         case "loaded":
             if !isMpvLoaded {
                 player.mpv.setVolume(volume)
+                applyLetterboxingToPlayer()
                 Task { [weak self] in
                     guard let self = self else {
                         return

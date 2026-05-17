@@ -1,12 +1,36 @@
 import SwiftUI
 
-
 struct VideoInfoOverlayView: View {
+    enum Style {
+        /// In-player glass card (macOS).
+        case floatingCard
+        /// Scrollable body for an iOS sheet (no duplicate title chrome).
+        case sheetContent
+    }
+
     let vm: MpvViewModel
+    var style: Style = .floatingCard
 
     var body: some View {
+        switch style {
+        case .floatingCard:
+            floatingCard
+        case .sheetContent:
+            sheetContent
+        }
+    }
+
+    private var floatingCard: some View {
         VStack(alignment: .leading, spacing: 0) {
-            // Header
+            floatingCardChrome
+            statsRows
+        }
+        .frame(width: 260)
+        .infoOverlayGlass()
+    }
+
+    private var floatingCardChrome: some View {
+        VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 8) {
                 Image(systemName: "info.circle.fill")
                     .font(.system(size: 13, weight: .semibold))
@@ -20,86 +44,79 @@ struct VideoInfoOverlayView: View {
             .padding(.top, 12)
             .padding(.bottom, 8)
 
-            // Divider
             Rectangle()
                 .fill(.white.opacity(0.08))
                 .frame(height: 1)
                 .padding(.horizontal, 10)
-
-            // Info rows
-            VStack(alignment: .leading, spacing: 6) {
-                // HDR Section
-                hdrSection
-
-                // Divider
-                Rectangle()
-                    .fill(.white.opacity(0.06))
-                    .frame(height: 1)
-                    .padding(.vertical, 2)
-
-                // Video Properties
-                infoRow(icon: "film", label: "Codec", value: vm.videoCodecName)
-
-                infoRow(
-                    icon: "speedometer",
-                    label: "Bitrate",
-                    value: formatBitRate(vm.videoBitRate)
-                )
-
-                infoRow(
-                    icon: "arrow.down.circle",
-                    label: "Download",
-                    value: String(format: "%.2f Mbps", vm.downloadSpeed)
-                )
-
-                // Divider
-                Rectangle()
-                    .fill(.white.opacity(0.06))
-                    .frame(height: 1)
-                    .padding(.vertical, 2)
-
-                // Color Properties
-                infoRow(
-                    icon: "waveform.path",
-                    label: "Sig Peak",
-                    value: String(format: "%.2f", vm.sigPeak)
-                )
-
-                infoRow(icon: "paintpalette", label: "Colormatrix", value: vm.colormatrix)
-
-                infoRow(icon: "target", label: "Primaries", value: vm.primaries)
-
-                infoRow(icon: "sun.max", label: "Gamma", value: vm.gamma)
-
-                infoRow(icon: "display", label: "EDR Range", value: vm.edrRange)
-
-                // Divider
-                Rectangle()
-                    .fill(.white.opacity(0.06))
-                    .frame(height: 1)
-                    .padding(.vertical, 2)
-
-                // Decoder
-                infoRow(icon: "cpu", label: "Decoder", value: vm.currentDecoder)
-
-                // Buffer
-                infoRow(
-                    icon: "clock.arrow.circlepath",
-                    label: "Buffered",
-                    value: formatBufferDuration(vm.cachePos - vm.currentPos)
-                )
-            }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 10)
         }
-        .frame(width: 260)
-        .infoOverlayGlass()
     }
 
+    private var sheetContent: some View {
+        statsRows
+            .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var statsRows: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            hdrSection
+
+            Rectangle()
+                .fill(.white.opacity(0.06))
+                .frame(height: 1)
+                .padding(.vertical, 2)
+
+            infoRow(icon: "film", label: "Codec", value: vm.videoCodecName)
+
+            infoRow(
+                icon: "speedometer",
+                label: "Bitrate",
+                value: formatBitRate(vm.videoBitRate)
+            )
+
+            infoRow(
+                icon: "arrow.down.circle",
+                label: "Download",
+                value: String(format: "%.2f Mbps", vm.downloadSpeed)
+            )
+
+            Rectangle()
+                .fill(.white.opacity(0.06))
+                .frame(height: 1)
+                .padding(.vertical, 2)
+
+            infoRow(
+                icon: "waveform.path",
+                label: "Sig Peak",
+                value: String(format: "%.2f", vm.sigPeak)
+            )
+
+            infoRow(icon: "paintpalette", label: "Colormatrix", value: vm.colormatrix)
+
+            infoRow(icon: "target", label: "Primaries", value: vm.primaries)
+
+            infoRow(icon: "sun.max", label: "Gamma", value: vm.gamma)
+
+            infoRow(icon: "display", label: "EDR Range", value: vm.edrRange)
+
+            Rectangle()
+                .fill(.white.opacity(0.06))
+                .frame(height: 1)
+                .padding(.vertical, 2)
+
+            infoRow(icon: "cpu", label: "Decoder", value: vm.currentDecoder)
+
+            infoRow(
+                icon: "clock.arrow.circlepath",
+                label: "Buffered",
+                value: formatBufferDuration(vm.cachePos - vm.currentPos)
+            )
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
+    }
 
     private var hdrSection: some View {
         VStack(alignment: .leading, spacing: 6) {
-            // HDR Available status
             HStack(spacing: 8) {
                 Image(systemName: vm.hdrAvailable ? "checkmark.seal.fill" : "xmark.seal.fill")
                     .font(.system(size: 12, weight: .medium))
@@ -117,7 +134,6 @@ struct VideoInfoOverlayView: View {
                     .foregroundStyle(vm.hdrAvailable ? .green : .white.opacity(0.4))
             }
 
-            // HDR Toggle
             HStack(spacing: 8) {
                 Image(systemName: "sparkles")
                     .font(.system(size: 12, weight: .medium))
@@ -145,7 +161,6 @@ struct VideoInfoOverlayView: View {
         }
     }
 
-
     private func infoRow(icon: String, label: String, value: String) -> some View {
         HStack(spacing: 8) {
             Image(systemName: icon)
@@ -166,7 +181,6 @@ struct VideoInfoOverlayView: View {
         }
     }
 
-
     private func formatBitRate(_ bitsPerSecond: Double) -> String {
         let mbps = bitsPerSecond / 1_000_000
         if mbps >= 1.0 {
@@ -186,13 +200,11 @@ struct VideoInfoOverlayView: View {
     }
 }
 
-
 extension View {
     @ViewBuilder
     func infoOverlayGlass() -> some View {
         if #available(macOS 26, iOS 26, *) {
             self
-            // glassEffect(.clear, in: .rect(cornerRadius: 14))
             background(
                 .ultraThinMaterial,
                 in: RoundedRectangle(cornerRadius: 14)
@@ -201,8 +213,6 @@ extension View {
                 RoundedRectangle(cornerRadius: 14)
                     .strokeBorder(.white.opacity(0.15), lineWidth: 1)
             }
-            // .clipShape(.rect(cornerRadius: 14))
-            // .glassEffect(.regular, in: .rect(cornerRadius: 14))
         } else {
             background(
                 .ultraThinMaterial,

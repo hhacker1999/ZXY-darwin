@@ -562,6 +562,33 @@ class MPV {
         mpv_set_property(mpv, "volume", MPV_FORMAT_DOUBLE, &volume)
     }
 
+    func setDouble(_ name: String, _ value: Double) {
+        guard mpv != nil else { return }
+        var data = value
+        mpv_set_property(mpv, name, MPV_FORMAT_DOUBLE, &data)
+    }
+
+    /// Preserve aspect ratio and allow black bars (classic letterboxing).
+    func applyLetterboxingLetterbox() {
+        guard mpv != nil else { return }
+        setFlag("keepaspect", true)
+        setDouble("panscan", 0)
+    }
+
+    /// Preserve aspect ratio but crop to reduce bars (fill frame).
+    func applyLetterboxingCropToFill() {
+        guard mpv != nil else { return }
+        setFlag("keepaspect", true)
+        setDouble("panscan", 1)
+    }
+
+    /// Stretch video to the full frame (no letterboxing).
+    func applyLetterboxingStretch() {
+        guard mpv != nil else { return }
+        setFlag("keepaspect", false)
+        setDouble("panscan", 0)
+    }
+
     func setInt64(_ name: String, _ value: Int64) {
         guard mpv != nil else { return }
         var data = value

@@ -34,6 +34,10 @@ private struct TopBannerCarousel: View {
     /// gestures, so UI (like the mute button) doesn't flicker.
     @State private var stableActiveIndex: Int = 0
     @State private var isGestureActive: Bool = false
+    #if os(iOS)
+    /// After one slide change, ignore further drag updates until lift (matches macOS trackpad).
+    @State private var carouselDragCommitted: Bool = false
+    #endif
 
     private let aspectRatio: CGFloat = {
         #if os(iOS)
@@ -68,7 +72,9 @@ private struct TopBannerCarousel: View {
             )
             .aspectRatio(aspectRatio, contentMode: .fit)
         }
-        #if os(macOS)
+        #if os(iOS)
+        .simultaneousGesture(iOSCarouselDragGesture())
+        #elseif os(macOS)
         .onTrackpadSwipe(onSwipe: { event in
             if event.phase == .began {
                 isGestureActive = true
@@ -79,24 +85,12 @@ private struct TopBannerCarousel: View {
 
                 if offset > 15 {
                     isGestureActive = false
-                    withAnimation(.easeInOut(duration: 0.4)) {
-                        if stableActiveIndex == 0 {
-                            stableActiveIndex = items.count - 1
-                        } else {
-                            stableActiveIndex -= 1
-                        }
-                    }
+                    goToPreviousSlide()
                 }
 
                 if offset < -15 {
                     isGestureActive = false
-                    withAnimation(.easeInOut(duration: 0.4)) {
-                        if stableActiveIndex == items.count - 1 {
-                            stableActiveIndex = 0
-                        } else {
-                            stableActiveIndex += 1
-                        }
-                    }
+                    goToNextSlide()
                 }
             }
 
@@ -106,7 +100,62 @@ private struct TopBannerCarousel: View {
 
         })
         #endif
-        .contentShape(Rectangle())
+    }
+
+    #if os(iOS)
+    /// Horizontal drag to change slides, without fighting the home `ScrollView`:
+    /// only acts when movement is clearly horizontal; one transition per gesture.
+    private func iOSCarouselDragGesture() -> some Gesture {
+        DragGesture(minimumDistance: 24)
+            .onChanged { value in
+                let w = value.translation.width
+                let h = value.translation.height
+                guard abs(w) > abs(h) else {
+                    return
+                }
+                guard !carouselDragCommitted else {
+                    return
+                }
+                if !isGestureActive {
+                    isGestureActive = true
+                }
+                if w > Self.iOSSwipeThreshold {
+                    carouselDragCommitted = true
+                    isGestureActive = false
+                    goToPreviousSlide()
+                } else if w < -Self.iOSSwipeThreshold {
+                    carouselDragCommitted = true
+                    isGestureActive = false
+                    goToNextSlide()
+                }
+            }
+            .onEnded { _ in
+                isGestureActive = false
+                carouselDragCommitted = false
+            }
+    }
+
+    private static let iOSSwipeThreshold: CGFloat = 52
+    #endif
+
+    private func goToPreviousSlide() {
+        withAnimation(.easeInOut(duration: 0.4)) {
+            if stableActiveIndex == 0 {
+                stableActiveIndex = items.count - 1
+            } else {
+                stableActiveIndex -= 1
+            }
+        }
+    }
+
+    private func goToNextSlide() {
+        withAnimation(.easeInOut(duration: 0.4)) {
+            if stableActiveIndex == items.count - 1 {
+                stableActiveIndex = 0
+            } else {
+                stableActiveIndex += 1
+            }
+        }
     }
 }
 
