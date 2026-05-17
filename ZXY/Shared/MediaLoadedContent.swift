@@ -373,11 +373,7 @@ private struct MediaInfoPosterView: View {
                 seasonNo: effectiveSeasonNo,
                 media: details
             )
-            .frame(minWidth: 500)
-            #if os(iOS)
-                .presentationDetents([.medium, .large])
-                .presentationDragIndicator(.visible)
-            #endif
+            .streamSheetPresentationChrome()
         }
     }
 
@@ -646,11 +642,7 @@ private struct MediaInfoBannerView: View {
                 seasonNo: effectiveSeasonNo,
                 media: details
             )
-            .frame(minWidth: 500)
-            #if os(iOS)
-                .presentationDetents([.medium, .large])
-                .presentationDragIndicator(.visible)
-            #endif
+            .streamSheetPresentationChrome()
         }
     }
 
@@ -855,6 +847,23 @@ private struct PlayStreamButton: View {
 }
 
 
+private extension View {
+    /// On iPhone / compact layouts SwiftUI may adapt ``sheet`` to a popover-style panel; force a bottom sheet and system page sizing.
+    @ViewBuilder
+    func streamSheetPresentationChrome() -> some View {
+        #if os(iOS)
+            self
+                .presentationCompactAdaptation(.sheet)
+                .presentationSizing(.page)
+                .presentationDragIndicator(.visible)
+                .presentationDetents([.medium, .large])
+        #else
+            self.frame(minWidth: 500)
+        #endif
+    }
+}
+
+
 private struct StreamSheet: View {
     let state: ViewItemState<[ResolutionItem]>
     let episodeNo: Int
@@ -983,7 +992,11 @@ private struct StreamSheet: View {
                 .listRowSeparatorTint(AppTheme.Colors.divider)
             }
         }
-        .listStyle(.plain)
+        #if os(iOS)
+            .listStyle(.insetGrouped)
+        #else
+            .listStyle(.plain)
+        #endif
         .scrollContentBackground(.hidden)
     }
 }
@@ -1058,11 +1071,7 @@ private struct SeasonEpisodeSection: View {
         }
         .sheet(isPresented: $showStreamSheet) {
             StreamSheet(state: seriesVm.episodeStreamState, episodeNo: seriesVm.selectedEpisode, seasonNo: seriesVm.selectedSeason, media: media)
-                .frame(minWidth: 500)
-            #if os(iOS)
-                .presentationDetents([.medium, .large])
-                .presentationDragIndicator(.visible)
-            #endif
+                .streamSheetPresentationChrome()
         }
     }
 

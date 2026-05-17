@@ -17,7 +17,6 @@ import Libmpv
         private let resizeDebounce = 0.08
         private var lastResizeDate = Date()
 
-        var playUrl: URL?
         // var hdrAvailable: Bool = false
         // var hdrEnabled = false
         // {
@@ -76,10 +75,6 @@ import Libmpv
 
             mpv.setupMpv(metalLayer: &metalLayer)
 
-            if let url = playUrl {
-                mpv.loadFile(url)
-            }
-
             // observer EDR range value change
             NotificationCenter.default.addObserver(
                 forName: NSApplication.didChangeScreenParametersNotification,
@@ -106,7 +101,8 @@ import Libmpv
 
             if let window = view.window {
                 let now = Date()
-                guard now.timeIntervalSince(lastResizeDate) > resizeDebounce else {
+                guard now.timeIntervalSince(lastResizeDate) > resizeDebounce
+                else {
                     return
                 }
                 lastResizeDate = now
@@ -144,15 +140,25 @@ import Libmpv
     final class MPVMetalViewController: UIViewController {
         var metalLayer = MetalLayer()
         var mpv: MPV = .init()
-        var playDelegate: MPVPlayerDelegate?
+        var playDelegate: MPVPlayerDelegate? {
+            didSet {
+                mpv.playDelegate = playDelegate
+            }
+        }
 
         var playUrl: URL?
+
+        private let resizeDebounce: TimeInterval = 0.08
+        private var lastResizeDate = Date.distantPast
 
         override func viewDidLoad() {
             super.viewDidLoad()
 
-            metalLayer.frame = view.frame
-            metalLayer.contentsScale = UIScreen.main.nativeScale
+            view.isOpaque = true
+            view.backgroundColor = .black
+
+            metalLayer.frame = view.bounds
+            metalLayer.contentsScale = screenNativeScale
             metalLayer.framebufferOnly = true
             metalLayer.backgroundColor = UIColor.black.cgColor
 
@@ -160,21 +166,44 @@ import Libmpv
 
             mpv.setupMpv(metalLayer: &metalLayer)
             setupNotification()
-
-            if let url = playUrl {
-                mpv.loadFile(url)
-            }
         }
 
         override func viewDidLayoutSubviews() {
             super.viewDidLayoutSubviews()
 
-            metalLayer.frame = view.frame
+            let now = Date()
+            guard view.bounds.width > 0, view.bounds.height > 0 else { return }
+            guard now.timeIntervalSince(lastResizeDate) > resizeDebounce else {
+                return
+            }
+            lastResizeDate = now
+
+            let scale = screenNativeScale
+            metalLayer.frame = view.bounds
+            metalLayer.contentsScale = scale
+            metalLayer.drawableSize = CGSize(
+                width: view.bounds.width * scale,
+                height: view.bounds.height * scale
+            )
+        }
+
+        private var screenNativeScale: CGFloat {
+            view.window?.screen.nativeScale ?? UIScreen.main.nativeScale
         }
 
         func setupNotification() {
-            NotificationCenter.default.addObserver(self, selector: #selector(enterBackground), name: UIApplication.didEnterBackgroundNotification, object: nil)
-            NotificationCenter.default.addObserver(self, selector: #selector(enterForeground), name: UIApplication.willEnterForegroundNotification, object: nil)
+            NotificationCenter.default.addObserver(
+                self,
+                selector: #selector(enterBackground),
+                name: UIApplication.didEnterBackgroundNotification,
+                object: nil
+            )
+            NotificationCenter.default.addObserver(
+                self,
+                selector: #selector(enterForeground),
+                name: UIApplication.willEnterForegroundNotification,
+                object: nil
+            )
         }
 
         @objc func enterBackground() {
