@@ -69,9 +69,10 @@ enum Constants {
 }
 
 enum MediaMetrics {
-    static let posterWidth: CGFloat = 130
-    static let posterHeight: CGFloat = 195
-    static let posterRadius: CGFloat = 12
+    // Horizontal shelf posters — single source in AppTheme.MediaLibrary
+    static var posterWidth: CGFloat { AppTheme.MediaLibrary.rowPosterWidth }
+    static var posterHeight: CGFloat { AppTheme.MediaLibrary.rowPosterHeight }
+    static var posterRadius: CGFloat { AppTheme.MediaLibrary.rowPosterCornerRadius }
 
     static let castCircleSizeMobile: CGFloat = 90
     static let castCircleSizeDesktop: CGFloat = 140

@@ -20,7 +20,7 @@ struct LibraryView: View {
 
                 Spacer()
             }
-            .padding(.horizontal, AppTheme.Spacing.xl)
+            .padding(.horizontal, AppTheme.Layout.tabScreenHorizontalPadding)
             .padding(.top, AppTheme.Spacing.xl)
             .padding(.bottom, AppTheme.Spacing.md)
 
@@ -42,7 +42,7 @@ struct LibraryView: View {
                     }
                 }
             )
-            .padding(.horizontal, AppTheme.Spacing.xl - AppTheme.Spacing.md)  // alignment adjustment
+            .padding(.horizontal, AppTheme.Layout.mediaGridOuterAlignmentPadding)
         }
         .task {
             await vm.initialLoad()

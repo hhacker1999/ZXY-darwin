@@ -17,6 +17,7 @@ struct DiscoverView: View {
     var body: some View {
         VStack(spacing: 0) {
             headerRow
+                .padding(.horizontal, AppTheme.Layout.discoverOuterHorizontalPadding)
 
             if vm.filter.type == "trakt", let traktName = vm.activeListName {
                 ScrollView(.horizontal, showsIndicators: false) {
@@ -36,6 +37,7 @@ struct DiscoverView: View {
                             )
                     }
                 }
+                .padding(.horizontal, AppTheme.Layout.discoverOuterHorizontalPadding)
                 .padding(.bottom, AppTheme.Spacing.sm)
             } else if !nonTraktSummaryChips.isEmpty {
                 ScrollView(.horizontal, showsIndicators: false) {
@@ -60,6 +62,7 @@ struct DiscoverView: View {
                         }
                     }
                 }
+                .padding(.horizontal, AppTheme.Layout.discoverOuterHorizontalPadding)
                 .padding(.bottom, AppTheme.Spacing.sm)
             }
 
@@ -79,9 +82,7 @@ struct DiscoverView: View {
                     }
                 }
             )
-            .padding(.horizontal, AppTheme.Spacing.md - AppTheme.Spacing.sm)
         }
-        .padding(.horizontal, AppTheme.Spacing.md)
         .padding(.top, AppTheme.Spacing.md)
         .task {
             await vm.initialLoad()

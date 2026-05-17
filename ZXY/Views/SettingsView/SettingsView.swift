@@ -36,7 +36,7 @@ struct SettingsView: View {
                         ProgressView().tint(.white)
                     }
                 }
-                .padding(.horizontal, AppTheme.Spacing.xl)
+                .padding(.horizontal, AppTheme.Layout.tabScreenHorizontalPadding)
                 .padding(.top, AppTheme.Spacing.xl)
                 .padding(.bottom, AppTheme.Spacing.xxl)
                 .frame(maxWidth: 720, alignment: .leading)

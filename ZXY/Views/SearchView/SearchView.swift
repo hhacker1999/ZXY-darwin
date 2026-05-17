@@ -11,55 +11,41 @@ struct SearchView: View {
         vm = SearchViewModel(mediaUc: mediaUc)
     }
 
+    /// iOS: title + field don’t fit one row; macOS keeps title beside a fixed-width field.
+    private var useCompactSearchHeader: Bool {
+        #if os(iOS)
+        true
+        #else
+        false
+        #endif
+    }
+
     var body: some View {
         VStack(spacing: 0) {
-            // Header with search field
-            HStack {
-                Text("Search")
-                    .font(AppTheme.Typography.headingLarge)
-                    .foregroundColor(AppTheme.Colors.elementWhite)
+            Group {
+                if useCompactSearchHeader {
+                    VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+                        Text("Search")
+                            .font(AppTheme.Typography.headingLarge)
+                            .foregroundColor(AppTheme.Colors.elementWhite)
 
-                Spacer()
+                        searchFieldChrome
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                } else {
+                    HStack(alignment: .center) {
+                        Text("Search")
+                            .font(AppTheme.Typography.headingLarge)
+                            .foregroundColor(AppTheme.Colors.elementWhite)
 
-                HStack(spacing: AppTheme.Spacing.sm) {
-                    Image(systemName: "magnifyingglass")
-                        .foregroundColor(AppTheme.Colors.elementMuted)
+                        Spacer()
 
-                    TextField("Movies or Shows", text: $searchText)
-                        .textFieldStyle(.plain)
-                        .font(AppTheme.Typography.bodyMedium)
-                        .foregroundColor(AppTheme.Colors.elementWhite)
-                        .onChange(of: searchText) { _, newvalue in
-                            if newvalue.isEmpty {
-                                vm.reset()
-                            }
-                        }
-                        .onSubmit {
-                            Task {
-                                if !searchText.trimmingCharacters(in: .whitespaces).isEmpty {
-                                    await vm.loadResults(keyword: searchText)
-                                }
-                            }
-                        }
-
-                    if !searchText.isEmpty {
-                        Button(action: {
-                            searchText = ""
-                            vm.reset()
-                        }) {
-                            Image(systemName: "xmark.circle.fill")
-                                .foregroundColor(AppTheme.Colors.elementMuted)
-                        }
-                        .buttonStyle(.plain)
+                        searchFieldChrome
+                            .frame(width: 320)
                     }
                 }
-                .padding(.horizontal, AppTheme.Spacing.md)
-                .padding(.vertical, AppTheme.Spacing.sm)
-                .background(Color.white.opacity(0.1))
-                .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md))
-                .frame(width: 320)
             }
-            .padding(.horizontal, AppTheme.Spacing.xl)
+            .padding(.horizontal, AppTheme.Layout.tabScreenHorizontalPadding)
             .padding(.top, AppTheme.Spacing.xl)
             .padding(.bottom, AppTheme.Spacing.md)
 
@@ -81,9 +67,48 @@ struct SearchView: View {
                     }
                 }
             )
-            .padding(.horizontal, AppTheme.Spacing.xl - AppTheme.Spacing.md) // alignment adjustment
+            .padding(.horizontal, AppTheme.Layout.mediaGridOuterAlignmentPadding)
         }
         .enableInjection()
         .background(AppTheme.Colors.background.ignoresSafeArea())
+    }
+
+    private var searchFieldChrome: some View {
+        HStack(spacing: AppTheme.Spacing.sm) {
+            Image(systemName: "magnifyingglass")
+                .foregroundColor(AppTheme.Colors.elementMuted)
+
+            TextField("Movies or Shows", text: $searchText)
+                .textFieldStyle(.plain)
+                .font(AppTheme.Typography.bodyMedium)
+                .foregroundColor(AppTheme.Colors.elementWhite)
+                .onChange(of: searchText) { _, newvalue in
+                    if newvalue.isEmpty {
+                        vm.reset()
+                    }
+                }
+                .onSubmit {
+                    Task {
+                        if !searchText.trimmingCharacters(in: .whitespaces).isEmpty {
+                            await vm.loadResults(keyword: searchText)
+                        }
+                    }
+                }
+
+            if !searchText.isEmpty {
+                Button(action: {
+                    searchText = ""
+                    vm.reset()
+                }) {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundColor(AppTheme.Colors.elementMuted)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(.horizontal, AppTheme.Spacing.md)
+        .padding(.vertical, AppTheme.Spacing.sm)
+        .background(Color.white.opacity(0.1))
+        .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md))
     }
 }

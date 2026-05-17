@@ -142,7 +142,10 @@ struct MediaViewShimmer: View {
                     // Media row shimmer
                     VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
                         ShimmerView()
-                            .frame(width: 140, height: 18)
+                            .frame(
+                                width: AppTheme.MediaLibrary.sectionTitleShimmerWidth,
+                                height: AppTheme.MediaLibrary.sectionTitleShimmerHeight
+                            )
                             .clipShape(
                                 RoundedRectangle(
                                     cornerRadius: 4, style: .continuous)

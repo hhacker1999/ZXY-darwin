@@ -9,7 +9,7 @@ struct MediaDetailsMediaRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
             Text(title)
-                .font(AppTheme.Typography.headingMedium)
+                .font(AppTheme.MediaLibrary.sectionHeaderFont)
                 .foregroundStyle(AppTheme.Colors.elementWhite)
 
             ScrollView(.horizontal, showsIndicators: false) {
@@ -83,9 +83,9 @@ private struct MoviePosterCard: View {
 
             // Title
             Text(displayTitle)
-                .font(AppTheme.Typography.bodySmall)
+                .font(AppTheme.MediaLibrary.posterTitleFont)
                 .foregroundStyle(AppTheme.Colors.elementSubtle)
-                .lineLimit(2)
+                .lineLimit(AppTheme.MediaLibrary.shelfTitleLineLimit)
                 .frame(
                     width: MediaMetrics.posterWidth, alignment: .leading
                 )

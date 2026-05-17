@@ -1,5 +1,8 @@
 import Foundation
 import SwiftUI
+#if os(iOS)
+import UIKit
+#endif
 
 enum BaseHomeViewPages: String, CaseIterable, Identifiable {
     case home = "Home"
@@ -28,6 +31,35 @@ struct BaseHomeview: View {
     let deps: AppDependencies
 
     var body: some View {
+        Group {
+            #if os(iOS)
+            if UIDevice.current.userInterfaceIdiom == .phone {
+                iosTabChrome
+            } else {
+                macSidebarSplitChrome
+            }
+            #else
+            macSidebarSplitChrome
+            #endif
+        }
+        .accentColor(.white)
+    }
+
+    #if os(iOS)
+    private var iosTabChrome: some View {
+        TabView(selection: $selectedPage) {
+            ForEach(BaseHomeViewPages.allCases) { page in
+                detailContent(for: page)
+                    .tabItem {
+                        Label(page.rawValue, systemImage: page.icon)
+                    }
+                    .tag(page)
+            }
+        }
+    }
+    #endif
+
+    private var macSidebarSplitChrome: some View {
         NavigationSplitView {
             List {
                 Spacer().frame(height: AppTheme.Spacing.lg)
@@ -72,25 +104,26 @@ struct BaseHomeview: View {
             }
             .listStyle(.sidebar)
             .navigationTitle("ZXY")
-            // .navigationBarBackButtonHidden(true)
             .navigationSplitViewColumnWidth(min: 232, ideal: 256, max: 296)
 
         } detail: {
-            switch selectedPage {
-            case .home:
-                HomeView(mediaUc: deps.mediaUc, progressUc: deps.progressUc)
-            case .discover:
-                DiscoverView(mediaUc: deps.mediaUc, authUc: deps.authUc)
-            case .search:
-                SearchView(mediaUc: deps.mediaUc)
-            case .library:
-                LibraryView(mediaUc: deps.mediaUc)
-            case .settings:
-                SettingsView(authUc: deps.authUc)
-            }
+            detailContent(for: selectedPage)
         }
-        // .toolbar(removing: .sidebarToggle)
-        // .toolbar(.hidden, for: .windowToolbar)
-        .accentColor(.white)
+    }
+
+    @ViewBuilder
+    private func detailContent(for page: BaseHomeViewPages) -> some View {
+        switch page {
+        case .home:
+            HomeView(mediaUc: deps.mediaUc, progressUc: deps.progressUc)
+        case .discover:
+            DiscoverView(mediaUc: deps.mediaUc, authUc: deps.authUc)
+        case .search:
+            SearchView(mediaUc: deps.mediaUc)
+        case .library:
+            LibraryView(mediaUc: deps.mediaUc)
+        case .settings:
+            SettingsView(authUc: deps.authUc)
+        }
     }
 }

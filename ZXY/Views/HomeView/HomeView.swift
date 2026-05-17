@@ -7,30 +7,6 @@
 import Foundation
 import SwiftUI
 
-private enum PosterMetrics {
-    static let posterWidth: CGFloat = 130
-    static let posterHeight: CGFloat = 195 // ~1.5:1 aspect ratio (TMDB poster)
-    static let cornerRadius: CGFloat = 12
-    static let titleLineLimit = 2
-}
-
-private enum CWMetrics {
-    static let cardWidth: CGFloat = 300
-    static let posterWidth: CGFloat = 100
-    static let posterAspectRatio: CGFloat = 2.0 / 3.0 // portrait poster
-    static var posterHeight: CGFloat {
-        posterWidth / posterAspectRatio
-    }
-
-    static var cardHeight: CGFloat {
-        posterHeight
-    }
-
-    static let cornerRadius: CGFloat = 10
-    static let progressBarHeight: CGFloat = 4
-    static let progressBarRadius: CGFloat = 2
-}
-
 struct HomeView: View {
     @State private var vm: HomeViewModel
 
@@ -122,7 +98,7 @@ private struct ContinueWatchingSection: View {
                 VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
                     HStack(spacing: 4) {
                         Text("Continue Watching")
-                            .font(AppTheme.Typography.headingMedium)
+                            .font(AppTheme.MediaLibrary.sectionHeaderFont)
                             .foregroundStyle(AppTheme.Colors.elementWhite)
 
                         Image(systemName: "chevron.forward")
@@ -219,8 +195,8 @@ private struct ContinueWatchingCard: View {
                     }
                 }
                 .frame(
-                    width: CWMetrics.posterWidth,
-                    height: CWMetrics.posterHeight
+                    width: AppTheme.MediaLibrary.cwPosterWidth,
+                    height: AppTheme.MediaLibrary.cwPosterHeight
                 )
                 .clipped()
 
@@ -228,7 +204,7 @@ private struct ContinueWatchingCard: View {
                 VStack(alignment: .leading, spacing: 0) {
                     // Title
                     Text(displayTitle)
-                        .font(.system(size: 15, weight: .bold))
+                        .font(AppTheme.MediaLibrary.cwTitleFont)
                         .foregroundStyle(Color.white)
                         .lineLimit(1)
                         .truncationMode(.tail)
@@ -239,27 +215,27 @@ private struct ContinueWatchingCard: View {
                     if let ep = episodeInfo {
                         // Show: Season + Episode
                         Text("Season \(ep.season)")
-                            .font(.system(size: 13, weight: .regular))
+                            .font(AppTheme.MediaLibrary.cwSubtitleFont)
                             .foregroundStyle(Color.white.opacity(0.55))
 
                         Spacer().frame(height: 2)
 
                         Text("Episode \(ep.episode)")
-                            .font(.system(size: 13, weight: .regular))
+                            .font(AppTheme.MediaLibrary.cwSubtitleFont)
                             .foregroundStyle(Color.white.opacity(0.55))
                     } else {
                         // Movie: Year • Movie
                         HStack(spacing: 0) {
                             if let year = releaseYear {
                                 Text(year)
-                                    .font(.system(size: 13, weight: .regular))
+                                    .font(AppTheme.MediaLibrary.cwSubtitleFont)
                                     .foregroundStyle(Color.white.opacity(0.55))
                                 Text(" · ")
-                                    .font(.system(size: 13, weight: .regular))
+                                    .font(AppTheme.MediaLibrary.cwSubtitleFont)
                                     .foregroundStyle(Color.white.opacity(0.55))
                             }
                             Text("Movie")
-                                .font(.system(size: 13, weight: .regular))
+                                .font(AppTheme.MediaLibrary.cwSubtitleFont)
                                 .foregroundStyle(Color.white.opacity(0.55))
                         }
                     }
@@ -271,31 +247,31 @@ private struct ContinueWatchingCard: View {
                         ZStack(alignment: .leading) {
                             // Track
                             RoundedRectangle(
-                                cornerRadius: CWMetrics.progressBarRadius,
+                                cornerRadius: AppTheme.MediaLibrary.cwProgressBarRadius,
                                 style: .continuous
                             )
                             .fill(Color.white.opacity(0.2))
-                            .frame(height: CWMetrics.progressBarHeight)
+                            .frame(height: AppTheme.MediaLibrary.cwProgressBarHeight)
 
                             // Fill
                             RoundedRectangle(
-                                cornerRadius: CWMetrics.progressBarRadius,
+                                cornerRadius: AppTheme.MediaLibrary.cwProgressBarRadius,
                                 style: .continuous
                             )
                             .fill(Color.white)
                             .frame(
                                 width: geo.size.width * progressFraction,
-                                height: CWMetrics.progressBarHeight
+                                height: AppTheme.MediaLibrary.cwProgressBarHeight
                             )
                         }
                     }
-                    .frame(height: CWMetrics.progressBarHeight)
+                    .frame(height: AppTheme.MediaLibrary.cwProgressBarHeight)
 
                     Spacer().frame(height: 6)
 
                     HStack(spacing: 0) {
                         Text("\(progressPercent)% watched")
-                            .font(.system(size: 12, weight: .regular))
+                            .font(AppTheme.MediaLibrary.cwPercentFont)
                             .foregroundStyle(Color.white.opacity(0.45))
                         Spacer(minLength: 4)
                     }
@@ -305,10 +281,10 @@ private struct ContinueWatchingCard: View {
                 .padding(.trailing, 28)
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .frame(width: CWMetrics.cardWidth, height: CWMetrics.cardHeight)
+            .frame(width: AppTheme.MediaLibrary.cwCardWidth, height: AppTheme.MediaLibrary.cwCardHeight)
             .contentShape(
                 RoundedRectangle(
-                    cornerRadius: CWMetrics.cornerRadius,
+                    cornerRadius: AppTheme.MediaLibrary.cwCornerRadius,
                     style: .continuous
                 )
             )
@@ -329,7 +305,7 @@ private struct ContinueWatchingCard: View {
                 }
             } label: {
                 Image(systemName: "ellipsis")
-                    .font(.system(size: 14, weight: .bold))
+                    .font(AppTheme.MediaLibrary.cwMenuIconFont)
                     .foregroundStyle(Color.white.opacity(0.85))
                     .frame(width: 28, height: 28)
                     .contentShape(Rectangle())
@@ -338,17 +314,17 @@ private struct ContinueWatchingCard: View {
             .padding(.trailing, 10)
             .padding(.bottom, 10)
         }
-        .frame(width: CWMetrics.cardWidth, height: CWMetrics.cardHeight)
+        .frame(width: AppTheme.MediaLibrary.cwCardWidth, height: AppTheme.MediaLibrary.cwCardHeight)
         .background(AppTheme.Colors.backgroundTertiary)
         .clipShape(
             RoundedRectangle(
-                cornerRadius: CWMetrics.cornerRadius,
+                cornerRadius: AppTheme.MediaLibrary.cwCornerRadius,
                 style: .continuous
             )
         )
         .overlay(
             RoundedRectangle(
-                cornerRadius: CWMetrics.cornerRadius,
+                cornerRadius: AppTheme.MediaLibrary.cwCornerRadius,
                 style: .continuous
             )
             .stroke(Color.white.opacity(0.15), lineWidth: 0.5)
@@ -370,7 +346,10 @@ private struct ContinueWatchingShimmerRow: View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
             // Title shimmer
             ShimmerView()
-                .frame(width: 160, height: 18)
+                .frame(
+                    width: AppTheme.MediaLibrary.sectionTitleShimmerWidth,
+                    height: AppTheme.MediaLibrary.sectionTitleShimmerHeight
+                )
                 .clipShape(
                     RoundedRectangle(
                         cornerRadius: 4,
@@ -387,8 +366,8 @@ private struct ContinueWatchingShimmerRow: View {
                             // Poster placeholder
                             ShimmerView()
                                 .frame(
-                                    width: CWMetrics.posterWidth,
-                                    height: CWMetrics.posterHeight
+                                    width: AppTheme.MediaLibrary.cwPosterWidth,
+                                    height: AppTheme.MediaLibrary.cwPosterHeight
                                 )
 
                             // Info placeholder
@@ -398,7 +377,10 @@ private struct ContinueWatchingShimmerRow: View {
                             ) {
                                 // Title line
                                 ShimmerView()
-                                    .frame(width: 130, height: 14)
+                                    .frame(
+                                        width: AppTheme.MediaLibrary.cwShimmerInnerTitleWidth,
+                                        height: 14
+                                    )
                                     .clipShape(
                                         RoundedRectangle(
                                             cornerRadius: 3,
@@ -453,13 +435,13 @@ private struct ContinueWatchingShimmerRow: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                         }
                         .frame(
-                            width: CWMetrics.cardWidth,
-                            height: CWMetrics.cardHeight
+                            width: AppTheme.MediaLibrary.cwCardWidth,
+                            height: AppTheme.MediaLibrary.cwCardHeight
                         )
                         .background(AppTheme.Colors.backgroundTertiary)
                         .clipShape(
                             RoundedRectangle(
-                                cornerRadius: CWMetrics.cornerRadius,
+                                cornerRadius: AppTheme.MediaLibrary.cwCornerRadius,
                                 style: .continuous
                             )
                         )
@@ -475,13 +457,13 @@ private struct ContinueWatchingShimmerRow: View {
 private struct DiscoveryRow: View {
     @Bindable var item: HomeViewDiscoveryItem
     let onTap: (AppMedia) -> Void
-    private let stableContentHeight = PosterMetrics.posterHeight + 34
+    private let stableContentHeight = AppTheme.MediaLibrary.rowPosterHeight + 34
 
     var body: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
             // ── Section title ────────────────────────────────
             Text(item.name)
-                .font(AppTheme.Typography.headingMedium)
+                .font(AppTheme.MediaLibrary.sectionHeaderFont)
                 .foregroundStyle(AppTheme.Colors.elementWhite)
                 .padding(.horizontal, AppTheme.Spacing.md)
 
@@ -555,18 +537,18 @@ private struct PosterCard: View {
             }
             .id(reloadToken)
             .frame(
-                width: PosterMetrics.posterWidth,
-                height: PosterMetrics.posterHeight
+                width: AppTheme.MediaLibrary.rowPosterWidth,
+                height: AppTheme.MediaLibrary.rowPosterHeight
             )
             .clipShape(
                 RoundedRectangle(
-                    cornerRadius: PosterMetrics.cornerRadius,
+                    cornerRadius: AppTheme.MediaLibrary.rowPosterCornerRadius,
                     style: .continuous
                 )
             )
             .overlay(
                 RoundedRectangle(
-                    cornerRadius: PosterMetrics.cornerRadius,
+                    cornerRadius: AppTheme.MediaLibrary.rowPosterCornerRadius,
                     style: .continuous
                 )
                 .stroke(AppTheme.Colors.border, lineWidth: 0.5)
@@ -575,10 +557,10 @@ private struct PosterCard: View {
 
             // ── Title label ──────────────────────────────────
             Text(displayTitle)
-                .font(AppTheme.Typography.bodySmall)
+                .font(AppTheme.MediaLibrary.posterTitleFont)
                 .foregroundStyle(AppTheme.Colors.elementSubtle)
-                .lineLimit(PosterMetrics.titleLineLimit)
-                .frame(width: PosterMetrics.posterWidth, alignment: .leading)
+                .lineLimit(AppTheme.MediaLibrary.shelfTitleLineLimit)
+                .frame(width: AppTheme.MediaLibrary.rowPosterWidth, alignment: .leading)
         }
         .onAppear {
             if !hasSuccessfulLoad {
@@ -616,19 +598,19 @@ private struct ShimmerRow: View {
                     ) {
                         ShimmerView()
                             .frame(
-                                width: PosterMetrics.posterWidth,
-                                height: PosterMetrics.posterHeight
+                                width: AppTheme.MediaLibrary.rowPosterWidth,
+                                height: AppTheme.MediaLibrary.rowPosterHeight
                             )
                             .clipShape(
                                 RoundedRectangle(
-                                    cornerRadius: PosterMetrics.cornerRadius,
+                                    cornerRadius: AppTheme.MediaLibrary.rowPosterCornerRadius,
                                     style: .continuous
                                 )
                             )
 
                         ShimmerView()
                             .frame(
-                                width: PosterMetrics.posterWidth * 0.7,
+                                width: AppTheme.MediaLibrary.rowPosterWidth * 0.7,
                                 height: 12
                             )
                             .clipShape(

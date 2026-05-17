@@ -1,15 +1,22 @@
 import Inject
 import SwiftUI
 
-
 private enum GridMetrics {
-    static let minPosterWidth: CGFloat = 140
-    static let posterAspectRatio: CGFloat = 1.5 // Height / Width
-    static let cornerRadius: CGFloat = 12
-    static let titleLineLimit = 2
+    static var minPosterWidth: CGFloat {
+        AppTheme.MediaLibrary.gridMinPosterWidth
+    }
+    static let posterAspectRatio: CGFloat = 1.5  // Height / Width
+    static var cornerRadius: CGFloat {
+        AppTheme.MediaLibrary.gridPosterCornerRadius
+    }
+    static var titleLineLimit: Int { AppTheme.MediaLibrary.shelfTitleLineLimit }
+    static var columnSpacing: CGFloat {
+        AppTheme.MediaLibrary.gridColumnSpacing
+    }
+    static var rowSpacing: CGFloat { AppTheme.MediaLibrary.gridRowSpacing }
 }
 
-struct MediaGrid<T:Hashable>: View {
+struct MediaGrid<T: Hashable>: View {
     @ObserveInjection var inject
 
     let itemState: ViewItemState<[AppMedia]>
@@ -19,10 +26,15 @@ struct MediaGrid<T:Hashable>: View {
     let id: T
     let onItemTapped: (AppMedia) -> Void
 
-    /// We let the grid fill as many columns as possible with at least `minPosterWidth`
-    private let columns = [
-        GridItem(.adaptive(minimum: GridMetrics.minPosterWidth), spacing: AppTheme.Spacing.md),
-    ]
+    private var columns: [GridItem] {
+        [
+            GridItem(
+                .adaptive(minimum: GridMetrics.minPosterWidth),
+                spacing: GridMetrics.columnSpacing,
+                alignment: .top
+            )
+        ]
+    }
 
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
@@ -37,21 +49,26 @@ struct MediaGrid<T:Hashable>: View {
                 case .loading:
                     shimmerGrid
 
-                case let .error(msg):
+                case .error(let msg):
                     Text(msg)
                         .font(AppTheme.Typography.bodyLarge)
                         .foregroundColor(AppTheme.Colors.error)
                         .padding(.top, AppTheme.Spacing.xl)
 
-                case let .loaded(items):
+                case .loaded(let items):
                     if items.isEmpty {
                         Text("No items found.")
                             .font(AppTheme.Typography.bodyLarge)
                             .foregroundColor(AppTheme.Colors.elementSubtle)
                             .padding(.top, AppTheme.Spacing.xl)
                     } else {
-                        LazyVGrid(columns: columns, spacing: AppTheme.Spacing.lg) {
-                            ForEach(Array(items.enumerated()), id: \.offset) { index, item in
+                        LazyVGrid(
+                            columns: columns,
+                            spacing: GridMetrics.rowSpacing
+                        ) {
+                            ForEach(Array(items.enumerated()), id: \.offset) {
+                                index,
+                                item in
                                 GridPosterCard(media: item, showType: showType)
                                     .onTapGesture {
                                         onItemTapped(item)
@@ -65,7 +82,10 @@ struct MediaGrid<T:Hashable>: View {
                             }
                         }
                         .id(id)
-                        .padding(.horizontal, AppTheme.Spacing.md)
+                        .padding(
+                            .horizontal,
+                            AppTheme.Layout.mediaGridScrollHorizontalPadding
+                        )
                         .padding(.top, AppTheme.Spacing.md)
                         .padding(.bottom, AppTheme.Spacing.xxl)
                     }
@@ -77,24 +97,42 @@ struct MediaGrid<T:Hashable>: View {
     }
 
     private var shimmerGrid: some View {
-        LazyVGrid(columns: columns, spacing: AppTheme.Spacing.lg) {
-            ForEach(0 ..< 12, id: \.self) { _ in
+        LazyVGrid(columns: columns, spacing: GridMetrics.rowSpacing) {
+            ForEach(0..<12, id: \.self) { _ in
                 VStack(alignment: .leading, spacing: AppTheme.Spacing.xs) {
                     ShimmerView()
-                        .aspectRatio(1 / GridMetrics.posterAspectRatio, contentMode: .fit)
-                        .clipShape(RoundedRectangle(cornerRadius: GridMetrics.cornerRadius, style: .continuous))
+                        .aspectRatio(
+                            1 / GridMetrics.posterAspectRatio,
+                            contentMode: .fit
+                        )
+                        .clipShape(
+                            RoundedRectangle(
+                                cornerRadius: GridMetrics.cornerRadius,
+                                style: .continuous
+                            )
+                        )
 
                     ShimmerView()
                         .frame(height: 14)
-                        .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
+                        .clipShape(
+                            RoundedRectangle(
+                                cornerRadius: 4,
+                                style: .continuous
+                            )
+                        )
 
                     ShimmerView()
                         .frame(width: 80, height: 14)
-                        .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
+                        .clipShape(
+                            RoundedRectangle(
+                                cornerRadius: 4,
+                                style: .continuous
+                            )
+                        )
                 }
             }
         }
-        .padding(.horizontal, AppTheme.Spacing.md)
+        .padding(.horizontal, AppTheme.Layout.mediaGridScrollHorizontalPadding)
         .padding(.top, AppTheme.Spacing.md)
         .padding(.bottom, AppTheme.Spacing.xxl)
     }
@@ -120,12 +158,17 @@ private struct GridPosterCard: View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.xs + 2) {
             // ── Poster image ─────────────────────────────────
             ZStack(alignment: .topTrailing) {
-                AsyncImage(url: MediaConfig.instance.posterURL(media.posterPath)) { phase in
+                AsyncImage(
+                    url: MediaConfig.instance.posterURL(media.posterPath)
+                ) { phase in
                     switch phase {
-                    case let .success(image):
+                    case .success(let image):
                         image
                             .resizable()
-                            .aspectRatio(1 / GridMetrics.posterAspectRatio, contentMode: .fit)
+                            .aspectRatio(
+                                1 / GridMetrics.posterAspectRatio,
+                                contentMode: .fit
+                            )
                     case .failure:
                         posterPlaceholder
                     case .empty:
@@ -134,35 +177,89 @@ private struct GridPosterCard: View {
                         posterPlaceholder
                     }
                 }
-                .aspectRatio(1 / GridMetrics.posterAspectRatio, contentMode: .fit)
-                .clipShape(RoundedRectangle(cornerRadius: GridMetrics.cornerRadius, style: .continuous))
-                .overlay(
-                    RoundedRectangle(cornerRadius: GridMetrics.cornerRadius, style: .continuous)
-                        .stroke(AppTheme.Colors.border.opacity(isHovered ? 0.8 : 0.4), lineWidth: isHovered ? 1.5 : 0.5)
+                .aspectRatio(
+                    1 / GridMetrics.posterAspectRatio,
+                    contentMode: .fit
                 )
-                .shadow(color: AppTheme.Shadows.card.opacity(isHovered ? 0.6 : 0.3), radius: isHovered ? 12 : 8, x: 0, y: isHovered ? 6 : 4)
+                .clipShape(
+                    RoundedRectangle(
+                        cornerRadius: GridMetrics.cornerRadius,
+                        style: .continuous
+                    )
+                )
+                .overlay(
+                    RoundedRectangle(
+                        cornerRadius: GridMetrics.cornerRadius,
+                        style: .continuous
+                    )
+                    .stroke(
+                        AppTheme.Colors.border.opacity(isHovered ? 0.8 : 0.4),
+                        lineWidth: isHovered ? 1.5 : 0.5
+                    )
+                )
+                .shadow(
+                    color: AppTheme.Shadows.card.opacity(isHovered ? 0.6 : 0.3),
+                    radius: gridShadowRadius,
+                    x: 0,
+                    y: gridShadowYOffset
+                )
 
                 // Optional Type Label
                 if showType {
                     Text(displayType)
-                        .font(.system(size: 11, weight: .bold))
+                        .font(AppTheme.MediaLibrary.gridTypeBadgeFont)
                         .foregroundStyle(Color.white)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
+                        .padding(
+                            .horizontal,
+                            AppTheme.MediaLibrary.gridTypeBadgePaddingH
+                        )
+                        .padding(
+                            .vertical,
+                            AppTheme.MediaLibrary.gridTypeBadgePaddingV
+                        )
                         .background(.ultraThinMaterial)
                         .clipShape(Capsule())
-                        .padding(8)
+                        .padding(
+                            AppTheme.MediaLibrary.gridTypeBadgeOuterPadding
+                        )
                 }
             }
 
             // ── Title label ──────────────────────────────────
             Text(displayTitle)
-                .font(AppTheme.Typography.bodySmall)
+                .font(AppTheme.MediaLibrary.gridPosterTitleFont)
                 .foregroundStyle(AppTheme.Colors.elementSubtle)
                 .lineLimit(GridMetrics.titleLineLimit)
-                .frame(height: AppTheme.Spacing.xl, alignment: .topLeading)
+                .frame(
+                    height: AppTheme.MediaLibrary.gridTitleBlockHeight,
+                    alignment: .topLeading
+                )
         }
-        .scaleEffect(isHovered ? 1.08 : 1.0)
+        .scaleEffect(isHovered ? gridHoverScale : 1.0)
+    }
+
+    private var gridShadowRadius: CGFloat {
+        #if os(iOS)
+            isHovered ? 8 : 5
+        #else
+            isHovered ? 12 : 8
+        #endif
+    }
+
+    private var gridShadowYOffset: CGFloat {
+        #if os(iOS)
+            isHovered ? 4 : 3
+        #else
+            isHovered ? 6 : 4
+        #endif
+    }
+
+    private var gridHoverScale: CGFloat {
+        #if os(iOS)
+            1.0
+        #else
+            isHovered ? 1.08 : 1.0
+        #endif
     }
 
     private var posterPlaceholder: some View {

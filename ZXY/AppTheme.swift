@@ -39,10 +39,17 @@
 //    AppTheme.Shadows.accent             ← white  8% glow
 //
 //  Radius / Spacing / Typography   – same API as before
+//
+//  MediaLibrary  — poster shelf + grid sizing / fonts (iPhone compact vs iPad/desktop)
+//    AppTheme.MediaLibrary.rowPosterWidth / sectionHeaderFont / gridMinPosterWidth …
+//  Layout  — horizontal insets for tabs + settings + MediaGrid (iOS tighter)
+//    AppTheme.Layout.tabScreenHorizontalPadding / mediaGridScrollHorizontalPadding …
 //  ─────────────────────────────────────────────────────────────────
 
 import SwiftUI
-
+#if os(iOS)
+import UIKit
+#endif
 
 enum AppTheme {
 
@@ -170,6 +177,57 @@ enum AppTheme {
         static let xxl: CGFloat = 48
     }
 
+    /// Horizontal insets for tab roots (Discover, Search, Library) and Settings.
+    enum Layout {
+        private static var isIOS: Bool {
+            #if os(iOS)
+            true
+            #else
+            false
+            #endif
+        }
+
+        private static var isCompactPhone: Bool {
+            #if os(iOS)
+            UIDevice.current.userInterfaceIdiom == .phone
+            #else
+            false
+            #endif
+        }
+
+        /// Search / Library / Settings: outer leading/trailing for headers & main scroll (mac: `Spacing.xl`).
+        static var tabScreenHorizontalPadding: CGFloat {
+            if isIOS {
+                return isCompactPhone ? 12 : 16
+            }
+            return Spacing.xl
+        }
+
+        /// Discover: outer `VStack` horizontal (mac keeps 16; iOS tighter).
+        static var discoverOuterHorizontalPadding: CGFloat {
+            if isIOS {
+                return isCompactPhone ? 12 : 16
+            }
+            return Spacing.md
+        }
+
+        /// Extra wrapper on `MediaGrid` so its content lines up with tab headers (mac: `xl − md`; iOS: none).
+        static var mediaGridOuterAlignmentPadding: CGFloat {
+            if isIOS {
+                return 0
+            }
+            return Spacing.xl - Spacing.md
+        }
+
+        /// LazyVGrid horizontal padding inside `MediaGrid`.
+        static var mediaGridScrollHorizontalPadding: CGFloat {
+            if isIOS {
+                return tabScreenHorizontalPadding
+            }
+            return Spacing.md
+        }
+    }
+
     enum Typography {
         static let displayLarge  = Font.system(size: 36, weight: .bold,     design: .default)
         static let displayMedium = Font.system(size: 28, weight: .bold,     design: .default)
@@ -183,6 +241,146 @@ enum AppTheme {
         static let labelMedium   = Font.system(size: 13, weight: .semibold, design: .default)
         static let labelSmall    = Font.system(size: 11, weight: .semibold, design: .default)
         static let caption       = Font.system(size: 11, weight: .regular,  design: .default)
+    }
+
+    /// Shared sizing and type for horizontal poster shelves (home discovery rows,
+    /// “You may also like” / similar on movie & series, MediaRow) and home continue-watching.
+    enum MediaLibrary {
+        private static var isCompactPhone: Bool {
+            #if os(iOS)
+            UIDevice.current.userInterfaceIdiom == .phone
+            #else
+            false
+            #endif
+        }
+
+        static let shelfTitleLineLimit = 2
+
+        // MARK: Horizontal shelf posters (~0.8× on iPhone)
+
+        static var rowPosterWidth: CGFloat { isCompactPhone ? 104 : 130 }
+        static var rowPosterHeight: CGFloat { isCompactPhone ? 156 : 195 }
+        static var rowPosterCornerRadius: CGFloat { isCompactPhone ? 10 : 12 }
+
+        // MARK: Library / search / discover grid (`MediaGrid`)
+
+        /// `true` for iPhone / iPad app; macOS & visionOS use desktop spacing.
+        private static var isIOS: Bool {
+            #if os(iOS)
+            true
+            #else
+            false
+            #endif
+        }
+
+        /// Minimum cell width for `LazyVGrid` adaptive columns — smaller on iOS for more columns.
+        static var gridMinPosterWidth: CGFloat {
+            if isIOS {
+                return isCompactPhone ? 96 : 120
+            }
+            return 140
+        }
+
+        static var gridPosterCornerRadius: CGFloat {
+            if isIOS {
+                return isCompactPhone ? 8 : 10
+            }
+            return 12
+        }
+
+        /// Horizontal gap between grid columns (`GridItem` adaptive spacing).
+        static var gridColumnSpacing: CGFloat {
+            isIOS ? Spacing.sm + 2 : Spacing.md
+        }
+
+        /// Vertical gap between grid rows (`LazyVGrid` spacing).
+        static var gridRowSpacing: CGFloat {
+            isIOS ? Spacing.md : Spacing.lg
+        }
+
+        /// Under-poster title in grid (slightly tighter than shelf on iOS).
+        static var gridPosterTitleFont: Font {
+            #if os(iOS)
+            isCompactPhone
+                ? .system(size: 11, weight: .regular, design: .default)
+                : .system(size: 12, weight: .regular, design: .default)
+            #else
+            Typography.bodySmall
+            #endif
+        }
+
+        /// Fixed title block under poster (two lines max).
+        static var gridTitleBlockHeight: CGFloat {
+            if isIOS {
+                return isCompactPhone ? 30 : 34
+            }
+            return Spacing.xl
+        }
+
+        static var gridTypeBadgeFont: Font {
+            #if os(iOS)
+            .system(size: 10, weight: .bold, design: .default)
+            #else
+            .system(size: 11, weight: .bold, design: .default)
+            #endif
+        }
+
+        static var gridTypeBadgePaddingH: CGFloat { isIOS ? 6 : 8 }
+        static var gridTypeBadgePaddingV: CGFloat { isIOS ? 3 : 4 }
+        static var gridTypeBadgeOuterPadding: CGFloat { isIOS ? 6 : 8 }
+
+        // MARK: Continue watching (home)
+
+        private static let cwPosterAspectRatio: CGFloat = 2.0 / 3.0
+        static var cwPosterWidth: CGFloat { isCompactPhone ? 80 : 100 }
+        static var cwPosterHeight: CGFloat { cwPosterWidth / cwPosterAspectRatio }
+        static var cwCardWidth: CGFloat { isCompactPhone ? 248 : 300 }
+        static var cwCardHeight: CGFloat { cwPosterHeight }
+        static var cwCornerRadius: CGFloat { isCompactPhone ? 9 : 10 }
+        static let cwProgressBarHeight: CGFloat = 4
+        static let cwProgressBarRadius: CGFloat = 2
+
+        // MARK: Typography — section titles & poster captions
+
+        static var sectionHeaderFont: Font {
+            isCompactPhone ? Typography.headingSmall : Typography.headingMedium
+        }
+
+        static var posterTitleFont: Font {
+            isCompactPhone
+                ? .system(size: 12, weight: .regular, design: .default)
+                : Typography.bodySmall
+        }
+
+        static var cwTitleFont: Font {
+            isCompactPhone
+                ? .system(size: 13, weight: .bold, design: .default)
+                : .system(size: 15, weight: .bold, design: .default)
+        }
+
+        static var cwSubtitleFont: Font {
+            isCompactPhone
+                ? .system(size: 12, weight: .regular, design: .default)
+                : .system(size: 13, weight: .regular, design: .default)
+        }
+
+        static var cwPercentFont: Font {
+            isCompactPhone
+                ? .system(size: 11, weight: .regular, design: .default)
+                : .system(size: 12, weight: .regular, design: .default)
+        }
+
+        static var cwMenuIconFont: Font {
+            isCompactPhone
+                ? .system(size: 13, weight: .bold, design: .default)
+                : .system(size: 14, weight: .bold, design: .default)
+        }
+
+        // MARK: Shimmer placeholders (approx. real layout)
+
+        static var sectionTitleShimmerWidth: CGFloat { isCompactPhone ? 128 : 160 }
+        static var sectionTitleShimmerHeight: CGFloat { isCompactPhone ? 16 : 18 }
+        static var cwShimmerInnerTitleWidth: CGFloat { isCompactPhone ? 100 : 130 }
     }
 }
 
