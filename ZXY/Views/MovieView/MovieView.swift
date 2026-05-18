@@ -33,8 +33,10 @@ struct MovieView: View {
         ZStack {
             switch vm.movieState {
             case .initial, .loading:
-                AppTheme.Colors.background.ignoresSafeArea()
+                HomePageAmbientBackground(gradient: .default)
+                    .ignoresSafeArea()
                 MediaViewShimmer(isMobile: isMobile)
+                    .environment(\.contentBlendsWithAmbient, true)
             case .error(let err):
                 AppTheme.Colors.background.ignoresSafeArea()
                 VStack(spacing: AppTheme.Spacing.md) {

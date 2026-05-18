@@ -23,8 +23,10 @@ struct SeriesView: View {
         ZStack {
             switch vm.seriesState {
             case .initial, .loading:
-                AppTheme.Colors.background.ignoresSafeArea()
+                HomePageAmbientBackground(gradient: .default)
+                    .ignoresSafeArea()
                 MediaViewShimmer(isMobile: isMobile)
+                    .environment(\.contentBlendsWithAmbient, true)
             case let .error(err):
                 AppTheme.Colors.background.ignoresSafeArea()
                 VStack(spacing: AppTheme.Spacing.md) {

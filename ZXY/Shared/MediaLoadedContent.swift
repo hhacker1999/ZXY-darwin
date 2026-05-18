@@ -95,10 +95,13 @@ struct MediaLoadedContent: View {
                                 height: isMobile
                                     ? AppTheme.Spacing.md : AppTheme.Spacing.lg
                             )
-                            MediaDetailsMediaRow(
+                            MediaShelfSection(
                                 title: collection.name,
-                                items: collection.parts,
-                                isMovie: details.isMovie
+                                media: collection.parts.map {
+                                    $0.asAppMedia(preferMovie: details.isMovie)
+                                },
+                                onTap: MediaShelfNavigation.openDetails,
+                                insetContent: false
                             )
                         }
 
@@ -108,10 +111,13 @@ struct MediaLoadedContent: View {
                                 height: isMobile
                                     ? AppTheme.Spacing.md : AppTheme.Spacing.lg
                             )
-                            MediaDetailsMediaRow(
+                            MediaShelfSection(
                                 title: "You may also like",
-                                items: details.recommendations,
-                                isMovie: details.isMovie
+                                media: details.recommendations.map {
+                                    $0.asAppMedia(preferMovie: details.isMovie)
+                                },
+                                onTap: MediaShelfNavigation.openDetails,
+                                insetContent: false
                             )
                         }
 
@@ -121,10 +127,13 @@ struct MediaLoadedContent: View {
                                 height: isMobile
                                     ? AppTheme.Spacing.md : AppTheme.Spacing.lg
                             )
-                            MediaDetailsMediaRow(
+                            MediaShelfSection(
                                 title: "Similar \(details.isMovie ? "Movies" : "Shows")",
-                                items: details.similar,
-                                isMovie: details.isMovie
+                                media: details.similar.map {
+                                    $0.asAppMedia(preferMovie: details.isMovie)
+                                },
+                                onTap: MediaShelfNavigation.openDetails,
+                                insetContent: false
                             )
                         }
 
@@ -132,6 +141,7 @@ struct MediaLoadedContent: View {
                     }
                     .padding(.horizontal, AppTheme.Spacing.md)
                 }
+                .environment(\.contentBlendsWithAmbient, true)
             }
             .scrollContentBackground(.hidden)
             }
@@ -369,7 +379,7 @@ private struct MediaInfoPosterView: View {
 
     private var posterPlaceholder: some View {
         ZStack {
-            AppTheme.Colors.backgroundTertiary
+            LoadingSurfaceFill()
             Image(systemName: "film")
                 .font(.largeTitle)
                 .foregroundStyle(AppTheme.Colors.elementMuted)
@@ -611,7 +621,7 @@ private struct MediaInfoBannerView: View {
 
     private var bannerPlaceholder: some View {
         ZStack {
-            AppTheme.Colors.backgroundTertiary
+            LoadingSurfaceFill()
             Image(systemName: "film")
                 .font(.largeTitle)
                 .foregroundStyle(AppTheme.Colors.elementMuted)
@@ -1412,7 +1422,7 @@ private struct EpisodeCard: View {
 
     private var thumbnailPlaceholder: some View {
         ZStack {
-            AppTheme.Colors.backgroundTertiary
+            LoadingSurfaceFill()
             Image(systemName: "tv")
                 .font(.system(size: 28))
                 .foregroundStyle(AppTheme.Colors.elementDim)

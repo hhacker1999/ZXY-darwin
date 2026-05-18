@@ -23,7 +23,6 @@ struct HomeView: View {
     var body: some View {
         ZStack {
             HomePageAmbientBackground(gradient: ambientGradient)
-                // .ignoresSafeArea()
 
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 0) {
@@ -78,8 +77,13 @@ struct HomeView: View {
                     }
                     .padding(.bottom, AppTheme.Spacing.xxl)
                 }
+                .environment(\.contentBlendsWithAmbient, true)
             }
             .scrollContentBackground(.hidden)
+            #if os(iOS)
+            .contentMargins(.top, 0, for: .scrollContent)
+            .ignoresSafeArea(edges: .top)
+            #endif
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .onChange(of: Router.router.mainRouteState) { old, new in
@@ -335,7 +339,7 @@ private struct ContinueWatchingCard: View {
             .padding(.bottom, 10)
         }
         .frame(width: AppTheme.MediaLibrary.cwCardWidth, height: AppTheme.MediaLibrary.cwCardHeight)
-        .background(AppTheme.Colors.backgroundTertiary)
+        .background { LoadingSurfaceFill() }
         .clipShape(
             RoundedRectangle(
                 cornerRadius: AppTheme.MediaLibrary.cwCornerRadius,
@@ -353,7 +357,7 @@ private struct ContinueWatchingCard: View {
 
     private var posterPlaceholder: some View {
         ZStack {
-            AppTheme.Colors.backgroundTertiary
+            LoadingSurfaceFill()
             Image(systemName: "film")
                 .font(.title2)
                 .foregroundStyle(AppTheme.Colors.elementMuted)
@@ -458,7 +462,7 @@ private struct ContinueWatchingShimmerRow: View {
                             width: AppTheme.MediaLibrary.cwCardWidth,
                             height: AppTheme.MediaLibrary.cwCardHeight
                         )
-                        .background(AppTheme.Colors.backgroundTertiary)
+                        .background { LoadingSurfaceFill() }
                         .clipShape(
                             RoundedRectangle(
                                 cornerRadius: AppTheme.MediaLibrary.cwCornerRadius,
@@ -490,187 +494,16 @@ private struct DiscoveryRow: View {
             // ── Content based on state ───────────────────────
             switch item.state {
             case .initial, .loading:
-                ShimmerRow()
+                MediaShelfShimmerRow()
                     .frame(height: stableContentHeight)
             case let .loaded(media):
-                MediaRow(media: media) { item in
+                MediaShelfRow(media: media) { item in
                     onTap(item)
                 }
                 .frame(height: stableContentHeight)
             case let .error(message):
-                ErrorRow(message: message)
+                MediaShelfErrorRow(message: message)
             }
         }
-    }
-}
-
-private struct MediaRow: View {
-    let media: [AppMedia]
-    let onTap: (AppMedia) -> Void
-
-    var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            LazyHStack(spacing: AppTheme.Spacing.sm + 2) {
-                ForEach(media, id: \.id) { item in
-                    PosterCard(media: item).onTapGesture {
-                        onTap(item)
-                    }
-                }
-            }
-            .padding(.horizontal, AppTheme.Spacing.md)
-        }
-    }
-}
-
-private struct PosterCard: View {
-    let media: AppMedia
-    @State private var reloadToken = UUID()
-    @State private var hasSuccessfulLoad = false
-
-    /// TMDB uses `title` for movies and `name` for shows
-    private var displayTitle: String {
-        if !media.title.isEmpty { return media.title }
-        if !media.name.isEmpty { return media.name }
-        return media.originalTitle
-    }
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: AppTheme.Spacing.xs + 2) {
-            // ── Poster image ─────────────────────────────────
-            AsyncImage(url: posterURL) {
-                phase in
-                switch phase {
-                case let .success(image):
-                    image
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .onAppear {
-                            hasSuccessfulLoad = true
-                        }
-                case .failure:
-                    posterPlaceholder
-                case .empty:
-                    posterShimmer
-                @unknown default:
-                    posterPlaceholder
-                }
-            }
-            .id(reloadToken)
-            .frame(
-                width: AppTheme.MediaLibrary.rowPosterWidth,
-                height: AppTheme.MediaLibrary.rowPosterHeight
-            )
-            .clipShape(
-                RoundedRectangle(
-                    cornerRadius: AppTheme.MediaLibrary.rowPosterCornerRadius,
-                    style: .continuous
-                )
-            )
-            .overlay(
-                RoundedRectangle(
-                    cornerRadius: AppTheme.MediaLibrary.rowPosterCornerRadius,
-                    style: .continuous
-                )
-                .stroke(AppTheme.Colors.border, lineWidth: 0.5)
-            )
-            .shadow(color: AppTheme.Shadows.card, radius: 8, x: 0, y: 4)
-
-            // ── Title label ──────────────────────────────────
-            Text(displayTitle)
-                .font(AppTheme.MediaLibrary.posterTitleFont)
-                .foregroundStyle(AppTheme.Colors.elementSubtle)
-                .lineLimit(AppTheme.MediaLibrary.shelfTitleLineLimit)
-                .frame(width: AppTheme.MediaLibrary.rowPosterWidth, alignment: .leading)
-        }
-        .onAppear {
-            if !hasSuccessfulLoad {
-                reloadToken = UUID()
-            }
-        }
-    }
-
-    private var posterPlaceholder: some View {
-        ZStack {
-            AppTheme.Colors.backgroundTertiary
-            Image(systemName: "film")
-                .font(.title2)
-                .foregroundStyle(AppTheme.Colors.elementMuted)
-        }
-    }
-
-    private var posterShimmer: some View {
-        ShimmerView()
-    }
-
-    private var posterURL: URL? {
-        MediaConfig.instance.posterURL(media.posterPath)
-    }
-}
-
-private struct ShimmerRow: View {
-    var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: AppTheme.Spacing.sm + 2) {
-                ForEach(0 ..< 6, id: \.self) { _ in
-                    VStack(
-                        alignment: .leading,
-                        spacing: AppTheme.Spacing.xs + 2
-                    ) {
-                        ShimmerView()
-                            .frame(
-                                width: AppTheme.MediaLibrary.rowPosterWidth,
-                                height: AppTheme.MediaLibrary.rowPosterHeight
-                            )
-                            .clipShape(
-                                RoundedRectangle(
-                                    cornerRadius: AppTheme.MediaLibrary.rowPosterCornerRadius,
-                                    style: .continuous
-                                )
-                            )
-
-                        ShimmerView()
-                            .frame(
-                                width: AppTheme.MediaLibrary.rowPosterWidth * 0.7,
-                                height: 12
-                            )
-                            .clipShape(
-                                RoundedRectangle(
-                                    cornerRadius: 4,
-                                    style: .continuous
-                                )
-                            )
-                    }
-                }
-            }
-            .padding(.horizontal, AppTheme.Spacing.md)
-        }
-        .scrollDisabled(true)
-    }
-}
-
-private struct ErrorRow: View {
-    let message: String
-
-    var body: some View {
-        HStack(spacing: AppTheme.Spacing.sm) {
-            Image(systemName: "exclamationmark.triangle.fill")
-                .foregroundStyle(AppTheme.Colors.error)
-            Text(message)
-                .font(AppTheme.Typography.bodySmall)
-                .foregroundStyle(AppTheme.Colors.elementSubtle)
-                .lineLimit(1)
-        }
-        .padding(.horizontal, AppTheme.Spacing.md)
-        .padding(.vertical, AppTheme.Spacing.sm)
-        .background(
-            AppTheme.Colors.errorSurface
-                .clipShape(
-                    RoundedRectangle(
-                        cornerRadius: AppTheme.Radius.sm,
-                        style: .continuous
-                    )
-                )
-        )
-        .padding(.horizontal, AppTheme.Spacing.md)
     }
 }

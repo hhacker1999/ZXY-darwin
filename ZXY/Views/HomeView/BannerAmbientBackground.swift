@@ -390,7 +390,7 @@ struct BannerFadingHeroImage: View {
 
     private var heroPlaceholder: some View {
         ZStack {
-            AppTheme.Colors.backgroundTertiary
+            LoadingSurfaceFill()
             Image(systemName: "film")
                 .font(.largeTitle)
                 .foregroundStyle(AppTheme.Colors.elementMuted)

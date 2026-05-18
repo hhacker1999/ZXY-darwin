@@ -104,7 +104,7 @@ struct CastAndCrewSection: View {
 
     private var castPlaceholder: some View {
         ZStack {
-            AppTheme.Colors.backgroundTertiary
+            LoadingSurfaceFill()
             Image(systemName: "person.fill")
                 .font(.title3)
                 .foregroundStyle(AppTheme.Colors.elementMuted)

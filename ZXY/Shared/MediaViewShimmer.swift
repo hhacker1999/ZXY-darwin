@@ -17,21 +17,16 @@ struct MediaViewShimmer: View {
                     ZStack(alignment: .bottomLeading) {
                         ShimmerView()
                             .frame(width: width, height: headerHeight)
+                            .mask {
+                                BannerImageBottomFadeMask(height: headerHeight)
+                            }
+                            .zIndex(0)
 
-                        LinearGradient(
-                            stops: [
-                                .init(color: .clear, location: 0.0),
-                                .init(
-                                    color: AppTheme.Colors.background
-                                        .opacity(0.5), location: 0.6),
-                                .init(
-                                    color: AppTheme.Colors.background,
-                                    location: 1.0),
-                            ],
-                            startPoint: .top,
-                            endPoint: .bottom
+                        HeroTextLegibilityScrim(
+                            width: width,
+                            height: headerHeight * 0.55
                         )
-                        .frame(height: headerHeight * 0.5)
+                        .zIndex(1)
 
                         // Skeleton content in header
                         VStack(alignment: .leading, spacing: 10) {
@@ -79,6 +74,7 @@ struct MediaViewShimmer: View {
                         }
                         .padding(.horizontal, AppTheme.Spacing.md)
                         .padding(.bottom, AppTheme.Spacing.lg)
+                        .zIndex(2)
                     }
 
                     Spacer().frame(height: AppTheme.Spacing.lg)
@@ -152,47 +148,11 @@ struct MediaViewShimmer: View {
                             )
                             .padding(.horizontal, AppTheme.Spacing.md)
 
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: AppTheme.Spacing.sm + 2) {
-                                ForEach(0..<5, id: \.self) { _ in
-                                    VStack(
-                                        alignment: .leading,
-                                        spacing: AppTheme.Spacing.xs + 2
-                                    ) {
-                                        ShimmerView()
-                                            .frame(
-                                                width: MediaMetrics
-                                                    .posterWidth,
-                                                height: MediaMetrics
-                                                    .posterHeight
-                                            )
-                                            .clipShape(
-                                                RoundedRectangle(
-                                                    cornerRadius: MediaMetrics
-                                                        .posterRadius,
-                                                    style: .continuous
-                                                )
-                                            )
-                                        ShimmerView()
-                                            .frame(
-                                                width: MediaMetrics
-                                                    .posterWidth * 0.7,
-                                                height: 12
-                                            )
-                                            .clipShape(
-                                                RoundedRectangle(
-                                                    cornerRadius: 4,
-                                                    style: .continuous)
-                                            )
-                                    }
-                                }
-                            }
-                            .padding(.horizontal, AppTheme.Spacing.md)
-                        }
-                        .scrollDisabled(true)
+                        MediaShelfShimmerRow(insetContent: false)
                     }
                 }
             }
+            .scrollContentBackground(.hidden)
         }
         #if os(iOS)
             .ignoresSafeArea(edges: isMobile ? .top : [])
