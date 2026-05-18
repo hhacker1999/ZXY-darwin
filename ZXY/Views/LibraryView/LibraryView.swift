@@ -48,6 +48,5 @@ struct LibraryView: View {
             await vm.initialLoad()
         }
         .enableInjection()
-        .background(AppTheme.Colors.background.ignoresSafeArea())
     }
 }

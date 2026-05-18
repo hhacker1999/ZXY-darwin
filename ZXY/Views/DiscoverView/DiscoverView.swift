@@ -88,7 +88,6 @@ struct DiscoverView: View {
             await vm.initialLoad()
         }
         .enableInjection()
-        .background(AppTheme.Colors.background.ignoresSafeArea())
         .sheet(isPresented: $showFilterSheet) {
             DiscoverFilterSheet(
                 initialFilter: vm.filter,

@@ -35,12 +35,16 @@ class HomeViewModel {
     init(mediaUc: MediaUsecase, progressUc: ProgressUsecase) {
         self.mediaUc = mediaUc
         self.progressUc = progressUc
-        Task {
-            await initialise()
-        }
     }
 
     func initialise() async {
+        switch topBannerState {
+        case .initial:
+            break
+        default:
+            return
+        }
+
         guard let profile = userBloc.profile else {
             return
         }

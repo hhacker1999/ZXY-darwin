@@ -18,6 +18,7 @@ private enum GridMetrics {
 
 struct MediaGrid<T: Hashable>: View {
     @ObserveInjection var inject
+    @Environment(\.contentBlendsWithAmbient) private var blendsWithAmbient
 
     let itemState: ViewItemState<[AppMedia]>
     let initialText: String
@@ -93,7 +94,7 @@ struct MediaGrid<T: Hashable>: View {
             }
         }
         .enableInjection()
-        .background(AppTheme.Colors.background.ignoresSafeArea())
+        .modifier(MediaGridScrollChrome(blendsWithAmbient: blendsWithAmbient))
     }
 
     private var shimmerGrid: some View {
@@ -268,6 +269,20 @@ private struct GridPosterCard: View {
             Image(systemName: "film")
                 .font(.title2)
                 .foregroundStyle(AppTheme.Colors.elementMuted)
+        }
+    }
+}
+
+private struct MediaGridScrollChrome: ViewModifier {
+    let blendsWithAmbient: Bool
+
+    func body(content: Content) -> some View {
+        if blendsWithAmbient {
+            content
+                .scrollContentBackground(.hidden)
+        } else {
+            content
+                .background(AppTheme.Colors.background.ignoresSafeArea())
         }
     }
 }

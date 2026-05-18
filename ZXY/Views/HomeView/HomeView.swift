@@ -9,102 +9,101 @@ import SwiftUI
 
 struct HomeView: View {
     @State private var vm: HomeViewModel
-    @State private var ambientGradient: HomeAmbientGradient = .default
+    @Binding var ambientGradient: HomeAmbientGradient
 
-    init(mediaUc: MediaUsecase, progressUc: ProgressUsecase) {
-        _vm = State(
-            wrappedValue: HomeViewModel(
+    init(mediaUc: MediaUsecase, progressUc: ProgressUsecase, ambientGradient: Binding<HomeAmbientGradient>) {
+        vm =
+            HomeViewModel(
                 mediaUc: mediaUc,
                 progressUc: progressUc
             )
-        )
+        _ambientGradient = ambientGradient
     }
 
     var body: some View {
-        ZStack {
-            HomePageAmbientBackground(gradient: ambientGradient)
-
-            ScrollView(.vertical, showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 0) {
-                    TopBannerSection(
-                        state: vm.topBannerState,
-                        onActiveMediaChange: { media in
+        ScrollView(.vertical, showsIndicators: false) {
+            VStack(alignment: .leading, spacing: 0) {
+                TopBannerSection(
+                    state: vm.topBannerState,
+                    onActiveMediaChange: { media in
+                        Task {
+                            let next = await BannerAmbientLoader.gradient(for: media)
+                            withAnimation(.easeInOut(duration: 0.65)) {
+                                ambientGradient = next
+                            }
+                        }
+                    }
+                )
+                #if os(macOS)
+                .backgroundExtensionEffect()
+                #endif
+                Spacer().frame(height: AppTheme.Spacing.lg)
+                LazyVStack(alignment: .leading, spacing: AppTheme.Spacing.lg) {
+                    ContinueWatchingSection(
+                        state: vm.continueWatchingState,
+                        onRemove: { item in
                             Task {
-                                let next = await BannerAmbientLoader.gradient(for: media)
-                                withAnimation(.easeInOut(duration: 0.65)) {
-                                    ambientGradient = next
-                                }
+                                await vm.removeFromContinueWatching(item: item)
+                            }
+                        },
+                        onMarkWatched: { item in
+                            Task {
+                                await vm.markContinueWatchingWatched(item: item)
                             }
                         }
                     )
-                    #if os(macOS)
-                    .backgroundExtensionEffect()
-                    #endif
-                    Spacer().frame(height: AppTheme.Spacing.lg)
-                    LazyVStack(alignment: .leading, spacing: AppTheme.Spacing.lg) {
-                        ContinueWatchingSection(
-                            state: vm.continueWatchingState,
-                            onRemove: { item in
-                                Task {
-                                    await vm.removeFromContinueWatching(item: item)
-                                }
-                            },
-                            onMarkWatched: { item in
-                                Task {
-                                    await vm.markContinueWatchingWatched(item: item)
-                                }
+                    ForEach(vm.discoveryItemState) { item in
+                        DiscoveryRow(item: item) { media in
+                            if media.type == "movie" {
+                                Router.router.addToRoute(route: .movieDetails(media.id))
+                            } else {
+                                Router.router.addToRoute(route: .seriesDetails(media.id))
                             }
-                        )
-                        ForEach(vm.discoveryItemState) { item in
-                            DiscoveryRow(item: item) { media in
-                                if media.type == "movie" {
-                                    Router.router.addToRoute(route: .movieDetails(media.id))
-                                } else {
-                                    Router.router.addToRoute(route: .seriesDetails(media.id))
-                                }
-                            }
-                            .onAppear {
-                                if vm.startRowFetchIfNeeded(item: item) {
-                                    Task {
-                                        await vm
-                                            .getMediaAndUpdateItemState(
-                                                item: item
-                                            )
-                                    }
+                        }
+                        .onAppear {
+                            if vm.startRowFetchIfNeeded(item: item) {
+                                Task {
+                                    await vm
+                                        .getMediaAndUpdateItemState(
+                                            item: item
+                                        )
                                 }
                             }
                         }
                     }
-                    .padding(.bottom, AppTheme.Spacing.xxl)
                 }
-                .environment(\.contentBlendsWithAmbient, true)
+                .padding(.bottom, AppTheme.Spacing.xxl)
             }
-            .scrollContentBackground(.hidden)
-            #if os(iOS)
+            .environment(\.contentBlendsWithAmbient, true)
+        }
+        .task {
+            Task { await vm.initialise() }
+        }
+        .scrollContentBackground(.hidden)
+        #if os(iOS)
             .contentMargins(.top, 0, for: .scrollContent)
             .ignoresSafeArea(edges: .top)
-            #endif
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .onChange(of: Router.router.mainRouteState) { old, new in
-            guard let oldRoute = old.last else {
-                return
-            }
+        #endif
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .onChange(of: Router.router.mainRouteState) { old, new in
+                guard let oldRoute = old.last else {
+                    return
+                }
 
-            let newRoute = new.last
-            let returnedFromDetails: Bool
-            switch oldRoute {
-            case .movieDetails, .seriesDetails:
-                returnedFromDetails = true
-            default:
-                returnedFromDetails = false
-            }
-            if newRoute == nil && returnedFromDetails {
-                Task {
-                    await vm.initialiseContinueWatching()
+                let newRoute = new.last
+                let returnedFromDetails: Bool
+                switch oldRoute {
+                case .movieDetails, .seriesDetails:
+                    returnedFromDetails = true
+                default:
+                    returnedFromDetails = false
+                }
+                if newRoute == nil && returnedFromDetails {
+                    Task {
+                        await vm.initialiseContinueWatching()
+                    }
                 }
             }
-        }
     }
 }
 

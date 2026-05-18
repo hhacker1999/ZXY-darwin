@@ -28,6 +28,7 @@ enum BaseHomeViewPages: String, CaseIterable, Identifiable {
 
 struct BaseHomeview: View {
     @State var selectedPage: BaseHomeViewPages = .home
+    @State private var ambientGradient: HomeAmbientGradient = .default
     let deps: AppDependencies
 
     var body: some View {
@@ -47,13 +48,17 @@ struct BaseHomeview: View {
 
     #if os(iOS)
         private var iosTabChrome: some View {
-            TabView(selection: $selectedPage) {
-                ForEach(BaseHomeViewPages.allCases) { page in
-                    detailContent(for: page)
-                        .tabItem {
-                            Label(page.rawValue, systemImage: page.icon)
-                        }
-                        .tag(page)
+            ZStack {
+                HomePageAmbientBackground(gradient: ambientGradient)
+
+                TabView(selection: $selectedPage) {
+                    ForEach(BaseHomeViewPages.allCases) { page in
+                        detailContent(for: page)
+                            .tabItem {
+                                Label(page.rawValue, systemImage: page.icon)
+                            }
+                            .tag(page)
+                    }
                 }
             }
         }
@@ -107,7 +112,10 @@ struct BaseHomeview: View {
             .navigationSplitViewColumnWidth(min: 232, ideal: 256, max: 296)
 
         } detail: {
-            detailContent(for: selectedPage)
+            ZStack {
+                HomePageAmbientBackground(gradient: ambientGradient)
+                detailContent(for: selectedPage)
+            }
         }
     }
 
@@ -115,13 +123,21 @@ struct BaseHomeview: View {
     private func detailContent(for page: BaseHomeViewPages) -> some View {
         switch page {
         case .home:
-            HomeView(mediaUc: deps.mediaUc, progressUc: deps.progressUc)
+            HomeView(
+                mediaUc: deps.mediaUc,
+                progressUc: deps.progressUc,
+                ambientGradient: $ambientGradient
+            )
+            .environment(\.contentBlendsWithAmbient, true)
         case .discover:
             DiscoverView(mediaUc: deps.mediaUc, authUc: deps.authUc)
+                .environment(\.contentBlendsWithAmbient, true)
         case .search:
             SearchView(mediaUc: deps.mediaUc)
+                .environment(\.contentBlendsWithAmbient, true)
         case .library:
             LibraryView(mediaUc: deps.mediaUc)
+                .environment(\.contentBlendsWithAmbient, true)
         case .settings:
             SettingsView(authUc: deps.authUc)
         }

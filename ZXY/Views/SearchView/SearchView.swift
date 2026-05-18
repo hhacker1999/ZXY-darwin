@@ -70,7 +70,6 @@ struct SearchView: View {
             .padding(.horizontal, AppTheme.Layout.mediaGridOuterAlignmentPadding)
         }
         .enableInjection()
-        .background(AppTheme.Colors.background.ignoresSafeArea())
     }
 
     private var searchFieldChrome: some View {
