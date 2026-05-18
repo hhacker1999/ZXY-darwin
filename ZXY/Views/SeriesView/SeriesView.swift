@@ -21,12 +21,12 @@ struct SeriesView: View {
 
     var body: some View {
         ZStack {
-            AppTheme.Colors.background.ignoresSafeArea()
-
             switch vm.seriesState {
             case .initial, .loading:
+                AppTheme.Colors.background.ignoresSafeArea()
                 MediaViewShimmer(isMobile: isMobile)
             case let .error(err):
+                AppTheme.Colors.background.ignoresSafeArea()
                 VStack(spacing: AppTheme.Spacing.md) {
                     Button {
                         Router.router.popRoute()

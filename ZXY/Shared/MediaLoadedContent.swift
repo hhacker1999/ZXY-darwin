@@ -6,6 +6,7 @@ struct MediaLoadedContent: View {
     @ObserveInjection var inject
     let details: MediaDetails
     let isMobile: Bool
+    @State private var ambientGradient: HomeAmbientGradient = .default
     var streamState: ViewItemState<[ResolutionItem]> = .initial
     var movieProgress: Double = 0
     var movieIsWatched: Bool = false
@@ -22,6 +23,10 @@ struct MediaLoadedContent: View {
             let headerHeight: CGFloat = isMobile
                 ? (width * 3) / 2
                 : (width * 9) / 16
+
+            ZStack {
+                HomePageAmbientBackground(gradient: ambientGradient)
+                    .ignoresSafeArea()
 
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 0) {
@@ -128,6 +133,18 @@ struct MediaLoadedContent: View {
                     .padding(.horizontal, AppTheme.Spacing.md)
                 }
             }
+            .scrollContentBackground(.hidden)
+            }
+        }
+        .task(id: "\(details.id)-\(isMobile)") {
+            let url = details.heroArtworkURL(isMobile: isMobile)
+            let next = await BannerAmbientLoader.gradient(
+                for: url,
+                fallbackId: Int(details.id) ?? 0
+            )
+            withAnimation(.easeInOut(duration: 0.65)) {
+                ambientGradient = next
+            }
         }
         #if os(iOS)
             .ignoresSafeArea(edges: isMobile ? .top : [])
@@ -207,53 +224,19 @@ private struct MediaInfoPosterView: View {
         VStack(alignment: .leading, spacing: 0) {
             // ── Hero poster with everything overlaid ──
             ZStack(alignment: .bottom) {
-                ZStack(alignment: .bottom) {
-                    // Poster image
-                    AsyncImage(
-                        url: MediaConfig.instance.posterURL(
-                            details.posterPath ?? "", width: 500
-                        )
-                    ) { phase in
-                        switch phase {
-                        case let .success(image):
-                            image
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                        case .failure:
-                            posterPlaceholder
-                        case .empty:
-                            ShimmerView()
-                        @unknown default:
-                            posterPlaceholder
-                        }
-                    }
-                    .frame(width: width, height: height)
-                    .clipped()
-
-                    // Gradient
-                    LinearGradient(
-                        stops: [
-                            .init(color: .clear, location: 0.0),
-                            .init(
-                                color: Color.black.opacity(0.3), location: 0.28
-                            ),
-                            .init(
-                                color: Color.black.opacity(0.85), location: 0.55
-                            ),
-                            .init(
-                                color: Color.black.opacity(0.97), location: 1.0
-                            ),
-                        ],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                    .frame(width: width, height: height)
-                    .allowsHitTesting(false)
-                }
-                .compositingGroup()
-                .frame(width: width, height: height)
+                BannerFadingHeroImage(
+                    width: width,
+                    height: height,
+                    url: details.heroArtworkURL(isMobile: true)
+                )
                 .stretchableHeroBannerInScrollView()
                 .zIndex(0)
+
+                HeroTextLegibilityScrim(
+                    width: width,
+                    height: height * 0.55
+                )
+                .zIndex(1)
 
                 // Content pinned to bottom
                 VStack(alignment: .leading, spacing: 0) {
@@ -353,7 +336,7 @@ private struct MediaInfoPosterView: View {
                 .padding(.horizontal, AppTheme.Spacing.md)
                 .padding(.bottom, AppTheme.Spacing.lg)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .zIndex(1)
+                .zIndex(2)
             }
             .frame(width: width, height: height)
 
@@ -479,46 +462,19 @@ private struct MediaInfoBannerView: View {
 
     var body: some View {
         ZStack(alignment: .bottomLeading) {
-            ZStack(alignment: .bottom) {
-                // Backdrop image
-                AsyncImage(
-                    url: MediaConfig.instance.backdropURL(
-                        details.backdropPath ?? "", width: "original"
-                    )
-                ) { phase in
-                    switch phase {
-                    case let .success(image):
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                    case .failure:
-                        bannerPlaceholder
-                    case .empty:
-                        ShimmerView()
-                    @unknown default:
-                        bannerPlaceholder
-                    }
-                }
-                .frame(width: width, height: height)
-                .clipped()
-
-                // Gradient overlay
-                LinearGradient(
-                    stops: [
-                        .init(color: .clear, location: 0.2),
-                        .init(color: Color.black.opacity(0.8), location: 0.7),
-                        .init(color: Color.black.opacity(0.95), location: 1.0),
-                    ],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-                .frame(width: width, height: height)
-                .allowsHitTesting(false)
-            }
-            .compositingGroup()
-            .frame(width: width, height: height)
+            BannerFadingHeroImage(
+                width: width,
+                height: height,
+                url: details.heroArtworkURL(isMobile: false)
+            )
             .stretchableHeroBannerInScrollView()
             .zIndex(0)
+
+            HeroTextLegibilityScrim(
+                width: width,
+                height: height * 0.55
+            )
+            .zIndex(1)
 
             // Content
             VStack(alignment: .leading, spacing: 0) {
@@ -631,7 +587,7 @@ private struct MediaInfoBannerView: View {
             }
             .padding(.horizontal, AppTheme.Spacing.lg)
             .padding(.bottom, AppTheme.Spacing.lg)
-            .zIndex(1)
+            .zIndex(2)
 
         }
         .frame(width: width, height: height)

@@ -31,12 +31,12 @@ struct MovieView: View {
 
     var body: some View {
         ZStack {
-            AppTheme.Colors.background.ignoresSafeArea()
-
             switch vm.movieState {
             case .initial, .loading:
+                AppTheme.Colors.background.ignoresSafeArea()
                 MediaViewShimmer(isMobile: isMobile)
             case .error(let err):
+                AppTheme.Colors.background.ignoresSafeArea()
                 VStack(spacing: AppTheme.Spacing.md) {
                     Button {
                         Router.router.popRoute()

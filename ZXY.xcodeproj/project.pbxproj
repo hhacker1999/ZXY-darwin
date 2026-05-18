@@ -86,6 +86,7 @@
 		69E6A3652FB0F25C00EBEBEA /* Track.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69E6A3032FB0F25C00EBEBEA /* Track.swift */; };
 		69E6A3662FB0F25C00EBEBEA /* LibraryCustomizationSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69E6A3112FB0F25C00EBEBEA /* LibraryCustomizationSection.swift */; };
 		69E6A3682FB0F2FD00EBEBEA /* ZXYApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69E6A3672FB0F2FD00EBEBEA /* ZXYApp.swift */; };
+		69E6A3692FB0F25C00EBEBEA /* BannerAmbientBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69E6A36A2FB0F25C00EBEBEA /* BannerAmbientBackground.swift */; };
 		D2D2615B8628D2F8C96236FD /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 1B44BDE7D0A832B4B5CA9468 /* .gitignore */; };
 		F9420C367E86DA90F00556EC /* Mpv.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91F1E28FAA8C1C57FC38E16F /* Mpv.swift */; };
 /* End PBXBuildFile section */
@@ -171,6 +172,7 @@
 		69E6A31A2FB0F25C00EBEBEA /* GlobalOverlays.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalOverlays.swift; sourceTree = "<group>"; };
 		69E6A31B2FB0F25C00EBEBEA /* Router.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Router.swift; sourceTree = "<group>"; };
 		69E6A3672FB0F2FD00EBEBEA /* ZXYApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZXYApp.swift; sourceTree = "<group>"; };
+		69E6A36A2FB0F25C00EBEBEA /* BannerAmbientBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BannerAmbientBackground.swift; sourceTree = "<group>"; };
 		8517C0CB402EB23C733A61CB /* MpvViewController.old */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = MpvViewController.old; sourceTree = "<group>"; };
 		91F1E28FAA8C1C57FC38E16F /* Mpv.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = Mpv.swift; sourceTree = "<group>"; };
 		9CF0EE4A0CCB4E7DEBCB02BF /* MpvMetalPlayerView.old */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = MpvMetalPlayerView.old; sourceTree = "<group>"; };
@@ -337,6 +339,7 @@
 		69E6A2F32FB0F25C00EBEBEA /* HomeView */ = {
 			isa = PBXGroup;
 			children = (
+				69E6A36A2FB0F25C00EBEBEA /* BannerAmbientBackground.swift */,
 				69E6A2EF2FB0F25C00EBEBEA /* HomeView.swift */,
 				69E6A2F02FB0F25C00EBEBEA /* HomeViewModel.swift */,
 				69E6A2F12FB0F25C00EBEBEA /* ShimmerView.swift */,
@@ -614,6 +617,7 @@
 				69E6A3532FB0F25C00EBEBEA /* Media.swift in Sources */,
 				69E6A3542FB0F25C00EBEBEA /* DiscoverViewMode.swift in Sources */,
 				69E6A3552FB0F25C00EBEBEA /* HomeView.swift in Sources */,
+				69E6A3692FB0F25C00EBEBEA /* BannerAmbientBackground.swift in Sources */,
 				69E6A3562FB0F25C00EBEBEA /* BaseHomeView.swift in Sources */,
 				69E6A3572FB0F25C00EBEBEA /* Extensions.swift in Sources */,
 				69E6A3582FB0F25C00EBEBEA /* User.swift in Sources */,

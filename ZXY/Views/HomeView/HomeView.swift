@@ -9,6 +9,7 @@ import SwiftUI
 
 struct HomeView: View {
     @State private var vm: HomeViewModel
+    @State private var ambientGradient: HomeAmbientGradient = .default
 
     init(mediaUc: MediaUsecase, progressUc: ProgressUsecase) {
         _vm = State(
@@ -20,50 +21,67 @@ struct HomeView: View {
     }
 
     var body: some View {
-        ScrollView(.vertical, showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 0) {
-                TopBannerSection(state: vm.topBannerState)
-                #if os(macOS)
-                    .backgroundExtensionEffect()
-                #endif
-                Spacer().frame(height: AppTheme.Spacing.lg)
-                LazyVStack(alignment: .leading, spacing: AppTheme.Spacing.lg) {
-                    ContinueWatchingSection(
-                        state: vm.continueWatchingState,
-                        onRemove: { item in
+        ZStack {
+            HomePageAmbientBackground(gradient: ambientGradient)
+                // .ignoresSafeArea()
+
+            ScrollView(.vertical, showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 0) {
+                    TopBannerSection(
+                        state: vm.topBannerState,
+                        onActiveMediaChange: { media in
                             Task {
-                                await vm.removeFromContinueWatching(item: item)
-                            }
-                        },
-                        onMarkWatched: { item in
-                            Task {
-                                await vm.markContinueWatchingWatched(item: item)
+                                let next = await BannerAmbientLoader.gradient(for: media)
+                                withAnimation(.easeInOut(duration: 0.65)) {
+                                    ambientGradient = next
+                                }
                             }
                         }
                     )
-                    ForEach(vm.discoveryItemState) { item in
-                        DiscoveryRow(item: item) { media in
-                            if media.type == "movie" {
-                                Router.router.addToRoute(route: .movieDetails(media.id))
-                            } else {
-                                Router.router.addToRoute(route: .seriesDetails(media.id))
-                            }
-                        }
-                        .onAppear {
-                            if vm.startRowFetchIfNeeded(item: item) {
+                    #if os(macOS)
+                    .backgroundExtensionEffect()
+                    #endif
+                    Spacer().frame(height: AppTheme.Spacing.lg)
+                    LazyVStack(alignment: .leading, spacing: AppTheme.Spacing.lg) {
+                        ContinueWatchingSection(
+                            state: vm.continueWatchingState,
+                            onRemove: { item in
                                 Task {
-                                    await vm
-                                        .getMediaAndUpdateItemState(
-                                            item: item
-                                        )
+                                    await vm.removeFromContinueWatching(item: item)
+                                }
+                            },
+                            onMarkWatched: { item in
+                                Task {
+                                    await vm.markContinueWatchingWatched(item: item)
+                                }
+                            }
+                        )
+                        ForEach(vm.discoveryItemState) { item in
+                            DiscoveryRow(item: item) { media in
+                                if media.type == "movie" {
+                                    Router.router.addToRoute(route: .movieDetails(media.id))
+                                } else {
+                                    Router.router.addToRoute(route: .seriesDetails(media.id))
+                                }
+                            }
+                            .onAppear {
+                                if vm.startRowFetchIfNeeded(item: item) {
+                                    Task {
+                                        await vm
+                                            .getMediaAndUpdateItemState(
+                                                item: item
+                                            )
+                                    }
                                 }
                             }
                         }
                     }
+                    .padding(.bottom, AppTheme.Spacing.xxl)
                 }
-                .padding(.bottom, AppTheme.Spacing.xxl)
             }
+            .scrollContentBackground(.hidden)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .onChange(of: Router.router.mainRouteState) { old, new in
             guard let oldRoute = old.last else {
                 return
@@ -83,7 +101,6 @@ struct HomeView: View {
                 }
             }
         }
-        .background(AppTheme.Colors.background).ignoresSafeArea(edges: .top)
     }
 }
 

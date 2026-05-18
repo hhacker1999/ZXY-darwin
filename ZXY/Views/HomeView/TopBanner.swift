@@ -11,6 +11,7 @@ import SwiftUI
 struct TopBannerSection: View {
     @ObserveInjection var inject
     let state: ViewItemState<[AppMedia]>
+    var onActiveMediaChange: ((AppMedia) -> Void)? = nil
 
     var body: some View {
         switch state {
@@ -18,8 +19,14 @@ struct TopBannerSection: View {
             TopBannerShimmer()
         case let .loaded(items):
             if !items.isEmpty {
-                TopBannerCarousel(items: items)
-                    .enableInjection()
+                TopBannerCarousel(
+                    items: items,
+                    onActiveMediaChange: onActiveMediaChange
+                )
+                .enableInjection()
+                .onAppear {
+                    onActiveMediaChange?(items[0])
+                }
             }
         case .error:
             EmptyView()
@@ -29,6 +36,7 @@ struct TopBannerSection: View {
 
 private struct TopBannerCarousel: View {
     let items: [AppMedia]
+    var onActiveMediaChange: ((AppMedia) -> Void)? = nil
     @State private var scrolledIndex: Int? = 0
     /// Mirrors `scrolledIndex` but never goes back to nil during scroll
     /// gestures, so UI (like the mute button) doesn't flicker.
@@ -71,6 +79,12 @@ private struct TopBannerCarousel: View {
                 .opacity
             )
             .aspectRatio(aspectRatio, contentMode: .fit)
+        }
+        .onAppear {
+            reportActiveMedia()
+        }
+        .onChange(of: stableActiveIndex) { _, _ in
+            reportActiveMedia()
         }
         #if os(iOS)
         .simultaneousGesture(iOSCarouselDragGesture())
@@ -157,6 +171,11 @@ private struct TopBannerCarousel: View {
             }
         }
     }
+
+    private func reportActiveMedia() {
+        guard items.indices.contains(stableActiveIndex) else { return }
+        onActiveMediaChange?(items[stableActiveIndex])
+    }
 }
 
 private struct MuteToggleButton: View {
@@ -196,6 +215,14 @@ private struct MuteToggleButton: View {
 private struct BannerSlide: View {
     let media: AppMedia
     let aspectRatio: Double
+
+    private var bannerArtworkURL: URL? {
+        #if os(iOS)
+            return MediaConfig.instance.posterURL(media.posterPath, width: 780)
+        #else
+            return MediaConfig.instance.backdropURL(media.backdropPath, width: "original")
+        #endif
+    }
 
     private var isShow: Bool {
         media.type == "show"
@@ -277,56 +304,19 @@ private struct BannerSlide: View {
             let height = geo.size.width / aspectRatio
             let width = geo.size.width
             ZStack(alignment: .bottomLeading) {
-                ZStack(alignment: .bottom) {
-                    // ── Background poster image ────────────────────
-                    AsyncImage(
-                        url: {
-                            #if os(iOS)
-                                return MediaConfig.instance.posterURL(
-                                    media.posterPath,
-                                    width: 780
-                                )
-                            #else
-                                return MediaConfig.instance.backdropURL(
-                                    media.backdropPath,
-                                    width: "original"
-                                )
-                            #endif
-                        }()
-                    ) { phase in
-                        switch phase {
-                        case let .success(image):
-                            image
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                        case .failure:
-                            bannerPlaceholder
-                        case .empty:
-                            ShimmerView()
-                        @unknown default:
-                            bannerPlaceholder
-                        }
-                    }
-                    .frame(width: width, height: height)
-                    .clipped()
-
-                    // ── Readability scrim (helps text on bright/white backgrounds) ──
-                    LinearGradient(
-                        stops: [
-                            .init(color: .clear, location: 0.0),
-                            .init(color: .black.opacity(0.25), location: 0.45),
-                            .init(color: .black.opacity(0.7), location: 1.0),
-                        ],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                    .frame(width: width, height: height * 0.65)
-                    .allowsHitTesting(false)
-                }
-                .compositingGroup()
-                .frame(width: width, height: height)
+                BannerFadingHeroImage(
+                    width: width,
+                    height: height,
+                    url: bannerArtworkURL
+                )
                 .stretchableHeroBannerInScrollView()
                 .zIndex(0)
+
+                HeroTextLegibilityScrim(
+                    width: width,
+                    height: height * 0.55
+                )
+                .zIndex(1)
 
                 // ── Trailer video (only for the slide in viewport) ─────
                 // if isActive,
@@ -452,7 +442,7 @@ private struct BannerSlide: View {
                     alignment: .bottomLeading
                 )
                 .padding(.horizontal, AppTheme.Spacing.md)
-                .zIndex(1)
+                .zIndex(2)
             }
             .frame(maxWidth: width)
         }
@@ -533,33 +523,13 @@ private struct TopBannerShimmer: View {
             let bannerHeight = geo.size.width / aspectRatio
 
             ZStack(alignment: .bottom) {
-                ZStack(alignment: .bottom) {
-                    ShimmerView()
-                        .frame(width: geo.size.width, height: bannerHeight)
-
-                    // Gradient overlay
-                    LinearGradient(
-                        stops: [
-                            .init(color: .clear, location: 0.0),
-                            .init(
-                                color: AppTheme.Colors.background
-                                    .opacity(0.5),
-                                location: 0.6
-                            ),
-                            .init(
-                                color: AppTheme.Colors.background,
-                                location: 1.0
-                            ),
-                        ],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                    .frame(width: geo.size.width, height: bannerHeight * 0.5)
-                }
-                .compositingGroup()
-                .frame(width: geo.size.width, height: bannerHeight)
-                .stretchableHeroBannerInScrollView()
-                .zIndex(0)
+                ShimmerView()
+                    .frame(width: geo.size.width, height: bannerHeight)
+                    .mask {
+                        BannerImageBottomFadeMask(height: bannerHeight)
+                    }
+                    .stretchableHeroBannerInScrollView()
+                    .zIndex(0)
 
                 // Skeleton content
                 VStack(spacing: 12) {

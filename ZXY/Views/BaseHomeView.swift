@@ -1,7 +1,7 @@
 import Foundation
 import SwiftUI
 #if os(iOS)
-import UIKit
+    import UIKit
 #endif
 
 enum BaseHomeViewPages: String, CaseIterable, Identifiable {
@@ -33,30 +33,30 @@ struct BaseHomeview: View {
     var body: some View {
         Group {
             #if os(iOS)
-            if UIDevice.current.userInterfaceIdiom == .phone {
-                iosTabChrome
-            } else {
-                macSidebarSplitChrome
-            }
+                if UIDevice.current.userInterfaceIdiom == .phone {
+                    iosTabChrome
+                } else {
+                    macSidebarSplitChrome
+                }
             #else
-            macSidebarSplitChrome
+                macSidebarSplitChrome
             #endif
         }
         .accentColor(.white)
     }
 
     #if os(iOS)
-    private var iosTabChrome: some View {
-        TabView(selection: $selectedPage) {
-            ForEach(BaseHomeViewPages.allCases) { page in
-                detailContent(for: page)
-                    .tabItem {
-                        Label(page.rawValue, systemImage: page.icon)
-                    }
-                    .tag(page)
+        private var iosTabChrome: some View {
+            TabView(selection: $selectedPage) {
+                ForEach(BaseHomeViewPages.allCases) { page in
+                    detailContent(for: page)
+                        .tabItem {
+                            Label(page.rawValue, systemImage: page.icon)
+                        }
+                        .tag(page)
+                }
             }
         }
-    }
     #endif
 
     private var macSidebarSplitChrome: some View {
