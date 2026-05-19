@@ -10,9 +10,10 @@ struct LoginView: View {
     private var vm: LoginViewModel
 
     init(authUc: AuthUsecase) {
-        self.vm = LoginViewModel(authUc: authUc)
+        vm = LoginViewModel(authUc: authUc)
     }
 
+    @State private var name = ""
     @State private var email = ""
     @State private var password = ""
     @State private var confirmPassword = ""
@@ -88,6 +89,22 @@ struct LoginView: View {
     private var form: some View {
         VStack(spacing: 18) {
             LoginFieldGroup {
+                if vm.isSignup {
+                    LoginField(
+                        placeholder: "Enter Name",
+                        text: $name,
+                        kind: .text
+                    )
+                    .transition(
+                        .asymmetric(
+                            insertion: .opacity.combined(
+                                with: .move(edge: .top)
+                            ),
+                            removal: .opacity
+                        )
+                    )
+                    LoginFieldDivider()
+                }
                 LoginField(
                     placeholder: "Email",
                     text: $email,
@@ -159,7 +176,13 @@ struct LoginView: View {
                 title: vm.isSignup ? "Create Account" : "Sign In",
                 isLoading: vm.isLoading
             ) {
-                Task { await vm.login(email: email, pwd: password) }
+                Task {
+                    if vm.isSignup {
+                        await vm.signup(name: name, email: email, pwd: password, confirmPwd: confirmPassword)
+                    } else {
+                        await vm.login(email: email, pwd: password)
+                    }
+                }
             }
             .opacity(primaryActionEnabled || vm.isLoading ? 1 : 0.5)
             .disabled(!primaryActionEnabled || vm.isLoading)
@@ -309,7 +332,9 @@ private struct LoginField: View {
     @FocusState private var focused: Bool
     @State private var reveal = false
 
-    private var isSecure: Bool { kind == .password }
+    private var isSecure: Bool {
+        kind == .password
+    }
 
     var body: some View {
         HStack(spacing: 10) {
@@ -328,15 +353,15 @@ private struct LoginField: View {
                     } else {
                         TextField("", text: $text)
                             .focused($focused)
-                            #if os(iOS)
-                                .keyboardType(
-                                    kind == .email ? .emailAddress : .default
-                                )
-                                .textContentType(
-                                    kind == .email ? .emailAddress : .none
-                                )
-                                .textInputAutocapitalization(.never)
-                            #endif
+                        #if os(iOS)
+                            .keyboardType(
+                                kind == .email ? .emailAddress : .default
+                            )
+                            .textContentType(
+                                kind == .email ? .emailAddress : .none
+                            )
+                            .textInputAutocapitalization(.never)
+                        #endif
                             .autocorrectionDisabled()
                     }
                 }

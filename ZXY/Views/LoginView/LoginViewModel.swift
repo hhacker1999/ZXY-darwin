@@ -17,7 +17,7 @@ class LoginViewModel {
     var err: String?
     var navigateToProfiles: Bool = false
 
-    private let router: Router = Router.router
+    private let router: Router = .router
 
     init(authUc: AuthUsecase) {
         self.authUc = authUc
@@ -44,6 +44,36 @@ class LoginViewModel {
             // Set this users as app user in user bloc
             UserBloc.bloc.user = user
             router.routerState = .profileLogIn(loggedInUser.profiles)
+        } catch let error as HttpError {
+            err = error.error()
+        } catch {
+            err = error.localizedDescription
+        }
+    }
+
+    func signup(name: String, email: String, pwd: String, confirmPwd: String) async {
+        if email.isEmpty || pwd.isEmpty || name.isEmpty {
+            err = "Name, Email or password cannot be empty"
+            return
+        }
+        if pwd != confirmPwd {
+            err = "Invalid confirm password"
+            return
+        }
+        err = nil
+        do {
+            defer {
+                isLoading = false
+            }
+            isLoading = true
+            try await authUc.signup(
+                name: name,
+                email: email,
+                password: pwd
+            )
+
+            isSignup = false
+            ToastProgressBloc.bloc.showToast(message: "Login to continue", isError: false)
         } catch let error as HttpError {
             err = error.error()
         } catch {
