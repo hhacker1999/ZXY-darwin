@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		0634A9828F1C49225B410FEF /* TrakPadAndDragListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A56036EBDC47624CC2FDA09 /* TrakPadAndDragListener.swift */; };
 		0C83E04A4CF86332FFC2772F /* MpvPlayerDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 225278BC78432D767B4D164F /* MpvPlayerDelegate.swift */; };
+		2A66D3ADCEB17803562BCFB6 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 1DC449894548917D9608C662 /* README.md */; };
 		695A196D2FAFA909005F52FB /* MPVKit in Frameworks */ = {isa = PBXBuildFile; productRef = 695A196C2FAFA909005F52FB /* MPVKit */; };
 		69D908192F82AA1900FDC6BA /* Inject in Frameworks */ = {isa = PBXBuildFile; productRef = 69D908182F82AA1900FDC6BA /* Inject */; };
 		69E6A31D2FB0F25C00EBEBEA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 69E6A2C32FB0F25C00EBEBEA /* Assets.xcassets */; };
@@ -94,6 +95,7 @@
 /* Begin PBXFileReference section */
 		0A56036EBDC47624CC2FDA09 /* TrakPadAndDragListener.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = TrakPadAndDragListener.swift; sourceTree = "<group>"; };
 		1B44BDE7D0A832B4B5CA9468 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
+		1DC449894548917D9608C662 /* README.md */ = {isa = PBXFileReference; explicitFileType = net.daringfireball.markdown; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = README.md; sourceTree = "<group>"; };
 		225278BC78432D767B4D164F /* MpvPlayerDelegate.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = MpvPlayerDelegate.swift; sourceTree = "<group>"; };
 		22B9534F392CD529EBD30AF0 /* MpvMetalLayer.old */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = MpvMetalLayer.old; sourceTree = "<group>"; };
 		6980844D2F78169500FCBB80 /* ZXY.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ZXY.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -255,6 +257,7 @@
 			children = (
 				6980844D2F78169500FCBB80 /* ZXY.app */,
 				1B44BDE7D0A832B4B5CA9468 /* .gitignore */,
+				1DC449894548917D9608C662 /* README.md */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -550,6 +553,7 @@
 			files = (
 				69E6A31D2FB0F25C00EBEBEA /* Assets.xcassets in Resources */,
 				D2D2615B8628D2F8C96236FD /* .gitignore in Resources */,
+				2A66D3ADCEB17803562BCFB6 /* README.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
