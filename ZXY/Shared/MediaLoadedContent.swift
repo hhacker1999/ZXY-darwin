@@ -14,150 +14,154 @@ struct MediaLoadedContent: View {
     var onMarkMovieWatched: () -> Void = {}
 
     private var castList: [Cast] {
-        return details.cast.filter { $0.profilePath != nil && !($0.profilePath!.isEmpty) }
+        return details.cast.filter {
+            $0.profilePath != nil && !($0.profilePath!.isEmpty)
+        }
     }
 
     var body: some View {
         GeometryReader { geo in
             let width = geo.size.width
-            let headerHeight: CGFloat = isMobile
-                ? (width * 3) / 2
-                : (width * 9) / 16
+            let headerHeight: CGFloat =
+                isMobile
+                    ? (width * 3) / 2
+                    : (width * 9) / 16
 
             ZStack {
                 HomePageAmbientBackground(gradient: ambientGradient)
                     .ignoresSafeArea()
 
-            ScrollView(.vertical, showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 0) {
-                    // ── Header (poster for mobile, banner for desktop) ──
-                    if isMobile {
-                        MediaInfoPosterView(
-                            details: details,
-                            width: width,
-                            height: headerHeight,
-                            streamState: streamState,
-                            movieProgress: movieProgress,
-                            movieIsWatched: movieIsWatched,
-                            seriesVm: seriesVm,
-                            onMarkMovieWatched: onMarkMovieWatched
-                        )
-                    } else {
-                        MediaInfoBannerView(
-                            details: details,
-                            width: width,
-                            height: headerHeight,
-                            streamState: streamState,
-                            movieProgress: movieProgress,
-                            movieIsWatched: movieIsWatched,
-                            seriesVm: seriesVm,
-                            onMarkMovieWatched: onMarkMovieWatched
-                        )
-                    }
-
-                    Spacer().frame(height: AppTheme.Spacing.lg)
-
-                    // ── Seasons & Episodes (series only) ──
-                    if !details.seasons.isEmpty, let seriesVm = seriesVm {
-                        SeasonEpisodeSection(
-                            seasons: details.seasons,
-                            seriesVm: seriesVm,
-                            isMobile: isMobile,
-                            media: details
-                        )
-                        .padding(.horizontal, AppTheme.Spacing.md)
-
-                        Spacer().frame(
-                            height: isMobile
-                                ? AppTheme.Spacing.md : AppTheme.Spacing.lg
-                        )
-                    }
-
-                    // ── Scrollable content below header ──
+                ScrollView(.vertical, showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 0) {
-                        // Cast & Crew
-                        if !castList.isEmpty {
-                            CastAndCrewSection(
-                                castList: castList,
-                                isMobile: isMobile
+                        // ── Header (poster for mobile, banner for desktop) ──
+                        if isMobile {
+                            MediaInfoPosterView(
+                                details: details,
+                                width: width,
+                                height: headerHeight,
+                                streamState: streamState,
+                                movieProgress: movieProgress,
+                                movieIsWatched: movieIsWatched,
+                                seriesVm: seriesVm,
+                                onMarkMovieWatched: onMarkMovieWatched
                             )
-                            Spacer().frame(
-                                height: isMobile
-                                    ? AppTheme.Spacing.sm : AppTheme.Spacing.lg
-                            )
-                        }
-
-                        // Collection
-                        if let collection = details.collection,
-                           !collection.parts.isEmpty
-                        {
-                            Spacer().frame(
-                                height: isMobile
-                                    ? AppTheme.Spacing.md : AppTheme.Spacing.lg
-                            )
-                            MediaShelfSection(
-                                title: collection.name,
-                                media: collection.parts.map {
-                                    $0.asAppMedia(preferMovie: details.isMovie)
-                                },
-                                onTap: MediaShelfNavigation.openDetails,
-                                insetContent: false
+                        } else {
+                            MediaInfoBannerView(
+                                details: details,
+                                width: width,
+                                height: headerHeight,
+                                streamState: streamState,
+                                movieProgress: movieProgress,
+                                movieIsWatched: movieIsWatched,
+                                seriesVm: seriesVm,
+                                onMarkMovieWatched: onMarkMovieWatched
                             )
                         }
 
-                        // Recommendations
-                        if !details.recommendations.isEmpty {
-                            Spacer().frame(
-                                height: isMobile
-                                    ? AppTheme.Spacing.md : AppTheme.Spacing.lg
-                            )
-                            MediaShelfSection(
-                                title: "You may also like",
-                                media: details.recommendations.map {
-                                    $0.asAppMedia(preferMovie: details.isMovie)
-                                },
-                                onTap: MediaShelfNavigation.openDetails,
-                                insetContent: false
-                            )
-                        }
+                        Spacer().frame(height: AppTheme.Spacing.lg)
 
-                        // Similar
-                        if !details.similar.isEmpty {
+                        // ── Seasons & Episodes (series only) ──
+                        if !details.seasons.isEmpty, let seriesVm = seriesVm {
+                            SeasonEpisodeSection(
+                                seasons: details.seasons,
+                                seriesVm: seriesVm,
+                                isMobile: isMobile,
+                                media: details
+                            )
+                            .padding(.horizontal, AppTheme.Spacing.md)
+
                             Spacer().frame(
                                 height: isMobile
                                     ? AppTheme.Spacing.md : AppTheme.Spacing.lg
                             )
-                            MediaShelfSection(
-                                title: "Similar \(details.isMovie ? "Movies" : "Shows")",
-                                media: details.similar.map {
-                                    $0.asAppMedia(preferMovie: details.isMovie)
-                                },
-                                onTap: MediaShelfNavigation.openDetails,
-                                insetContent: false
-                            )
                         }
 
-                        Spacer().frame(height: AppTheme.Spacing.xxl)
+                        // ── Scrollable content below header ──
+                        VStack(alignment: .leading, spacing: 0) {
+                            // Cast & Crew
+                            if !castList.isEmpty {
+                                CastAndCrewSection(
+                                    castList: castList,
+                                    isMobile: isMobile
+                                )
+                                Spacer().frame(
+                                    height: isMobile
+                                        ? AppTheme.Spacing.sm
+                                        : AppTheme.Spacing.lg
+                                )
+                            }
+
+                            // Collection
+                            if let collection = details.collection,
+                               !collection.parts.isEmpty
+                            {
+                                Spacer().frame(
+                                    height: isMobile
+                                        ? AppTheme.Spacing.md
+                                        : AppTheme.Spacing.lg
+                                )
+                                MediaShelfSection(
+                                    title: collection.name,
+                                    media: collection.parts.map {
+                                        $0.asAppMedia(
+                                            preferMovie: details.isMovie
+                                        )
+                                    },
+                                    onTap: MediaShelfNavigation.openDetails,
+                                    insetContent: false
+                                )
+                            }
+
+                            // Recommendations
+                            if !details.recommendations.isEmpty {
+                                Spacer().frame(
+                                    height: isMobile
+                                        ? AppTheme.Spacing.md
+                                        : AppTheme.Spacing.lg
+                                )
+                                MediaShelfSection(
+                                    title: "You may also like",
+                                    media: details.recommendations.map {
+                                        $0.asAppMedia(
+                                            preferMovie: details.isMovie
+                                        )
+                                    },
+                                    onTap: MediaShelfNavigation.openDetails,
+                                    insetContent: false
+                                )
+                            }
+
+                            // Similar
+                            if !details.similar.isEmpty {
+                                Spacer().frame(
+                                    height: isMobile
+                                        ? AppTheme.Spacing.md
+                                        : AppTheme.Spacing.lg
+                                )
+                                MediaShelfSection(
+                                    title:
+                                    "Similar \(details.isMovie ? "Movies" : "Shows")",
+                                    media: details.similar.map {
+                                        $0.asAppMedia(
+                                            preferMovie: details.isMovie
+                                        )
+                                    },
+                                    onTap: MediaShelfNavigation.openDetails,
+                                    insetContent: false
+                                )
+                            }
+
+                            Spacer().frame(height: AppTheme.Spacing.xxl)
+                        }
+                        .padding(.horizontal, AppTheme.Spacing.md)
                     }
-                    .padding(.horizontal, AppTheme.Spacing.md)
+                    .environment(\.contentBlendsWithAmbient, true)
                 }
-                .environment(\.contentBlendsWithAmbient, true)
-            }
-            .scrollContentBackground(.hidden)
-            }
-        }
-        .task(id: "\(details.id)-\(isMobile)") {
-            let url = details.heroArtworkURL(isMobile: isMobile)
-            let next = await BannerAmbientLoader.gradient(
-                for: url,
-                fallbackId: Int(details.id) ?? 0
-            )
-            withAnimation(.easeInOut(duration: 0.65)) {
-                ambientGradient = next
+                .scrollContentBackground(.hidden)
             }
         }
         #if os(iOS)
-            .ignoresSafeArea(edges: isMobile ? .top : [])
+        .ignoresSafeArea(edges: isMobile ? .top : [])
         #endif
         .enableInjection()
     }
@@ -184,13 +188,19 @@ private struct MediaInfoPosterView: View {
         return streamState
     }
 
-    private var effectiveSeasonNo: Int { seriesVm?.selectedSeason ?? -1 }
-    private var effectiveEpisodeNo: Int { seriesVm?.selectedEpisode ?? -1 }
+    private var effectiveSeasonNo: Int {
+        seriesVm?.selectedSeason ?? -1
+    }
+
+    private var effectiveEpisodeNo: Int {
+        seriesVm?.selectedEpisode ?? -1
+    }
 
     private var playProgressFraction: Double {
         let raw: Double
         if let seriesVm = seriesVm {
-            let key = "\(details.id):\(seriesVm.selectedSeason):\(seriesVm.selectedEpisode)"
+            let key =
+                "\(details.id):\(seriesVm.selectedSeason):\(seriesVm.selectedEpisode)"
             raw = seriesVm.progressState[key]?.progress ?? 0
         } else {
             raw = movieProgress
@@ -216,7 +226,9 @@ private struct MediaInfoPosterView: View {
     }
 
     private var releaseYear: String? {
-        guard details.airOrReleaseDate != nil, !details.airOrReleaseDate!.isEmpty else { return nil }
+        guard details.airOrReleaseDate != nil,
+              !details.airOrReleaseDate!.isEmpty
+        else { return nil }
         return String(details.airOrReleaseDate!.prefix(4))
     }
 
@@ -237,7 +249,8 @@ private struct MediaInfoPosterView: View {
                 BannerFadingHeroImage(
                     width: width,
                     height: height,
-                    url: details.heroArtworkURL(isMobile: true)
+                    path: details.posterPath ?? "",
+                    imageWidth: "w780"
                 )
                 .stretchableHeroBannerInScrollView()
                 .zIndex(0)
@@ -424,13 +437,19 @@ private struct MediaInfoBannerView: View {
         return streamState
     }
 
-    private var effectiveSeasonNo: Int { seriesVm?.selectedSeason ?? -1 }
-    private var effectiveEpisodeNo: Int { seriesVm?.selectedEpisode ?? -1 }
+    private var effectiveSeasonNo: Int {
+        seriesVm?.selectedSeason ?? -1
+    }
+
+    private var effectiveEpisodeNo: Int {
+        seriesVm?.selectedEpisode ?? -1
+    }
 
     private var playProgressFraction: Double {
         let raw: Double
         if let seriesVm = seriesVm {
-            let key = "\(details.id):\(seriesVm.selectedSeason):\(seriesVm.selectedEpisode)"
+            let key =
+                "\(details.id):\(seriesVm.selectedSeason):\(seriesVm.selectedEpisode)"
             raw = seriesVm.progressState[key]?.progress ?? 0
         } else {
             raw = movieProgress
@@ -456,7 +475,9 @@ private struct MediaInfoBannerView: View {
     }
 
     private var releaseYear: String? {
-        guard details.airOrReleaseDate != nil, !details.airOrReleaseDate!.isEmpty else { return nil }
+        guard details.airOrReleaseDate != nil,
+              !details.airOrReleaseDate!.isEmpty
+        else { return nil }
         return String(details.airOrReleaseDate!.prefix(4))
     }
 
@@ -475,7 +496,8 @@ private struct MediaInfoBannerView: View {
             BannerFadingHeroImage(
                 width: width,
                 height: height,
-                url: details.heroArtworkURL(isMobile: false)
+                path: details.backdropPath ?? "",
+                imageWidth: "original"
             )
             .stretchableHeroBannerInScrollView()
             .zIndex(0)
@@ -598,7 +620,6 @@ private struct MediaInfoBannerView: View {
             .padding(.horizontal, AppTheme.Spacing.lg)
             .padding(.bottom, AppTheme.Spacing.lg)
             .zIndex(2)
-
         }
         .frame(width: width, height: height)
         .sheet(isPresented: $showStreamSheet) {
@@ -670,13 +691,16 @@ private struct MovieWatchedCheckButton: View {
     var body: some View {
         Button(action: action) {
             HStack(spacing: 8) {
-                Image(systemName: isWatched ? "checkmark.circle.fill" : "checkmark.circle")
-                    .font(.system(size: 17, weight: .semibold))
-                    .foregroundStyle(
-                        isWatched
-                            ? Color.white
-                            : Color.white.opacity(0.9)
-                    )
+                Image(
+                    systemName: isWatched
+                        ? "checkmark.circle.fill" : "checkmark.circle"
+                )
+                .font(.system(size: 17, weight: .semibold))
+                .foregroundStyle(
+                    isWatched
+                        ? Color.white
+                        : Color.white.opacity(0.9)
+                )
                 Text(isWatched ? "Watched" : "Mark watched")
                     .font(.system(size: 15, weight: .semibold))
                     .foregroundStyle(
@@ -701,7 +725,10 @@ private struct MovieWatchedCheckButton: View {
                 )
             }
             .scaleEffect((isHovered && !isWatched) ? 1.02 : 1.0)
-            .animation(.spring(response: 0.3, dampingFraction: 0.72), value: isHovered)
+            .animation(
+                .spring(response: 0.3, dampingFraction: 0.72),
+                value: isHovered
+            )
         }
         .buttonStyle(.plain)
         .disabled(isWatched)
@@ -750,7 +777,6 @@ private struct MovieWatchedCheckButton: View {
     }
 }
 
-
 private struct PlayStreamButton: View {
     var label: String = "Play"
     var suffix: String? = nil
@@ -758,7 +784,9 @@ private struct PlayStreamButton: View {
     let action: () -> Void
     @State private var isHovered = false
 
-    private var hasProgress: Bool { progressFraction > 0 }
+    private var hasProgress: Bool {
+        progressFraction > 0
+    }
 
     var body: some View {
         Button(action: action) {
@@ -788,7 +816,10 @@ private struct PlayStreamButton: View {
                     )
             )
             .scaleEffect(isHovered ? 1.04 : 1.0)
-            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isHovered)
+            .animation(
+                .spring(response: 0.3, dampingFraction: 0.7),
+                value: isHovered
+            )
         }
         .buttonStyle(.plain)
         .onHover { hovering in
@@ -812,23 +843,20 @@ private struct PlayStreamButton: View {
     }
 }
 
-
 private extension View {
     /// On iPhone / compact layouts SwiftUI may adapt ``sheet`` to a popover-style panel; force a bottom sheet and system page sizing.
     @ViewBuilder
     func streamSheetPresentationChrome() -> some View {
         #if os(iOS)
-            self
-                .presentationCompactAdaptation(.sheet)
+            presentationCompactAdaptation(.sheet)
                 .presentationSizing(.page)
                 .presentationDragIndicator(.visible)
                 .presentationDetents([.medium, .large])
         #else
-            self.frame(minWidth: 500)
+            frame(minWidth: 500)
         #endif
     }
 }
-
 
 private struct StreamSheet: View {
     let state: ViewItemState<[ResolutionItem]>
@@ -892,7 +920,6 @@ private struct StreamSheet: View {
         .background(AppTheme.Colors.backgroundSecondary)
     }
 
-
     private var streamLoadingView: some View {
         VStack(spacing: AppTheme.Spacing.md) {
             ProgressView()
@@ -905,7 +932,6 @@ private struct StreamSheet: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
-
 
     private func streamErrorView(message: String) -> some View {
         VStack(spacing: AppTheme.Spacing.sm) {
@@ -927,7 +953,6 @@ private struct StreamSheet: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
-
     private var streamEmptyView: some View {
         VStack(spacing: AppTheme.Spacing.sm) {
             Image(systemName: "film.stack")
@@ -946,27 +971,38 @@ private struct StreamSheet: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
-
     private func streamListView(streams: [ResolutionItem]) -> some View {
         List {
-            ForEach(Array(streams.enumerated()), id: \.offset) { index, stream in
+            ForEach(Array(streams.enumerated()), id: \.offset) {
+                index,
+                stream in
                 StreamRow(stream: stream) {
                     dismiss()
-                    Router.router.addToRoute(route: .mpvVideoView(MPVViewArgs(resItems: streams, selectedIndex: index, mediaId: media.id, episodeNo: episodeNo, seasonNo: seasonNo, name: media.name)))
+                    Router.router.addToRoute(
+                        route: .mpvVideoView(
+                            MPVViewArgs(
+                                resItems: streams,
+                                selectedIndex: index,
+                                mediaId: media.id,
+                                episodeNo: episodeNo,
+                                seasonNo: seasonNo,
+                                name: media.name
+                            )
+                        )
+                    )
                 }
                 .listRowBackground(Color.clear)
                 .listRowSeparatorTint(AppTheme.Colors.divider)
             }
         }
         #if os(iOS)
-            .listStyle(.insetGrouped)
+        .listStyle(.insetGrouped)
         #else
-            .listStyle(.plain)
+        .listStyle(.plain)
         #endif
         .scrollContentBackground(.hidden)
     }
 }
-
 
 private struct StreamRow: View {
     let stream: ResolutionItem
@@ -1021,7 +1057,8 @@ private struct SeasonEpisodeSection: View {
     }
 
     private var currentSeason: Season? {
-        guard selectedSeasonIndex >= 0, selectedSeasonIndex < seasons.count else { return nil }
+        guard selectedSeasonIndex >= 0, selectedSeasonIndex < seasons.count
+        else { return nil }
         return seasons[selectedSeasonIndex]
     }
 
@@ -1032,18 +1069,28 @@ private struct SeasonEpisodeSection: View {
 
             // ── Episode Carousel ──
             if let season = currentSeason, !season.episodes.isEmpty {
-                episodeCarousel(episodes: season.episodes, seasonNumber: season.seasonNumber)
+                episodeCarousel(
+                    episodes: season.episodes,
+                    seasonNumber: season.seasonNumber
+                )
             }
         }
         .sheet(isPresented: $showStreamSheet) {
-            StreamSheet(state: seriesVm.episodeStreamState, episodeNo: seriesVm.selectedEpisode, seasonNo: seriesVm.selectedSeason, media: media)
-                .streamSheetPresentationChrome()
+            StreamSheet(
+                state: seriesVm.episodeStreamState,
+                episodeNo: seriesVm.selectedEpisode,
+                seasonNo: seriesVm.selectedSeason,
+                media: media
+            )
+            .streamSheetPresentationChrome()
         }
     }
 
     private var seasonPicker: some View {
         Menu {
-            ForEach(Array(seasons.enumerated()), id: \.offset) { index, season in
+            ForEach(Array(seasons.enumerated()), id: \.offset) {
+                index,
+                season in
                 Button(action: {
                     withAnimation(.smooth(duration: 0.25)) {
                         seriesVm.onEpisodeSelect(
@@ -1062,9 +1109,12 @@ private struct SeasonEpisodeSection: View {
             }
         } label: {
             HStack(spacing: 8) {
-                Text(currentSeason?.name ?? "Season \(currentSeason?.seasonNumber ?? 1)")
-                    .font(.system(size: 18, weight: .bold, design: .rounded))
-                    .foregroundStyle(AppTheme.Colors.elementWhite)
+                Text(
+                    currentSeason?.name
+                        ?? "Season \(currentSeason?.seasonNumber ?? 1)"
+                )
+                .font(.system(size: 18, weight: .bold, design: .rounded))
+                .foregroundStyle(AppTheme.Colors.elementWhite)
 
                 Image(systemName: "chevron.down")
                     .font(.system(size: 12, weight: .semibold))
@@ -1073,26 +1123,43 @@ private struct SeasonEpisodeSection: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 10)
             .background(
-                RoundedRectangle(cornerRadius: AppTheme.Radius.sm, style: .continuous)
-                    .fill(.ultraThinMaterial)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: AppTheme.Radius.sm, style: .continuous)
-                            .strokeBorder(AppTheme.Colors.border, lineWidth: 1)
+                RoundedRectangle(
+                    cornerRadius: AppTheme.Radius.sm,
+                    style: .continuous
+                )
+                .fill(.ultraThinMaterial)
+                .overlay(
+                    RoundedRectangle(
+                        cornerRadius: AppTheme.Radius.sm,
+                        style: .continuous
                     )
+                    .strokeBorder(AppTheme.Colors.border, lineWidth: 1)
+                )
             )
         }
         .buttonStyle(.plain)
     }
 
-    private func episodeCarousel(episodes: [Episode], seasonNumber: Int) -> some View {
+    private func episodeCarousel(episodes: [Episode], seasonNumber: Int)
+        -> some View
+    {
         let spacing: CGFloat = isMobile ? 14 : 18
         let minCardWidth: CGFloat = isMobile ? 260 : 340
         let columns = [
-            GridItem(.adaptive(minimum: minCardWidth), spacing: spacing, alignment: .top),
+            GridItem(
+                .adaptive(minimum: minCardWidth),
+                spacing: spacing,
+                alignment: .top
+            ),
         ]
-        return LazyVGrid(columns: columns, alignment: .leading, spacing: spacing) {
+        return LazyVGrid(
+            columns: columns,
+            alignment: .leading,
+            spacing: spacing
+        ) {
             ForEach(Array(episodes.enumerated()), id: \.offset) { _, episode in
-                let progressKey = "\(seriesVm.id):\(seasonNumber):\(episode.episodeNumber)"
+                let progressKey =
+                    "\(seriesVm.id):\(seasonNumber):\(episode.episodeNumber)"
                 EpisodeCard(
                     episode: episode,
                     seasonNumber: seasonNumber,
@@ -1100,7 +1167,10 @@ private struct SeasonEpisodeSection: View {
                     isMobile: isMobile,
                     progress: seriesVm.progressState[progressKey],
                     onTap: {
-                        loadStreamsAndShow(seasonNumber: seasonNumber, episodeNumber: episode.episodeNumber)
+                        loadStreamsAndShow(
+                            seasonNumber: seasonNumber,
+                            episodeNumber: episode.episodeNumber
+                        )
                     },
                     onMarkWatched: { mediaId in
                         Task {
@@ -1115,9 +1185,9 @@ private struct SeasonEpisodeSection: View {
 
     private func loadStreamsAndShow(seasonNumber: Int, episodeNumber: Int) {
         seriesVm.onEpisodeSelect(
-                season: seasonNumber,
-                episode: episodeNumber
-                )
+            season: seasonNumber,
+            episode: episodeNumber
+        )
         showStreamSheet = true
     }
 }
@@ -1169,7 +1239,9 @@ private struct EpisodeCard: View {
     }
 
     private var airDateValue: Date? {
-        guard let airDate = episode.airDate, !airDate.isEmpty else { return nil }
+        guard let airDate = episode.airDate, !airDate.isEmpty else {
+            return nil
+        }
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
         formatter.timeZone = TimeZone(secondsFromGMT: 0)
@@ -1199,7 +1271,10 @@ private struct EpisodeCard: View {
                 Group {
                     if let stillPath = episode.stillPath, !stillPath.isEmpty {
                         AsyncImage(
-                            url: MediaConfig.instance.stillURL(stillPath, width: "original")
+                            url: MediaConfig.instance.stillURL(
+                                stillPath,
+                                width: "original"
+                            )
                         ) { phase in
                             switch phase {
                             case let .success(image):
@@ -1323,7 +1398,9 @@ private struct EpisodeCard: View {
                 }
             }
             .frame(width: w, height: h)
-            .clipShape(RoundedRectangle(cornerRadius: corner, style: .continuous))
+            .clipShape(
+                RoundedRectangle(cornerRadius: corner, style: .continuous)
+            )
             .overlay(
                 RoundedRectangle(cornerRadius: corner, style: .continuous)
                     .strokeBorder(Color.white.opacity(0.06), lineWidth: 1)
@@ -1337,7 +1414,9 @@ private struct EpisodeCard: View {
     }
 
     @ViewBuilder
-    private func bottomFrostedOverlay(width: CGFloat, height: CGFloat) -> some View {
+    private func bottomFrostedOverlay(width: CGFloat, height: CGFloat)
+        -> some View
+    {
         let overlayHeight = height * 0.55
 
         ZStack(alignment: .bottom) {
@@ -1390,7 +1469,10 @@ private struct EpisodeCard: View {
                     )
                     .overlay(
                         Capsule(style: .continuous)
-                            .strokeBorder(Color.white.opacity(0.25), lineWidth: 1)
+                            .strokeBorder(
+                                Color.white.opacity(0.25),
+                                lineWidth: 1
+                            )
                     )
             )
     }
@@ -1449,42 +1531,45 @@ private struct EpisodeCard: View {
 }
 
 #if os(macOS)
-/// macOS-only: system `NavigationStack` toolbars use the window title area (grey bar).
-/// These controls sit over the hero like the hidden navigation bar on iOS.
-struct MediaDetailMacTopBar: View {
-    let showLibraryButton: Bool
-    let isInLibrary: Bool
-    let onBack: () -> Void
-    let onLibrary: () -> Void
+    /// macOS-only: system `NavigationStack` toolbars use the window title area (grey bar).
+    /// These controls sit over the hero like the hidden navigation bar on iOS.
+    struct MediaDetailMacTopBar: View {
+        let showLibraryButton: Bool
+        let isInLibrary: Bool
+        let onBack: () -> Void
+        let onLibrary: () -> Void
 
-    var body: some View {
-        HStack(spacing: AppTheme.Spacing.md) {
-            Button(action: onBack) {
-                Image(systemName: "chevron.backward")
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(.white)
-                    .frame(width: 36, height: 36)
-                    .background(.ultraThinMaterial, in: Circle())
-            }
-            .buttonStyle(.plain)
-            .help("Back")
-
-            Spacer(minLength: 0)
-
-            if showLibraryButton {
-                Button(action: onLibrary) {
-                    Image(systemName: isInLibrary ? "bookmark.fill" : "bookmark")
+        var body: some View {
+            HStack(spacing: AppTheme.Spacing.md) {
+                Button(action: onBack) {
+                    Image(systemName: "chevron.backward")
                         .font(.system(size: 15, weight: .semibold))
                         .foregroundStyle(.white)
                         .frame(width: 36, height: 36)
                         .background(.ultraThinMaterial, in: Circle())
                 }
                 .buttonStyle(.plain)
-                .help(isInLibrary ? "In Library" : "Add to Library")
+                .help("Back")
+
+                Spacer(minLength: 0)
+
+                if showLibraryButton {
+                    Button(action: onLibrary) {
+                        Image(
+                            systemName: isInLibrary
+                                ? "bookmark.fill" : "bookmark"
+                        )
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .frame(width: 36, height: 36)
+                        .background(.ultraThinMaterial, in: Circle())
+                    }
+                    .buttonStyle(.plain)
+                    .help(isInLibrary ? "In Library" : "Add to Library")
+                }
             }
+            .padding(.horizontal, AppTheme.Spacing.md)
+            .padding(.vertical, AppTheme.Spacing.sm)
         }
-        .padding(.horizontal, AppTheme.Spacing.md)
-        .padding(.vertical, AppTheme.Spacing.sm)
     }
-}
 #endif

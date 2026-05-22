@@ -88,6 +88,8 @@
 		69E6A3662FB0F25C00EBEBEA /* LibraryCustomizationSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69E6A3112FB0F25C00EBEBEA /* LibraryCustomizationSection.swift */; };
 		69E6A3682FB0F2FD00EBEBEA /* ZXYApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69E6A3672FB0F2FD00EBEBEA /* ZXYApp.swift */; };
 		69E6A3692FB0F25C00EBEBEA /* BannerAmbientBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69E6A36A2FB0F25C00EBEBEA /* BannerAmbientBackground.swift */; };
+		79F9FDC1A975D3CCC721BBFC /* ImageGradientStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B567BBA9F57F858E56EA35E /* ImageGradientStore.swift */; };
+		C6C571BD95EDE781CB6FA57B /* BlocAsyncImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30C0D9311A72DE0636EC56DE /* BlocAsyncImage.swift */; };
 		D2D2615B8628D2F8C96236FD /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 1B44BDE7D0A832B4B5CA9468 /* .gitignore */; };
 		F9420C367E86DA90F00556EC /* Mpv.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91F1E28FAA8C1C57FC38E16F /* Mpv.swift */; };
 /* End PBXBuildFile section */
@@ -98,6 +100,8 @@
 		1DC449894548917D9608C662 /* README.md */ = {isa = PBXFileReference; explicitFileType = net.daringfireball.markdown; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = README.md; sourceTree = "<group>"; };
 		225278BC78432D767B4D164F /* MpvPlayerDelegate.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = MpvPlayerDelegate.swift; sourceTree = "<group>"; };
 		22B9534F392CD529EBD30AF0 /* MpvMetalLayer.old */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = MpvMetalLayer.old; sourceTree = "<group>"; };
+		30C0D9311A72DE0636EC56DE /* BlocAsyncImage.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; lastKnownFileType = sourcecode.swift; name = BlocAsyncImage.swift; path = BlocAsyncImage.swift; sourceTree = "<group>"; };
+		4B567BBA9F57F858E56EA35E /* ImageGradientStore.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; lastKnownFileType = sourcecode.swift; name = ImageGradientStore.swift; path = ImageGradientStore.swift; sourceTree = "<group>"; };
 		6980844D2F78169500FCBB80 /* ZXY.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ZXY.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		69E6A2C22FB0F25C00EBEBEA /* AppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTheme.swift; sourceTree = "<group>"; };
 		69E6A2C32FB0F25C00EBEBEA /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -268,6 +272,7 @@
 				69E6A2C42FB0F25C00EBEBEA /* ProgressToastBloc.swift */,
 				69E6A2C52FB0F25C00EBEBEA /* SettingsBloc.swift */,
 				69E6A2C62FB0F25C00EBEBEA /* UserBloc.swift */,
+				4B567BBA9F57F858E56EA35E /* ImageGradientStore.swift */,
 			);
 			path = Bloc;
 			sourceTree = "<group>";
@@ -314,6 +319,7 @@
 				69E6A2E32FB0F25C00EBEBEA /* RatingTagView.swift */,
 				69E6A2E42FB0F25C00EBEBEA /* ViewItemState.swift */,
 				0A56036EBDC47624CC2FDA09 /* TrakPadAndDragListener.swift */,
+				30C0D9311A72DE0636EC56DE /* BlocAsyncImage.swift */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -642,6 +648,8 @@
 				0634A9828F1C49225B410FEF /* TrakPadAndDragListener.swift in Sources */,
 				0C83E04A4CF86332FFC2772F /* MpvPlayerDelegate.swift in Sources */,
 				F9420C367E86DA90F00556EC /* Mpv.swift in Sources */,
+				79F9FDC1A975D3CCC721BBFC /* ImageGradientStore.swift in Sources */,
+				C6C571BD95EDE781CB6FA57B /* BlocAsyncImage.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -29,7 +29,17 @@ enum BaseHomeViewPages: String, CaseIterable, Identifiable {
 struct BaseHomeview: View {
     @State var selectedPage: BaseHomeViewPages = .home
     @State private var ambientGradient: HomeAmbientGradient = .default
+    @State private var vm: HomeViewModel
     let deps: AppDependencies
+
+    init(deps: AppDependencies) {
+        self.deps = deps
+        vm =
+            HomeViewModel(
+                mediaUc: deps.mediaUc,
+                progressUc: deps.progressUc
+            )
+    }
 
     var body: some View {
         Group {
@@ -113,7 +123,7 @@ struct BaseHomeview: View {
 
         } detail: {
             ZStack {
-                HomePageAmbientBackground(gradient: ambientGradient)
+                HomePageAmbientBackground(gradient: ImageGradientAndStoreBloc.bloc.currentGradient)
                 detailContent(for: selectedPage)
             }
         }
@@ -124,20 +134,16 @@ struct BaseHomeview: View {
         switch page {
         case .home:
             HomeView(
-                mediaUc: deps.mediaUc,
-                progressUc: deps.progressUc,
+                vm: $vm,
                 ambientGradient: $ambientGradient
             )
             .environment(\.contentBlendsWithAmbient, true)
         case .discover:
             DiscoverView(mediaUc: deps.mediaUc, authUc: deps.authUc)
-                .environment(\.contentBlendsWithAmbient, true)
         case .search:
             SearchView(mediaUc: deps.mediaUc)
-                .environment(\.contentBlendsWithAmbient, true)
         case .library:
             LibraryView(mediaUc: deps.mediaUc)
-                .environment(\.contentBlendsWithAmbient, true)
         case .settings:
             SettingsView(authUc: deps.authUc)
         }

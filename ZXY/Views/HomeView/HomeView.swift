@@ -8,16 +8,13 @@ import Foundation
 import SwiftUI
 
 struct HomeView: View {
-    @State private var vm: HomeViewModel
-    @Binding var ambientGradient: HomeAmbientGradient
+    @Binding private var vm: HomeViewModel
+    // @Binding var ambientGradient: HomeAmbientGradient
 
-    init(mediaUc: MediaUsecase, progressUc: ProgressUsecase, ambientGradient: Binding<HomeAmbientGradient>) {
-        vm =
-            HomeViewModel(
-                mediaUc: mediaUc,
-                progressUc: progressUc
-            )
-        _ambientGradient = ambientGradient
+    init(vm: Binding<HomeViewModel>, ambientGradient _: Binding<HomeAmbientGradient>) {
+        _vm =
+            vm
+        // _ambientGradient = ambientGradient
     }
 
     var body: some View {
@@ -25,12 +22,12 @@ struct HomeView: View {
             VStack(alignment: .leading, spacing: 0) {
                 TopBannerSection(
                     state: vm.topBannerState,
-                    onActiveMediaChange: { media in
+                    onActiveMediaChange: { _ in
                         Task {
-                            let next = await BannerAmbientLoader.gradient(for: media)
-                            withAnimation(.easeInOut(duration: 0.65)) {
-                                ambientGradient = next
-                            }
+                            // let next = await BannerAmbientLoader.gradient(for: media)
+                            // withAnimation(.easeInOut(duration: 0.65)) {
+                            // ambientGradient = next
+                            // }
                         }
                     }
                 )

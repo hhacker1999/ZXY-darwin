@@ -43,8 +43,8 @@ private struct TopBannerCarousel: View {
     @State private var stableActiveIndex: Int = 0
     @State private var isGestureActive: Bool = false
     #if os(iOS)
-    /// After one slide change, ignore further drag updates until lift (matches macOS trackpad).
-    @State private var carouselDragCommitted: Bool = false
+        /// After one slide change, ignore further drag updates until lift (matches macOS trackpad).
+        @State private var carouselDragCommitted: Bool = false
     #endif
 
     private let aspectRatio: CGFloat = {
@@ -117,39 +117,39 @@ private struct TopBannerCarousel: View {
     }
 
     #if os(iOS)
-    /// Horizontal drag to change slides, without fighting the home `ScrollView`:
-    /// only acts when movement is clearly horizontal; one transition per gesture.
-    private func iOSCarouselDragGesture() -> some Gesture {
-        DragGesture(minimumDistance: 24)
-            .onChanged { value in
-                let w = value.translation.width
-                let h = value.translation.height
-                guard abs(w) > abs(h) else {
-                    return
+        /// Horizontal drag to change slides, without fighting the home `ScrollView`:
+        /// only acts when movement is clearly horizontal; one transition per gesture.
+        private func iOSCarouselDragGesture() -> some Gesture {
+            DragGesture(minimumDistance: 24)
+                .onChanged { value in
+                    let w = value.translation.width
+                    let h = value.translation.height
+                    guard abs(w) > abs(h) else {
+                        return
+                    }
+                    guard !carouselDragCommitted else {
+                        return
+                    }
+                    if !isGestureActive {
+                        isGestureActive = true
+                    }
+                    if w > Self.iOSSwipeThreshold {
+                        carouselDragCommitted = true
+                        isGestureActive = false
+                        goToPreviousSlide()
+                    } else if w < -Self.iOSSwipeThreshold {
+                        carouselDragCommitted = true
+                        isGestureActive = false
+                        goToNextSlide()
+                    }
                 }
-                guard !carouselDragCommitted else {
-                    return
-                }
-                if !isGestureActive {
-                    isGestureActive = true
-                }
-                if w > Self.iOSSwipeThreshold {
-                    carouselDragCommitted = true
+                .onEnded { _ in
                     isGestureActive = false
-                    goToPreviousSlide()
-                } else if w < -Self.iOSSwipeThreshold {
-                    carouselDragCommitted = true
-                    isGestureActive = false
-                    goToNextSlide()
+                    carouselDragCommitted = false
                 }
-            }
-            .onEnded { _ in
-                isGestureActive = false
-                carouselDragCommitted = false
-            }
-    }
+        }
 
-    private static let iOSSwipeThreshold: CGFloat = 52
+        private static let iOSSwipeThreshold: CGFloat = 52
     #endif
 
     private func goToPreviousSlide() {
@@ -221,6 +221,24 @@ private struct BannerSlide: View {
             return MediaConfig.instance.posterURL(media.posterPath, width: 780)
         #else
             return MediaConfig.instance.backdropURL(media.backdropPath, width: "original")
+        #endif
+    }
+
+    /// Path + width fed to `BlocAsyncImage`. Kept in lockstep with
+    /// `bannerArtworkURL` so cached gradients and rendered artwork match.
+    private var bannerArtworkPath: String {
+        #if os(iOS)
+            return media.posterPath
+        #else
+            return media.backdropPath
+        #endif
+    }
+
+    private var bannerArtworkWidth: String {
+        #if os(iOS)
+            return "w780"
+        #else
+            return "original"
         #endif
     }
 
@@ -307,7 +325,8 @@ private struct BannerSlide: View {
                 BannerFadingHeroImage(
                     width: width,
                     height: height,
-                    url: bannerArtworkURL
+                    path: bannerArtworkPath,
+                    imageWidth: bannerArtworkWidth
                 )
                 .stretchableHeroBannerInScrollView()
                 .zIndex(0)
@@ -362,8 +381,9 @@ private struct BannerSlide: View {
                     Spacer()
                     // Logo or Title
                     if let path = logoPath, !path.isEmpty {
-                        AsyncImage(
-                            url: MediaConfig.instance.logoURL(path)
+                        BlocAsyncImage(
+                            id: path,
+                            size: "w500"
                         ) { phase in
                             switch phase {
                             case let .success(image):
