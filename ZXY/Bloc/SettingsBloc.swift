@@ -97,33 +97,33 @@ final class SettingsBloc {
         if let v = readBool(Keys.formattedStreams) { showFormattedStreams = v }
         if let v = readBool(Keys.autoSelect) { autoSelectBestStream = v }
 
-        if let raw = SecureStorage.getSecret(key: Keys.volume),
+        if let raw = SecureStorage.getKey(key: Keys.volume),
            let v = Double(raw) { volume = v }
-        if let raw = SecureStorage.getSecret(key: Keys.skipDuration),
+        if let raw = SecureStorage.getKey(key: Keys.skipDuration),
            let v = Int(raw) { skipDuration = v }
 
-        if let v = SecureStorage.getSecret(key: Keys.language) { language = v }
-        if let v = SecureStorage.getSecret(key: Keys.subtitleLanguage) { subtitleLanguage = v }
-        if let v = SecureStorage.getSecret(key: Keys.resolution) { resolution = v }
+        if let v = SecureStorage.getKey(key: Keys.language) { language = v }
+        if let v = SecureStorage.getKey(key: Keys.subtitleLanguage) { subtitleLanguage = v }
+        if let v = SecureStorage.getKey(key: Keys.resolution) { resolution = v }
 
-        if let raw = SecureStorage.getSecret(key: Keys.subtitleFontSize),
+        if let raw = SecureStorage.getKey(key: Keys.subtitleFontSize),
            let v = Double(raw) { subtitleFontSize = v }
-        if let raw = SecureStorage.getSecret(key: Keys.subtitleFontPadding),
+        if let raw = SecureStorage.getKey(key: Keys.subtitleFontPadding),
            let v = Double(raw) { subtitleFontPadding = v }
     }
 
     private func persistBool(_ key: String, _ value: Bool) {
         guard !hydrating else { return }
-        SecureStorage.saveSecret(key: key, value: value ? "true" : "false")
+        SecureStorage.saveKey(key: key, value: value ? "true" : "false")
     }
 
     private func persistString(_ key: String, _ value: String) {
         guard !hydrating else { return }
-        SecureStorage.saveSecret(key: key, value: value)
+        SecureStorage.saveKey(key: key, value: value)
     }
 
     private func readBool(_ key: String) -> Bool? {
-        guard let raw = SecureStorage.getSecret(key: key) else { return nil }
+        guard let raw = SecureStorage.getKey(key: key) else { return nil }
         return raw == "true"
     }
 

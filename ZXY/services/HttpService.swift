@@ -25,11 +25,11 @@ class HttpService {
     static let service = HttpService()
 
     func loadCookiesIfPresent() -> Bool {
-        guard let uCookie = SecureStorage.getSecret(key: "user_cookie") else {
+        guard let uCookie = SecureStorage.getKey(key: "user_cookie") else {
             return false
         }
         userCookie = uCookie
-        guard let pCookie = SecureStorage.getSecret(key: "profile_cookie") else {
+        guard let pCookie = SecureStorage.getKey(key: "profile_cookie") else {
             return false
         }
         profileCookie = pCookie
@@ -114,7 +114,7 @@ class HttpService {
                     let temp = trimmed.split(separator: "=")
                     if temp.last != nil {
                         profileCookie = temp.last!.lowercased()
-                        SecureStorage.saveSecret(key: "profile_cookie", value: profileCookie!)
+                        SecureStorage.saveKey(key: "profile_cookie", value: profileCookie!)
                     }
                 }
 
@@ -124,7 +124,7 @@ class HttpService {
                     let temp = trimmed.split(separator: "=")
                     if temp.last != nil {
                         userCookie = temp.last!.lowercased()
-                        SecureStorage.saveSecret(key: "user_cookie", value: userCookie!)
+                        SecureStorage.saveKey(key: "user_cookie", value: userCookie!)
                     }
                 }
             }
@@ -208,7 +208,7 @@ class HttpService {
                     let temp = trimmed.split(separator: "=")
                     if temp.last != nil {
                         profileCookie = temp.last!.lowercased()
-                        SecureStorage.saveSecret(key: "profile_cookie", value: profileCookie!)
+                        SecureStorage.saveKey(key: "profile_cookie", value: profileCookie!)
                     }
                 }
 
@@ -218,7 +218,7 @@ class HttpService {
                     let temp = trimmed.split(separator: "=")
                     if temp.last != nil {
                         userCookie = temp.last!.lowercased()
-                        SecureStorage.saveSecret(key: "user_cookie", value: userCookie!)
+                        SecureStorage.saveKey(key: "user_cookie", value: userCookie!)
                     }
                 }
             }

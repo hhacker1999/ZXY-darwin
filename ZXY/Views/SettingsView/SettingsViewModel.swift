@@ -174,7 +174,7 @@ final class SettingsViewModel {
     func switchProfile() {
         guard let user = userBloc.user else { return }
         userBloc.profile = nil
-        SecureStorage.saveSecret(key: "profile_cookie", value: "")
+        SecureStorage.saveKey(key: "profile_cookie", value: "")
         httpService.clearCookie()
         // Re-load session-only cookie so profile selection can re-login.
         _ = httpService.loadCookiesIfPresent()
@@ -185,8 +185,8 @@ final class SettingsViewModel {
         authUc.logout()
         userBloc.user = nil
         userBloc.profile = nil
-        SecureStorage.saveSecret(key: "user_cookie", value: "")
-        SecureStorage.saveSecret(key: "profile_cookie", value: "")
+        SecureStorage.saveKey(key: "user_cookie", value: "")
+        SecureStorage.saveKey(key: "profile_cookie", value: "")
         router.mainRouteState = []
         router.routerState = .logIn
     }
@@ -197,8 +197,8 @@ final class SettingsViewModel {
             authUc.logout()
             userBloc.user = nil
             userBloc.profile = nil
-            SecureStorage.saveSecret(key: "user_cookie", value: "")
-            SecureStorage.saveSecret(key: "profile_cookie", value: "")
+            SecureStorage.saveKey(key: "user_cookie", value: "")
+            SecureStorage.saveKey(key: "profile_cookie", value: "")
             router.mainRouteState = []
             router.routerState = .logIn
         } catch let error as HttpError {
