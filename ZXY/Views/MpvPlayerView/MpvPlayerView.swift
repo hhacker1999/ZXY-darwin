@@ -123,6 +123,20 @@ struct MpvPlayerView: View {
                     return .handled
                 })
                 .onKeyPress(
+                    .upArrow,
+                    action: {
+                        vm.setVolume(vm.volume + 5)
+                        return .handled
+                    }
+                )
+                .onKeyPress(
+                    .downArrow,
+                    action: {
+                        vm.setVolume(vm.volume - 5)
+                        return .handled
+                    }
+                )
+                .onKeyPress(
                     .leftArrow,
                     action: {
                         let skipDuration = SettingsBloc.bloc.skipDuration

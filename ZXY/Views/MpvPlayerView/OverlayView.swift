@@ -29,6 +29,7 @@ struct OverlayView: View {
     var onShowVideoStatsSheet: (() -> Void)? = nil
 
     @State private var selectedCategory: SettingsCategory? = nil
+    @State private var isVolumeDragging = false
 
     var body: some View {
         ZStack {
@@ -89,6 +90,80 @@ struct OverlayView: View {
                 .liquidGlass()
 
             Spacer()
+
+            volumeControl
+        }
+    }
+
+    private var volumeControl: some View {
+        HStack(spacing: 10) {
+            Button(action: { vm.toggleMute() }) {
+                Image(systemName: volumeIconName)
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(.white.opacity(0.85))
+                    .frame(width: 24, height: 24)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+
+            volumeSlider
+                .frame(width: 88, height: 24)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .liquidGlass()
+    }
+
+    private var volumeIconName: String {
+        if vm.mute || vm.volume == 0 {
+            return "speaker.slash.fill"
+        }
+        if vm.volume < 33 {
+            return "speaker.wave.1.fill"
+        }
+        if vm.volume < 66 {
+            return "speaker.wave.2.fill"
+        }
+        return "speaker.wave.3.fill"
+    }
+
+    private var volumeSlider: some View {
+        GeometryReader { geometry in
+            let width = geometry.size.width
+            let progress = vm.volume / 100
+            let thumbSize = isVolumeDragging ? 14.0 : 10.0
+            let travelWidth = max(0, width - thumbSize)
+            let thumbOffset = travelWidth * progress
+
+            ZStack(alignment: .leading) {
+                Capsule()
+                    .fill(.white.opacity(0.15))
+                    .frame(height: 4)
+
+                Capsule()
+                    .fill(.white)
+                    .frame(width: max(0, thumbOffset + thumbSize / 2), height: 4)
+
+                Circle()
+                    .fill(.white)
+                    .frame(width: thumbSize, height: thumbSize)
+                    .shadow(color: .black.opacity(0.3), radius: 3, y: 1)
+                    .offset(x: thumbOffset)
+                    .animation(.easeOut(duration: 0.15), value: isVolumeDragging)
+            }
+            .frame(maxHeight: .infinity)
+            .contentShape(Rectangle())
+            .gesture(
+                DragGesture(minimumDistance: 0)
+                    .onChanged { value in
+                        isVolumeDragging = true
+                        let fraction = max(0, min(value.location.x / width, 1.0))
+                        vm.setVolume(fraction * 100)
+                    }
+                    .onEnded { _ in
+                        isVolumeDragging = false
+                    }
+            )
         }
     }
 

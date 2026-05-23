@@ -217,7 +217,7 @@ final class MpvViewModel: MPVPlayerDelegate {
     var letterboxingMode: LetterboxingMode = .letterbox
 
     var currentDecoder: String = "NA"
-    var volume: Double = 50
+    var volume: Double = 100
     var mute: Bool = false
     var isDragging = false
 
@@ -389,6 +389,24 @@ final class MpvViewModel: MPVPlayerDelegate {
             player?.mpv.setFlag("mute", true)
         }
         mute.toggle()
+    }
+
+    func setVolume(_ newVolume: Double) {
+        onUserInteraction()
+        let clamped = max(0, min(newVolume, 100))
+        if mute, clamped > 0 {
+            player?.mpv.setFlag("mute", false)
+            mute = false
+        }
+        if volume == clamped {
+            return
+        }
+
+        if !isMpvLoaded {
+            return
+        }
+        volume = clamped
+        player?.mpv.setVolume(clamped)
     }
 
     func switchStream(to index: Int) {
@@ -589,8 +607,6 @@ final class MpvViewModel: MPVPlayerDelegate {
             }
         case "loaded":
             if !isMpvLoaded {
-                player.mpv.setVolume(volume)
-                applyLetterboxingToPlayer()
                 Task { [weak self] in
                     guard let self = self else {
                         return
@@ -598,6 +614,8 @@ final class MpvViewModel: MPVPlayerDelegate {
                     await self.getAndLoadFinalUrl()
                 }
                 isMpvLoaded = true
+                setVolume(volume)
+                applyLetterboxingToPlayer()
                 setupProgressTask()
             }
         default: break
