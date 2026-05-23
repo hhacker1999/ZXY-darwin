@@ -184,7 +184,7 @@ class MPV {
                         dataOpaquePtr
                     )?.pointee {
                         let propertyName = String(cString: property.name)
-                        print("Event came \(propertyName)")
+                        // print("Event came \(propertyName)")
                         switch propertyName {
                         case MPVProperty.videoParamsSigPeak:
                             if let sigPeak = UnsafePointer<Double>(

@@ -10,7 +10,9 @@ enum LetterboxingMode: String, CaseIterable, Identifiable {
     /// Distort to fill the frame.
     case stretch = "Stretch"
 
-    var id: String { rawValue }
+    var id: String {
+        rawValue
+    }
 }
 
 enum MPVProperty {
@@ -284,12 +286,12 @@ final class MpvViewModel: MPVPlayerDelegate {
         }
         audioTracks = tempAudioTracks
         subtitleTracks = tempSubTracks
-        for i in 0..<tempAudioTracks.count {
+        for i in 0 ..< tempAudioTracks.count {
             if tempAudioTracks[i].selected {
                 selectAudioTrack = i
             }
         }
-        for i in 0..<tempSubTracks.count {
+        for i in 0 ..< tempSubTracks.count {
             if tempSubTracks[i].selected {
                 selectSubTrack = i
             }
@@ -330,7 +332,9 @@ final class MpvViewModel: MPVPlayerDelegate {
                 self.videoInFocus = true
 
                 #if os(macOS)
-                    NSCursor.hide()
+                    if shouldHideCursor() {
+                        NSCursor.hide()
+                    }
                 #endif
             }
         }
@@ -598,5 +602,35 @@ final class MpvViewModel: MPVPlayerDelegate {
             }
         default: break
         }
+    }
+
+    func shouldHideCursor() -> Bool {
+        // 1. Get the current location of the mouse cursor in global screen coordinates
+        let mouseLocation = NSEvent.mouseLocation
+
+        // 2. Find which screen the mouse is currently on
+        guard let currentScreen = NSScreen.screens.first(where: { NSMouseInRect(mouseLocation, $0.frame, false) }) else {
+            return true // Fallback: if we can't find the screen, allow hiding
+        }
+
+        let screenFrame = currentScreen.frame
+        let visibleFrame = currentScreen.visibleFrame
+
+        // 3. Calculate the top boundary where the Menu Bar / Status Bar lives
+        // On macOS, coordinate (0,0) is the bottom-left of the primary screen.
+        let menuBarHeight = screenFrame.height - (visibleFrame.origin.y + visibleFrame.size.height)
+        let menuBarMinY = screenFrame.origin.y + screenFrame.height - menuBarHeight
+
+        // 4. Check if the mouse is inside that top Status Bar region
+        if mouseLocation.y >= menuBarMinY {
+            return false // Do NOT hide the cursor; user is interacting with the Status Bar
+        }
+
+        // Optional: Check if mouse is interacting with the Dock at the bottom
+        if mouseLocation.y < visibleFrame.origin.y {
+            return false // Do NOT hide the cursor; user is interacting with the Dock
+        }
+
+        return true // Safe to hide
     }
 }
