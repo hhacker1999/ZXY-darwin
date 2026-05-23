@@ -256,11 +256,46 @@ enum AppTheme {
 
         static let shelfTitleLineLimit = 2
 
+        /// Single-line caption under shelf posters (grid keeps `shelfTitleLineLimit`).
+        static let shelfRowTitleLineLimit = 1
+
+        /// Brighter than `elementSubtle` for shelf row captions.
+        static let shelfPosterTitleColor = Color.white.opacity(0.85)
+
+        /// Subtle grey stroke around shelf row posters.
+        static let shelfPosterBorderColor = Color.white.opacity(0.20)
+
+        /// Horizontal gap between posters in a shelf row.
+        static var shelfRowItemSpacing: CGFloat { Spacing.sm + 6 }
+
         // MARK: Horizontal shelf posters (~0.8× on iPhone)
 
-        static var rowPosterWidth: CGFloat { isCompactPhone ? 104 : 130 }
-        static var rowPosterHeight: CGFloat { isCompactPhone ? 156 : 195 }
+        static var rowPosterWidth: CGFloat {
+            if isCompactPhone { return 104 }
+            #if os(macOS)
+            return 145
+            #else
+            return 130
+            #endif
+        }
+
+        static var rowPosterHeight: CGFloat {
+            if isCompactPhone { return 156 }
+            #if os(macOS)
+            return 218
+            #else
+            return 195
+            #endif
+        }
+
         static var rowPosterCornerRadius: CGFloat { isCompactPhone ? 10 : 12 }
+
+        /// Poster + spacing + title block for discovery shelf row height locking.
+        static var shelfRowStableHeight: CGFloat {
+            rowPosterHeight + Spacing.xs + 2 + shelfRowTitleBlockHeight
+        }
+
+        private static var shelfRowTitleBlockHeight: CGFloat { 18 }
 
         // MARK: Library / search / discover grid (`MediaGrid`)
 
@@ -278,7 +313,11 @@ enum AppTheme {
             if isIOS {
                 return isCompactPhone ? 96 : 120
             }
+            #if os(macOS)
+            return 155
+            #else
             return 140
+            #endif
         }
 
         static var gridPosterCornerRadius: CGFloat {
@@ -309,12 +348,12 @@ enum AppTheme {
             #endif
         }
 
-        /// Fixed title block under poster (two lines max).
+        /// Fixed title block under poster (single line on desktop, two on iOS).
         static var gridTitleBlockHeight: CGFloat {
             if isIOS {
                 return isCompactPhone ? 30 : 34
             }
-            return Spacing.xl
+            return shelfRowTitleBlockHeight
         }
 
         static var gridTypeBadgeFont: Font {
@@ -332,11 +371,37 @@ enum AppTheme {
         // MARK: Continue watching (home)
 
         private static let cwPosterAspectRatio: CGFloat = 2.0 / 3.0
-        static var cwPosterWidth: CGFloat { isCompactPhone ? 80 : 100 }
+
+        static var cwPosterWidth: CGFloat {
+            if isCompactPhone { return 80 }
+            #if os(macOS)
+            return 115
+            #else
+            return 100
+            #endif
+        }
+
         static var cwPosterHeight: CGFloat { cwPosterWidth / cwPosterAspectRatio }
-        static var cwCardWidth: CGFloat { isCompactPhone ? 248 : 300 }
+
+        static var cwCardWidth: CGFloat {
+            if isCompactPhone { return 248 }
+            #if os(macOS)
+            return 340
+            #else
+            return 300
+            #endif
+        }
+
         static var cwCardHeight: CGFloat { cwPosterHeight }
-        static var cwCornerRadius: CGFloat { isCompactPhone ? 9 : 10 }
+
+        static var cwCornerRadius: CGFloat {
+            if isCompactPhone { return 9 }
+            #if os(macOS)
+            return 12
+            #else
+            return 10
+            #endif
+        }
         static let cwProgressBarHeight: CGFloat = 4
         static let cwProgressBarRadius: CGFloat = 2
 

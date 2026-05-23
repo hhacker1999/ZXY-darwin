@@ -5,8 +5,7 @@ struct GeneralSection: View {
     @Bindable var bloc: SettingsBloc
 
     private var languageOptions: [String] {
-        let langs = LangHelper.iso6391List.map { $0.1 }.sorted()
-        return langs
+        return LangHelper.iso6391List.map { $0.1 }.sorted()
     }
 
     private var subtitleLanguageOptions: [String] {
@@ -36,14 +35,14 @@ struct GeneralSection: View {
             sectionDivider
 
             // ── Resolution ───────────────────────────────────────
-            SettingsPickerRow(
-                icon: "tv.fill",
-                label: "Preferred Resolution",
-                helper: "Highest acceptable quality on stream selection",
-                selection: $bloc.resolution,
-                options: SettingsBloc.resolutions
-            )
-            sectionDivider
+            // SettingsPickerRow(
+            //     icon: "tv.fill",
+            //     label: "Preferred Resolution",
+            //     helper: "Highest acceptable quality on stream selection",
+            //     selection: $bloc.resolution,
+            //     options: SettingsBloc.resolutions
+            // )
+            // sectionDivider
 
             // ── Skip duration ────────────────────────────────────
             SettingsPickerRow(
@@ -60,12 +59,16 @@ struct GeneralSection: View {
             sectionDivider
 
             // // ── AMOLED theme ─────────────────────────────────────
-            // SettingsToggleRow(
-            //     icon: "moon.fill",
-            //     label: "AMOLED Theme",
-            //     helper: "Use pure black backgrounds",
-            //     isOn: $bloc.isAmoled
-            // )
+            SettingsToggleRow(
+                icon: "moon.fill",
+                label: "Background Gradient",
+                helper: "Pick background color from focused Media",
+                isOn: $bloc.enableGradient
+            ).onChange(of: bloc.enableGradient) {
+                if !bloc.enableGradient {
+                    ImageGradientAndStoreBloc.bloc.currentGradient = .default
+                }
+            }
             // sectionDivider
 
             // ── Poster ratings ───────────────────────────────────
@@ -87,12 +90,12 @@ struct GeneralSection: View {
             // sectionDivider
 
             // ── Auto select best stream ──────────────────────────
-            SettingsToggleRow(
-                icon: "wand.and.stars",
-                label: "Auto-Select Best Stream",
-                helper: "Pick the highest matching stream automatically",
-                isOn: $bloc.autoSelectBestStream
-            )
+            // SettingsToggleRow(
+            //     icon: "wand.and.stars",
+            //     label: "Auto-Select Best Stream",
+            //     helper: "Pick the highest matching stream automatically",
+            //     isOn: $bloc.autoSelectBestStream
+            // )
         }
     }
 

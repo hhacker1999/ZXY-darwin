@@ -36,7 +36,6 @@ struct MovieView: View {
                 HomePageAmbientBackground(gradient: .default)
                     .ignoresSafeArea()
                 MediaViewShimmer(isMobile: isMobile)
-                    .environment(\.contentBlendsWithAmbient, true)
             case .error(let err):
                 AppTheme.Colors.background.ignoresSafeArea()
                 VStack(spacing: AppTheme.Spacing.md) {

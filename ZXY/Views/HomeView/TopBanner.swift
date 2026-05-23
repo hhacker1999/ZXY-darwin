@@ -69,11 +69,7 @@ private struct TopBannerCarousel: View {
             )
             .id(stableActiveIndex)
             .onTapGesture {
-                Router.router.addToRoute(
-                    route: items[stableActiveIndex].type == "movie" ?
-                        .movieDetails(items[stableActiveIndex].id) :
-                        .seriesDetails(items[stableActiveIndex].id)
-                )
+                openActiveBannerDetails()
             }
             .transition(
                 .opacity
@@ -175,6 +171,48 @@ private struct TopBannerCarousel: View {
     private func reportActiveMedia() {
         guard items.indices.contains(stableActiveIndex) else { return }
         onActiveMediaChange?(items[stableActiveIndex])
+    }
+
+    private func openActiveBannerDetails() {
+        guard items.indices.contains(stableActiveIndex) else { return }
+        MediaShelfNavigation.openDetails(for: items[stableActiveIndex])
+    }
+}
+
+private struct BannerDetailsButton: View {
+    let action: () -> Void
+    @State private var isHovered = false
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 8) {
+                Text("Go to Details")
+                    .font(.system(size: 15, weight: .semibold))
+                Image(systemName: "chevron.forward")
+                    .font(.system(size: 13, weight: .semibold))
+            }
+            .foregroundStyle(AppTheme.Colors.buttonPrimaryLabel)
+            .padding(.horizontal, 22)
+            .padding(.vertical, 11)
+            .background(
+                Capsule(style: .continuous)
+                    .fill(AppTheme.Colors.buttonPrimary)
+                    .shadow(
+                        color: Color.white.opacity(isHovered ? 0.3 : 0.15),
+                        radius: isHovered ? 16 : 8,
+                        y: 2
+                    )
+            )
+            .scaleEffect(isHovered ? 1.04 : 1.0)
+            .animation(
+                .spring(response: 0.3, dampingFraction: 0.7),
+                value: isHovered
+            )
+        }
+        .buttonStyle(.plain)
+        #if os(macOS)
+        .onHover { isHovered = $0 }
+        #endif
     }
 }
 
@@ -454,6 +492,12 @@ private struct BannerSlide: View {
                             x: 0,
                             y: 2
                         )
+
+                    Spacer().frame(height: 16)
+
+                    BannerDetailsButton {
+                        MediaShelfNavigation.openDetails(for: media)
+                    }
 
                     Spacer().frame(height: overlayBottomSpacing)
                 }

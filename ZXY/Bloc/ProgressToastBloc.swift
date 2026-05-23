@@ -16,6 +16,10 @@ class ToastProgressBloc {
     func showToast(message: String, isError: Bool) {
         toastMessage = message
         isToastError = isError
+        #if os(iOS)
+            let generator = UIImpactFeedbackGenerator(style: .medium)
+            generator.impactOccurred()
+        #endif
         toastTask?.cancel()
         toastTask = Task { [weak self] in
             try? await Task.sleep(nanoseconds: 3 * 1_000_000_000)

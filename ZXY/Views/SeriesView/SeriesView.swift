@@ -26,7 +26,6 @@ struct SeriesView: View {
                 HomePageAmbientBackground(gradient: .default)
                     .ignoresSafeArea()
                 MediaViewShimmer(isMobile: isMobile)
-                    .environment(\.contentBlendsWithAmbient, true)
             case let .error(err):
                 AppTheme.Colors.background.ignoresSafeArea()
                 VStack(spacing: AppTheme.Spacing.md) {

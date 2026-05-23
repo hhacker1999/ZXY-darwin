@@ -47,7 +47,7 @@ struct BannerFadingHeroImage: View {
     let imageWidth: String
 
     var body: some View {
-        BlocAsyncImage(id: path, size: imageWidth, setGradientFromImage: true) { phase in
+        BlocAsyncImage(id: path, size: imageWidth, setGradientFromImage: SettingsBloc.bloc.enableGradient) { phase in
             switch phase {
             case let .success(image):
                 image

@@ -71,13 +71,15 @@ struct HomeView: View {
                 }
                 .padding(.bottom, AppTheme.Spacing.xxl)
             }
-            .environment(\.contentBlendsWithAmbient, true)
         }
         .task {
             Task { await vm.initialise() }
         }
         .scrollContentBackground(.hidden)
         #if os(iOS)
+            .contentMargins(.top, 0, for: .scrollContent)
+            .ignoresSafeArea(edges: .top)
+        #elseif os(macOS)
             .contentMargins(.top, 0, for: .scrollContent)
             .ignoresSafeArea(edges: .top)
         #endif
@@ -128,7 +130,7 @@ private struct ContinueWatchingSection: View {
                     .padding(.horizontal, AppTheme.Spacing.md)
 
                     ScrollView(.horizontal, showsIndicators: false) {
-                        LazyHStack(spacing: AppTheme.Spacing.sm + 2) {
+                        LazyHStack(spacing: AppTheme.MediaLibrary.shelfRowItemSpacing) {
                             ForEach(items, id: \.progress.mediaId) { item in
                                 ContinueWatchingCard(
                                     item: item,
@@ -155,6 +157,8 @@ private struct ContinueWatchingCard: View {
     let item: ContinueWatchingItem
     let onRemove: () -> Void
     let onMarkWatched: () -> Void
+
+    @State private var isMenuHovered = false
 
     private var isShow: Bool {
         item.media.type == "show"
@@ -193,8 +197,32 @@ private struct ContinueWatchingCard: View {
     }
 
     var body: some View {
-        ZStack(alignment: .bottomTrailing) {
-            HStack(spacing: 0) {
+        cardContent
+            .frame(
+                width: AppTheme.MediaLibrary.cwCardWidth,
+                height: AppTheme.MediaLibrary.cwCardHeight
+            )
+            .background { LoadingSurfaceFill() }
+            .clipShape(
+                RoundedRectangle(
+                    cornerRadius: AppTheme.MediaLibrary.cwCornerRadius,
+                    style: .continuous
+                )
+            )
+            .overlay(
+                RoundedRectangle(
+                    cornerRadius: AppTheme.MediaLibrary.cwCornerRadius,
+                    style: .continuous
+                )
+                .stroke(
+                    AppTheme.MediaLibrary.shelfPosterBorderColor,
+                    lineWidth: 1
+                )
+            )
+    }
+
+    private var cardContent: some View {
+        HStack(spacing: 0) {
                 // ── Left: Poster thumbnail ─────────────────────
                 AsyncImage(
                     url: MediaConfig.instance.posterURL(
@@ -289,66 +317,59 @@ private struct ContinueWatchingCard: View {
 
                     Spacer().frame(height: 6)
 
-                    HStack(spacing: 0) {
+                    HStack(alignment: .center, spacing: 8) {
                         Text("\(progressPercent)% watched")
                             .font(AppTheme.MediaLibrary.cwPercentFont)
                             .foregroundStyle(Color.white.opacity(0.45))
-                        Spacer(minLength: 4)
+
+                        Spacer(minLength: 0)
+
+                        continueWatchingMenu
                     }
                 }
                 .padding(.horizontal, 12)
                 .padding(.vertical, 12)
-                .padding(.trailing, 28)
                 .frame(maxWidth: .infinity, alignment: .leading)
-            }
-            .frame(width: AppTheme.MediaLibrary.cwCardWidth, height: AppTheme.MediaLibrary.cwCardHeight)
-            .contentShape(
-                RoundedRectangle(
-                    cornerRadius: AppTheme.MediaLibrary.cwCornerRadius,
-                    style: .continuous
-                )
-            )
-            .onTapGesture {
-                Router.router.addToRoute(
-                    route: !isShow
-                        ? .movieDetails(item.media.id)
-                        : .seriesDetails(item.media.id)
-                )
-            }
-
-            Menu {
-                Button("Remove from continue watching", role: .destructive) {
-                    onRemove()
-                }
-                Button("Mark as watched") {
-                    onMarkWatched()
-                }
-            } label: {
-                Image(systemName: "ellipsis")
-                    .font(AppTheme.MediaLibrary.cwMenuIconFont)
-                    .foregroundStyle(Color.white.opacity(0.85))
-                    .frame(width: 28, height: 28)
-                    .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .padding(.trailing, 10)
-            .padding(.bottom, 10)
         }
-        .frame(width: AppTheme.MediaLibrary.cwCardWidth, height: AppTheme.MediaLibrary.cwCardHeight)
-        .background { LoadingSurfaceFill() }
-        .clipShape(
+        .frame(
+            width: AppTheme.MediaLibrary.cwCardWidth,
+            height: AppTheme.MediaLibrary.cwCardHeight
+        )
+        .contentShape(
             RoundedRectangle(
                 cornerRadius: AppTheme.MediaLibrary.cwCornerRadius,
                 style: .continuous
             )
         )
-        .overlay(
-            RoundedRectangle(
-                cornerRadius: AppTheme.MediaLibrary.cwCornerRadius,
-                style: .continuous
+        .onTapGesture {
+            Router.router.addToRoute(
+                route: !isShow
+                    ? .movieDetails(item.media.id)
+                    : .seriesDetails(item.media.id)
             )
-            .stroke(Color.white.opacity(0.15), lineWidth: 0.5)
-        )
+        }
+    }
+
+    private var continueWatchingMenu: some View {
+        Menu {
+            Button("Mark as watched") {
+                onMarkWatched()
+            }
+            Button("Remove from continue watching", role: .destructive) {
+                onRemove()
+            }
+        } label: {
+            Image(systemName: "ellipsis")
+                .font(.system(size: 14, weight: .bold))
+                .foregroundStyle(Color.white.opacity(isMenuHovered ? 0.85 : 0.55))
+                .frame(width: 28, height: 28)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        #if os(macOS)
+        .menuStyle(.borderlessButton)
+        .onHover { isMenuHovered = $0 }
+        #endif
     }
 
     private var posterPlaceholder: some View {
@@ -380,7 +401,7 @@ private struct ContinueWatchingShimmerRow: View {
 
             // Cards shimmer
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: AppTheme.Spacing.sm + 2) {
+                HStack(spacing: AppTheme.MediaLibrary.shelfRowItemSpacing) {
                     ForEach(0 ..< 3, id: \.self) { _ in
                         HStack(spacing: 0) {
                             // Poster placeholder
@@ -465,6 +486,16 @@ private struct ContinueWatchingShimmerRow: View {
                                 style: .continuous
                             )
                         )
+                        .overlay(
+                            RoundedRectangle(
+                                cornerRadius: AppTheme.MediaLibrary.cwCornerRadius,
+                                style: .continuous
+                            )
+                            .stroke(
+                                AppTheme.MediaLibrary.shelfPosterBorderColor,
+                                lineWidth: 1
+                            )
+                        )
                     }
                 }
                 .padding(.horizontal, AppTheme.Spacing.md)
@@ -477,7 +508,7 @@ private struct ContinueWatchingShimmerRow: View {
 private struct DiscoveryRow: View {
     @Bindable var item: HomeViewDiscoveryItem
     let onTap: (AppMedia) -> Void
-    private let stableContentHeight = AppTheme.MediaLibrary.rowPosterHeight + 34
+    private let stableContentHeight = AppTheme.MediaLibrary.shelfRowStableHeight
 
     var body: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {

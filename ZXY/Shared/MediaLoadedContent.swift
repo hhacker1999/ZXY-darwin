@@ -155,7 +155,6 @@ struct MediaLoadedContent: View {
                         }
                         .padding(.horizontal, AppTheme.Spacing.md)
                     }
-                    .environment(\.contentBlendsWithAmbient, true)
                 }
                 .scrollContentBackground(.hidden)
             }
@@ -345,7 +344,9 @@ private struct MediaInfoPosterView: View {
                                 label: "Play",
                                 suffix: playButtonSuffix,
                                 progressFraction: playProgressFraction,
-                                action: { showStreamSheet = true }
+                                action: {
+                                    showStreamSheet = true
+                                }
                             )
                             if isMovieOnly {
                                 MovieWatchedCheckButton(

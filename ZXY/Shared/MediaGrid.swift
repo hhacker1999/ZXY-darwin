@@ -9,7 +9,7 @@ private enum GridMetrics {
     static var cornerRadius: CGFloat {
         AppTheme.MediaLibrary.gridPosterCornerRadius
     }
-    static var titleLineLimit: Int { AppTheme.MediaLibrary.shelfTitleLineLimit }
+    static var titleLineLimit: Int { AppTheme.MediaLibrary.shelfRowTitleLineLimit }
     static var columnSpacing: CGFloat {
         AppTheme.MediaLibrary.gridColumnSpacing
     }
@@ -18,7 +18,6 @@ private enum GridMetrics {
 
 struct MediaGrid<T: Hashable>: View {
     @ObserveInjection var inject
-    @Environment(\.contentBlendsWithAmbient) private var blendsWithAmbient
 
     let itemState: ViewItemState<[AppMedia]>
     let initialText: String
@@ -94,7 +93,7 @@ struct MediaGrid<T: Hashable>: View {
             }
         }
         .enableInjection()
-        .modifier(MediaGridScrollChrome(blendsWithAmbient: blendsWithAmbient))
+        .scrollContentBackground(.hidden)
     }
 
     private var shimmerGrid: some View {
@@ -194,8 +193,8 @@ private struct GridPosterCard: View {
                         style: .continuous
                     )
                     .stroke(
-                        AppTheme.Colors.border.opacity(isHovered ? 0.8 : 0.4),
-                        lineWidth: isHovered ? 1.5 : 0.5
+                        AppTheme.MediaLibrary.shelfPosterBorderColor,
+                        lineWidth: 1
                     )
                 )
                 .shadow(
@@ -229,8 +228,9 @@ private struct GridPosterCard: View {
             // ── Title label ──────────────────────────────────
             Text(displayTitle)
                 .font(AppTheme.MediaLibrary.gridPosterTitleFont)
-                .foregroundStyle(AppTheme.Colors.elementSubtle)
+                .foregroundStyle(AppTheme.MediaLibrary.shelfPosterTitleColor)
                 .lineLimit(GridMetrics.titleLineLimit)
+                .truncationMode(.tail)
                 .frame(
                     height: AppTheme.MediaLibrary.gridTitleBlockHeight,
                     alignment: .topLeading
@@ -273,16 +273,3 @@ private struct GridPosterCard: View {
     }
 }
 
-private struct MediaGridScrollChrome: ViewModifier {
-    let blendsWithAmbient: Bool
-
-    func body(content: Content) -> some View {
-        if blendsWithAmbient {
-            content
-                .scrollContentBackground(.hidden)
-        } else {
-            content
-                .background(AppTheme.Colors.background.ignoresSafeArea())
-        }
-    }
-}

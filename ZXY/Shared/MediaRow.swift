@@ -22,8 +22,6 @@ struct MediaShelfSection: View {
     }
 }
 
-// MARK: - Horizontal row
-
 struct MediaShelfRow: View {
     let media: [AppMedia]
     let onTap: (AppMedia) -> Void
@@ -31,7 +29,7 @@ struct MediaShelfRow: View {
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            LazyHStack(spacing: AppTheme.Spacing.sm + 2) {
+            LazyHStack(spacing: AppTheme.MediaLibrary.shelfRowItemSpacing) {
                 ForEach(media, id: \.id) { item in
                     MediaShelfPosterCard(media: item)
                         .onTapGesture {
@@ -43,8 +41,6 @@ struct MediaShelfRow: View {
         }
     }
 }
-
-// MARK: - Poster card
 
 struct MediaShelfPosterCard: View {
     let media: AppMedia
@@ -92,14 +88,18 @@ struct MediaShelfPosterCard: View {
                     cornerRadius: AppTheme.MediaLibrary.rowPosterCornerRadius,
                     style: .continuous
                 )
-                .stroke(AppTheme.Colors.border, lineWidth: 0.5)
+                .stroke(
+                    AppTheme.MediaLibrary.shelfPosterBorderColor,
+                    lineWidth: 1
+                )
             )
             .shadow(color: AppTheme.Shadows.card, radius: 8, x: 0, y: 4)
 
             Text(displayTitle)
                 .font(AppTheme.MediaLibrary.posterTitleFont)
-                .foregroundStyle(AppTheme.Colors.elementSubtle)
-                .lineLimit(AppTheme.MediaLibrary.shelfTitleLineLimit)
+                .foregroundStyle(AppTheme.MediaLibrary.shelfPosterTitleColor)
+                .lineLimit(AppTheme.MediaLibrary.shelfRowTitleLineLimit)
+                .truncationMode(.tail)
                 .frame(
                     width: AppTheme.MediaLibrary.rowPosterWidth,
                     alignment: .leading
@@ -133,7 +133,7 @@ struct MediaShelfShimmerRow: View {
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: AppTheme.Spacing.sm + 2) {
+            HStack(spacing: AppTheme.MediaLibrary.shelfRowItemSpacing) {
                 ForEach(0 ..< 6, id: \.self) { _ in
                     VStack(
                         alignment: .leading,

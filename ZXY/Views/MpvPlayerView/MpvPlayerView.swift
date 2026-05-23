@@ -71,7 +71,7 @@ struct MpvPlayerView: View {
                         #if os(iOS)
                             OverlayView(
                                 title:
-                                    "\(vm.name)\(vm.seasonNo != -1 ? "(S\(String(format: "%02d", vm.seasonNo))" : "")\(vm.episodeNo != -1 ? ":E\(String(format: "%02d", vm.episodeNo)))" : "")",
+                                "\(vm.name)\(vm.seasonNo != -1 ? "(S\(String(format: "%02d", vm.seasonNo))" : "")\(vm.episodeNo != -1 ? ":E\(String(format: "%02d", vm.episodeNo)))" : "")",
                                 vm: vm,
                                 onBack: {
                                     Router.router.popRoute()
@@ -84,7 +84,7 @@ struct MpvPlayerView: View {
                         #else
                             OverlayView(
                                 title:
-                                    "\(vm.name)\(vm.seasonNo != -1 ? "(S\(String(format: "%02d", vm.seasonNo))" : "")\(vm.episodeNo != -1 ? ":E\(String(format: "%02d", vm.episodeNo)))" : "")",
+                                "\(vm.name)\(vm.seasonNo != -1 ? "(S\(String(format: "%02d", vm.seasonNo))" : "")\(vm.episodeNo != -1 ? ":E\(String(format: "%02d", vm.episodeNo)))" : "")",
                                 vm: vm,
                                 onBack: {
                                     Router.router.popRoute()
@@ -94,14 +94,14 @@ struct MpvPlayerView: View {
                     }
                     .opacity(vm.overlayVisible ? 1 : 0)
                 }
-                #if os(macOS)
-                    .overlay(alignment: .topLeading) {
-                        VideoInfoOverlayView(vm: vm)
+            #if os(macOS)
+                .overlay(alignment: .topLeading) {
+                    VideoInfoOverlayView(vm: vm)
                         .padding(.top, 70)
                         .padding(.leading, 24)
                         .opacity(vm.showVideoInfoOverlay ? 1 : 0)
-                    }
-                #endif
+                }
+            #endif
                 .overlay(alignment: .center) {
                     LoadingOverlayView(vm: vm)
                 }
@@ -125,14 +125,16 @@ struct MpvPlayerView: View {
                 .onKeyPress(
                     .leftArrow,
                     action: {
-                        vm.seek(relative: -10)
+                        let skipDuration = SettingsBloc.bloc.skipDuration
+                        vm.seek(relative: TimeInterval(-skipDuration))
                         return .handled
                     }
                 )
                 .onKeyPress(
                     .rightArrow,
                     action: {
-                        vm.seek(relative: 10)
+                        let skipDuration = SettingsBloc.bloc.skipDuration
+                        vm.seek(relative: TimeInterval(skipDuration))
                         return .handled
                     }
                 )
@@ -145,29 +147,29 @@ struct MpvPlayerView: View {
                 )
                 .preferredColorScheme(.dark)
                 .ignoresSafeArea()
-                #if os(iOS)
-                    .navigationBarBackButtonHidden(true)
-                    .navigationTitle("")
-                    .toolbarBackground(.hidden, for: .navigationBar)
-                #endif
+            #if os(iOS)
+                .navigationBarBackButtonHidden(true)
+                .navigationTitle("")
+                .toolbarBackground(.hidden, for: .navigationBar)
+            #endif
                 .onDisappear {
                     vm.cleanUp()
                 }
         }
         #if os(iOS)
-            .sheet(isPresented: $showVideoStatsSheet) {
-                NavigationStack {
-                    ScrollView {
-                        VideoInfoOverlayView(vm: vm, style: .sheetContent)
+        .sheet(isPresented: $showVideoStatsSheet) {
+            NavigationStack {
+                ScrollView {
+                    VideoInfoOverlayView(vm: vm, style: .sheetContent)
                         .padding(.horizontal, 8)
-                    }
-                    .navigationTitle("Video Stats")
-                    .navigationBarTitleDisplayMode(.inline)
                 }
-                .presentationDetents([.medium, .large])
-                .presentationDragIndicator(.visible)
-                .preferredColorScheme(.dark)
+                .navigationTitle("Video Stats")
+                .navigationBarTitleDisplayMode(.inline)
             }
+            .presentationDetents([.medium, .large])
+            .presentationDragIndicator(.visible)
+            .preferredColorScheme(.dark)
+        }
         #endif
     }
 }
@@ -186,8 +188,8 @@ struct LoadingOverlayView: View {
                     Text(
                         vm.loading
                             ? vm.downloadSpeed != 0
-                                ? String(format: "%.2f Mbps", vm.downloadSpeed)
-                                : "Loading"
+                            ? String(format: "%.2f Mbps", vm.downloadSpeed)
+                            : "Loading"
                             : "Fetching Streams"
                     )
                     .font(

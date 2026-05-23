@@ -19,7 +19,7 @@ final class SettingsBloc {
     static let skipDurationOptions = [5, 10, 15, 30, 45, 60]
 
     private enum Keys {
-        static let amoled = "amoled"
+        static let gradient = "gradient"
         static let dynamicTheme = "dynamic"
         static let posterRatings = "poster"
         static let formattedStreams = "formatted_streams"
@@ -33,8 +33,8 @@ final class SettingsBloc {
         static let subtitleFontPadding = "padding"
     }
 
-    var isAmoled: Bool = true {
-        didSet { persistBool(Keys.amoled, isAmoled) }
+    var enableGradient: Bool = true {
+        didSet { persistBool(Keys.gradient, enableGradient) }
     }
 
     var isDynamic: Bool = true {
@@ -91,7 +91,7 @@ final class SettingsBloc {
         hydrating = true
         defer { hydrating = false }
 
-        if let v = readBool(Keys.amoled) { isAmoled = v }
+        if let v = readBool(Keys.gradient) { enableGradient = v }
         if let v = readBool(Keys.dynamicTheme) { isDynamic = v }
         if let v = readBool(Keys.posterRatings) { showPosterRatings = v }
         if let v = readBool(Keys.formattedStreams) { showFormattedStreams = v }

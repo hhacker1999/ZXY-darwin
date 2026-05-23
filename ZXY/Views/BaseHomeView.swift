@@ -118,7 +118,6 @@ struct BaseHomeview: View {
                 }
             }
             .listStyle(.sidebar)
-            .navigationTitle("ZXY")
             .navigationSplitViewColumnWidth(min: 232, ideal: 256, max: 296)
 
         } detail: {
@@ -127,6 +126,13 @@ struct BaseHomeview: View {
                 detailContent(for: selectedPage)
             }
         }
+        #if os(macOS)
+        .navigationTitle("")
+        .toolbarBackground(.hidden, for: .automatic)
+        .toolbarBackground(.hidden, for: .windowToolbar)
+        .toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
+        .windowToolbarFullScreenVisibility(.onHover)
+        #endif
     }
 
     @ViewBuilder
@@ -137,7 +143,6 @@ struct BaseHomeview: View {
                 vm: $vm,
                 ambientGradient: $ambientGradient
             )
-            .environment(\.contentBlendsWithAmbient, true)
         case .discover:
             DiscoverView(mediaUc: deps.mediaUc, authUc: deps.authUc)
         case .search:

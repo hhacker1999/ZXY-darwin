@@ -44,6 +44,13 @@ struct ContentView: View {
                     }
                 }
             }
+            #if os(macOS)
+            .navigationTitle("")
+            .toolbarBackground(.hidden, for: .automatic)
+            .toolbarBackground(.hidden, for: .windowToolbar)
+            .toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
+            .windowToolbarFullScreenVisibility(.onHover)
+            #endif
         }
     }
 }

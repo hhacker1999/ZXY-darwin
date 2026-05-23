@@ -96,9 +96,10 @@ struct OverlayView: View {
         HStack(spacing: 40) {
             // Skip backward
             Button(action: {
-                vm.seek(relative: -10)
+                let skipDuration = SettingsBloc.bloc.skipDuration
+                vm.seek(relative: TimeInterval(-skipDuration))
             }) {
-                Image(systemName: "gobackward.10")
+                Image(systemName: "gobackward.\(SettingsBloc.bloc.skipDuration)")
                     .font(.system(size: 26, weight: .medium))
                     .foregroundStyle(.white.opacity(0.85))
                     .frame(width: 52, height: 52)
@@ -122,9 +123,10 @@ struct OverlayView: View {
 
             // Skip forward
             Button(action: {
-                vm.seek(relative: 10)
+                let skipDuration = SettingsBloc.bloc.skipDuration
+                vm.seek(relative: TimeInterval(skipDuration))
             }) {
-                Image(systemName: "goforward.10")
+                Image(systemName: "goforward.\(SettingsBloc.bloc.skipDuration)")
                     .font(.system(size: 26, weight: .medium))
                     .foregroundStyle(.white.opacity(0.85))
                     .frame(width: 52, height: 52)
