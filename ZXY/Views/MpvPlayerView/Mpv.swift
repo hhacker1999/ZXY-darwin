@@ -1,10 +1,11 @@
+import Foundation
+import Libmpv
+
 #if os(macOS)
     import AppKit
 #else
     import UIKit
 #endif
-import Foundation
-import Libmpv
 
 class MPV {
     var mpv: OpaquePointer!
@@ -18,9 +19,13 @@ class MPV {
 
     func toggleHDR(enabled: Bool) {
         if enabled {
-            checkError(mpv_set_option_string(mpv, "target-colorspace-hint", "yes"))
+            checkError(
+                mpv_set_option_string(mpv, "target-colorspace-hint", "yes")
+            )
         } else {
-            checkError(mpv_set_option_string(mpv, "target-colorspace-hint", "no"))
+            checkError(
+                mpv_set_option_string(mpv, "target-colorspace-hint", "no")
+            )
         }
     }
 
@@ -50,9 +55,21 @@ class MPV {
         // NOTE: This enabled spatial audio
         checkError(mpv_set_option_string(mpv, "ao", "avfoundation,coreaudio"))
 
+        if let langCodes = LangHelper.langToCodes[SettingsBloc.bloc.language] {
+            var langString = langCodes.joined(separator: ",")
+            langString += ",default"
+            checkError(mpv_set_option_string(mpv, "alang", langString))
+        }
+
+        if let langCodes = LangHelper.langToCodes[SettingsBloc.bloc.subtitleLanguage] {
+            let langStrings = langCodes.joined(separator: ",")
+            checkError(mpv_set_option_string(mpv, "slang", langStrings))
+        } else {
+            checkError(mpv_set_option_string(mpv, "sid", "no"))
+        }
+
         checkError(mpv_set_option_string(mpv, "ytdl", "no"))
         checkError(mpv_set_option_string(mpv, "target-colorspace-hint", "yes"))
-        checkError(mpv_set_option_string(mpv, "sid", "no"))
         checkError(mpv_set_option_string(mpv, "cache", "yes"))
         checkError(mpv_set_option_string(mpv, "demuxer-max-bytes", "1024MiB"))
         checkError(mpv_set_option_string(mpv, "demuxer-readahead-secs", "3600"))
@@ -183,9 +200,13 @@ class MPV {
                                                 .maximumPotentialExtendedDynamicRangeColorComponentValue
                                                 ?? 1.0
                                     #else
-                                        if let activeScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+                                        if let activeScene = UIApplication
+                                            .shared.connectedScenes.first
+                                            as? UIWindowScene
+                                        {
                                             let screen = activeScene.screen
-                                            maxEDRRange = screen.potentialEDRHeadroom
+                                            maxEDRRange =
+                                                screen.potentialEDRHeadroom
                                         }
                                     #endif
 

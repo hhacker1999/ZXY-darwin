@@ -39,13 +39,6 @@ class MediaConfig {
     /// URL to stream a YouTube trailer/clip through the backend proxy.
     /// The backend requires a valid profile session cookie on the request.
     func trailerStreamURL(youtubeKey: String) -> URL? {
-        // guard !youtubeKey.isEmpty,
-        //       let encoded = youtubeKey.addingPercentEncoding(
-        //           withAllowedCharacters: .urlQueryAllowed
-        //       )
-        // else {
-        //     return nil
-        // }
         return URL(string: "\(Constants.baseUrl)/yt_stream?id=\(youtubeKey)")
     }
 }
