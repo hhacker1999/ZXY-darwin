@@ -24,6 +24,12 @@ enum BaseHomeViewPages: String, CaseIterable, Identifiable {
         case .settings: return "gearshape.fill"
         }
     }
+
+    /// Pages shown in the tvOS top tab bar.
+    /// Settings lives outside the main tab strip on tvOS (accessible via a gear button or long-press).
+    static var tvOSTabs: [BaseHomeViewPages] {
+        [.home, .discover, .search, .library, .settings]
+    }
 }
 
 struct BaseHomeview: View {
@@ -43,7 +49,9 @@ struct BaseHomeview: View {
 
     var body: some View {
         Group {
-            #if os(iOS)
+            #if os(tvOS)
+                tvosTabChrome
+            #elseif os(iOS)
                 if UIDevice.current.userInterfaceIdiom == .phone {
                     iosTabChrome
                 } else {
@@ -55,6 +63,29 @@ struct BaseHomeview: View {
         }
         .accentColor(.white)
     }
+
+    // MARK: - tvOS
+
+    #if os(tvOS)
+        private var tvosTabChrome: some View {
+            TabView(selection: $selectedPage) {
+                ForEach(BaseHomeViewPages.tvOSTabs) { page in
+                    detailContent(for: page)
+                        .tabItem {
+                            Label(page.rawValue, systemImage: page.icon)
+                        }
+                        .tag(page)
+                }
+            }
+            .background {
+                if selectedPage != .home {
+                    HomePageAmbientBackground(gradient: ImageGradientAndStoreBloc.bloc.currentGradient)
+                }
+            }
+        }
+    #endif
+
+    // MARK: - iOS
 
     #if os(iOS)
         private var iosTabChrome: some View {
@@ -74,6 +105,9 @@ struct BaseHomeview: View {
         }
     #endif
 
+    // MARK: - macOS / iPad sidebar
+
+    #if !os(tvOS)
     private var macSidebarSplitChrome: some View {
         NavigationSplitView {
             List {
@@ -134,15 +168,20 @@ struct BaseHomeview: View {
         .windowToolbarFullScreenVisibility(.onHover)
         #endif
     }
+    #endif
 
     @ViewBuilder
     private func detailContent(for page: BaseHomeViewPages) -> some View {
         switch page {
         case .home:
-            HomeView(
-                vm: $vm,
-                ambientGradient: $ambientGradient
-            )
+            #if os(tvOS)
+                HomeViewTVOS(vm: vm)
+            #else
+                HomeView(
+                    vm: $vm,
+                    ambientGradient: $ambientGradient
+                )
+            #endif
         case .discover:
             DiscoverView(mediaUc: deps.mediaUc, authUc: deps.authUc)
         case .search:

@@ -30,6 +30,9 @@ class HomeViewModel {
     var continueWatchingState: ViewItemState<[ContinueWatchingItem]> = .initial
     var topBannerState: ViewItemState<[AppMedia]> = .initial
 
+    @ObservationIgnored
+    private var hasInitialised = false
+
     let mediaUc: MediaUsecase
     let progressUc: ProgressUsecase
     init(mediaUc: MediaUsecase, progressUc: ProgressUsecase) {
@@ -37,27 +40,25 @@ class HomeViewModel {
         self.progressUc = progressUc
     }
 
-    func initialise() async {
-        switch topBannerState {
-        case .initial:
-            break
-        default:
-            return
-        }
+    /// Bootstrap home state. Pass `loadTopBanner: false` for surfaces that
+    /// render their own banner (e.g. tvOS) so we don't fetch trakt rows we'll
+    /// never display.
+    func initialise(loadTopBanner: Bool = true) async {
+        guard !hasInitialised else { return }
 
-        guard let profile = userBloc.profile else {
-            return
-        }
-        guard let libraryItems = profile.libraryItems else {
-            return
-        }
+        guard let profile = userBloc.profile else { return }
+        guard let libraryItems = profile.libraryItems else { return }
+
+        hasInitialised = true
 
         Task {
             await initialiseContinueWatching()
         }
 
-        Task {
-            await initialiseTopBanner()
+        if loadTopBanner {
+            Task {
+                await initialiseTopBanner()
+            }
         }
 
         var tempItems: [HomeViewDiscoveryItem] = []

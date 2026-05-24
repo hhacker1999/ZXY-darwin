@@ -11,6 +11,7 @@
 		0C83E04A4CF86332FFC2772F /* MpvPlayerDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 225278BC78432D767B4D164F /* MpvPlayerDelegate.swift */; };
 		2A66D3ADCEB17803562BCFB6 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 1DC449894548917D9608C662 /* README.md */; };
 		695A196D2FAFA909005F52FB /* MPVKit in Frameworks */ = {isa = PBXBuildFile; productRef = 695A196C2FAFA909005F52FB /* MPVKit */; };
+		69A6F3792FC2BAA200477B60 /* HomeViewTVOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69A6F3782FC2BAA200477B60 /* HomeViewTVOS.swift */; platformFilters = (tvos, ); };
 		69D908192F82AA1900FDC6BA /* Inject in Frameworks */ = {isa = PBXBuildFile; productRef = 69D908182F82AA1900FDC6BA /* Inject */; };
 		69E6A31D2FB0F25C00EBEBEA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 69E6A2C32FB0F25C00EBEBEA /* Assets.xcassets */; };
 		69E6A31E2FB0F25C00EBEBEA /* CastAndCrewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69E6A2DC2FB0F25C00EBEBEA /* CastAndCrewView.swift */; };
@@ -89,12 +90,12 @@
 		69E6A3682FB0F2FD00EBEBEA /* ZXYApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69E6A3672FB0F2FD00EBEBEA /* ZXYApp.swift */; };
 		69E6A3692FB0F25C00EBEBEA /* BannerAmbientBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69E6A36A2FB0F25C00EBEBEA /* BannerAmbientBackground.swift */; };
 		79F9FDC1A975D3CCC721BBFC /* ImageGradientStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B567BBA9F57F858E56EA35E /* ImageGradientStore.swift */; };
-		C6C571BD95EDE781CB6FA57B /* BlocAsyncImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30C0D9311A72DE0636EC56DE /* BlocAsyncImage.swift */; };
-		D2D2615B8628D2F8C96236FD /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 1B44BDE7D0A832B4B5CA9468 /* .gitignore */; };
-		F9420C367E86DA90F00556EC /* Mpv.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91F1E28FAA8C1C57FC38E16F /* Mpv.swift */; };
 		A1B2C3D42FB1000100EBEBEA /* TVOSComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D12FB1000100EBEBEA /* TVOSComponents.swift */; };
 		A1B2C3D52FB1000200EBEBEA /* LoginViewTVOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D22FB1000200EBEBEA /* LoginViewTVOS.swift */; };
 		A1B2C3D62FB1000300EBEBEA /* ProfileSelectViewTVOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D32FB1000300EBEBEA /* ProfileSelectViewTVOS.swift */; };
+		C6C571BD95EDE781CB6FA57B /* BlocAsyncImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30C0D9311A72DE0636EC56DE /* BlocAsyncImage.swift */; };
+		D2D2615B8628D2F8C96236FD /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 1B44BDE7D0A832B4B5CA9468 /* .gitignore */; };
+		F9420C367E86DA90F00556EC /* Mpv.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91F1E28FAA8C1C57FC38E16F /* Mpv.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -106,6 +107,7 @@
 		30C0D9311A72DE0636EC56DE /* BlocAsyncImage.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = BlocAsyncImage.swift; sourceTree = "<group>"; };
 		4B567BBA9F57F858E56EA35E /* ImageGradientStore.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = ImageGradientStore.swift; sourceTree = "<group>"; };
 		6980844D2F78169500FCBB80 /* ZXY.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ZXY.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		69A6F3782FC2BAA200477B60 /* HomeViewTVOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewTVOS.swift; sourceTree = "<group>"; };
 		69E6A2C22FB0F25C00EBEBEA /* AppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTheme.swift; sourceTree = "<group>"; };
 		69E6A2C32FB0F25C00EBEBEA /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		69E6A2C42FB0F25C00EBEBEA /* ProgressToastBloc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressToastBloc.swift; sourceTree = "<group>"; };
@@ -132,9 +134,6 @@
 		69E6A2DC2FB0F25C00EBEBEA /* CastAndCrewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CastAndCrewView.swift; sourceTree = "<group>"; };
 		69E6A2DD2FB0F25C00EBEBEA /* Divider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Divider.swift; sourceTree = "<group>"; };
 		69E6A2DE2FB0F25C00EBEBEA /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
-		A1B2C3D12FB1000100EBEBEA /* TVOSComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TVOSComponents.swift; sourceTree = "<group>"; };
-		A1B2C3D22FB1000200EBEBEA /* LoginViewTVOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewTVOS.swift; sourceTree = "<group>"; };
-		A1B2C3D32FB1000300EBEBEA /* ProfileSelectViewTVOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileSelectViewTVOS.swift; sourceTree = "<group>"; };
 		69E6A2DF2FB0F25C00EBEBEA /* MediaGrid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaGrid.swift; sourceTree = "<group>"; };
 		69E6A2E02FB0F25C00EBEBEA /* MediaLoadedContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaLoadedContent.swift; sourceTree = "<group>"; };
 		69E6A2E12FB0F25C00EBEBEA /* MediaRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaRow.swift; sourceTree = "<group>"; };
@@ -188,6 +187,9 @@
 		8517C0CB402EB23C733A61CB /* MpvViewController.old */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = MpvViewController.old; sourceTree = "<group>"; };
 		91F1E28FAA8C1C57FC38E16F /* Mpv.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = Mpv.swift; sourceTree = "<group>"; };
 		9CF0EE4A0CCB4E7DEBCB02BF /* MpvMetalPlayerView.old */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = MpvMetalPlayerView.old; sourceTree = "<group>"; };
+		A1B2C3D12FB1000100EBEBEA /* TVOSComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TVOSComponents.swift; sourceTree = "<group>"; };
+		A1B2C3D22FB1000200EBEBEA /* LoginViewTVOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewTVOS.swift; sourceTree = "<group>"; };
+		A1B2C3D32FB1000300EBEBEA /* ProfileSelectViewTVOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileSelectViewTVOS.swift; sourceTree = "<group>"; };
 		A47FC608A6FF6FFF4DC4F865 /* MpvPlayerView.old */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = MpvPlayerView.old; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -357,6 +359,7 @@
 			children = (
 				69E6A36A2FB0F25C00EBEBEA /* BannerAmbientBackground.swift */,
 				69E6A2EF2FB0F25C00EBEBEA /* HomeView.swift */,
+				69A6F3782FC2BAA200477B60 /* HomeViewTVOS.swift */,
 				69E6A2F02FB0F25C00EBEBEA /* HomeViewModel.swift */,
 				69E6A2F12FB0F25C00EBEBEA /* ShimmerView.swift */,
 				69E6A2F22FB0F25C00EBEBEA /* TopBanner.swift */,
@@ -616,6 +619,7 @@
 				69E6A33F2FB0F25C00EBEBEA /* LibraryView.swift in Sources */,
 				69E6A3402FB0F25C00EBEBEA /* AppTheme.swift in Sources */,
 				69E6A3412FB0F25C00EBEBEA /* MpvPlayerView.swift in Sources */,
+				69A6F3792FC2BAA200477B60 /* HomeViewTVOS.swift in Sources */,
 				69E6A3422FB0F25C00EBEBEA /* MpvViewController.swift in Sources */,
 				69E6A3432FB0F25C00EBEBEA /* SplashViewModel.swift in Sources */,
 				69E6A3442FB0F25C00EBEBEA /* ProgressUsecase.swift in Sources */,
