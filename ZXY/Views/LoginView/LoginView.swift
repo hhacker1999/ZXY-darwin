@@ -361,8 +361,8 @@ private struct LoginField: View {
                                 kind == .email ? .emailAddress : .none
                             )
                             .textInputAutocapitalization(.never)
-                        #endif
                             .autocorrectionDisabled()
+                        #endif
                     }
                 }
                 .font(.system(size: 15, weight: .regular))

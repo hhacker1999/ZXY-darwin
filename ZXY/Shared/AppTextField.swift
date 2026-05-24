@@ -31,8 +31,8 @@ struct AppTextField: View {
                         #if os(iOS)
                             .keyboardType(isSecure ? .default : .emailAddress)
                             .textInputAutocapitalization(.never)  // Use this modern modifier instead of .autocapitalization
+                            .autocorrectionDisabled()
                         #endif
-                        .autocorrectionDisabled()
                 }
             }
             .placeholder(when: text.isEmpty) {

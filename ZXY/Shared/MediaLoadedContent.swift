@@ -156,7 +156,7 @@ struct MediaLoadedContent: View {
                         .padding(.horizontal, AppTheme.Spacing.md)
                     }
                 }
-                .scrollContentBackground(.hidden)
+                .hideScrollContentBackground()
             }
         }
         #if os(iOS)
@@ -735,9 +735,11 @@ private struct MovieWatchedCheckButton: View {
         .disabled(isWatched)
         .opacity(isWatched ? 0.92 : 1)
         .accessibilityLabel(isWatched ? "Watched" : "Mark as watched")
+        #if os(macOS)
         .onHover { hovering in
             isHovered = hovering
         }
+        #endif
     }
 
     private var backgroundFill: LinearGradient {
@@ -823,9 +825,11 @@ private struct PlayStreamButton: View {
             )
         }
         .buttonStyle(.plain)
+        #if os(macOS)
         .onHover { hovering in
             isHovered = hovering
         }
+        #endif
     }
 
     private var playProgressBar: some View {
@@ -853,8 +857,10 @@ private extension View {
                 .presentationSizing(.page)
                 .presentationDragIndicator(.visible)
                 .presentationDetents([.medium, .large])
-        #else
+        #elseif os(macOS)
             frame(minWidth: 500)
+        #else
+            frame(minWidth: 600, minHeight: 400)
         #endif
     }
 }
@@ -993,7 +999,7 @@ private struct StreamSheet: View {
                     )
                 }
                 .listRowBackground(Color.clear)
-                .listRowSeparatorTint(AppTheme.Colors.divider)
+                .listRowSeparatorTintIfAvailable(AppTheme.Colors.divider)
             }
         }
         #if os(iOS)
@@ -1001,7 +1007,7 @@ private struct StreamSheet: View {
         #else
         .listStyle(.plain)
         #endif
-        .scrollContentBackground(.hidden)
+        .hideScrollContentBackground()
     }
 }
 
@@ -1036,9 +1042,11 @@ private struct StreamRow: View {
         .contentShape(Rectangle())
         .opacity(isHovered ? 0.7 : 1.0)
         .animation(.easeOut(duration: 0.15), value: isHovered)
+        #if os(macOS)
         .onHover { hovering in
             isHovered = hovering
         }
+        #endif
         .onTapGesture {
             onTap()
         }
@@ -1531,8 +1539,8 @@ private struct EpisodeCard: View {
     }
 }
 
-#if os(macOS)
-    /// macOS-only: system `NavigationStack` toolbars use the window title area (grey bar).
+#if os(macOS) || os(tvOS)
+    /// macOS / tvOS: system navigation chrome is minimal or absent.
     /// These controls sit over the hero like the hidden navigation bar on iOS.
     struct MediaDetailMacTopBar: View {
         let showLibraryButton: Bool

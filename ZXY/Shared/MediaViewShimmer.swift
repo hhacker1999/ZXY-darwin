@@ -152,7 +152,7 @@ struct MediaViewShimmer: View {
                     }
                 }
             }
-            .scrollContentBackground(.hidden)
+            .hideScrollContentBackground()
         }
         #if os(iOS)
             .ignoresSafeArea(edges: isMobile ? .top : [])

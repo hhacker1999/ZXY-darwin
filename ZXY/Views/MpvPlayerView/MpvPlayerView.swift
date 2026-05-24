@@ -94,7 +94,7 @@ struct MpvPlayerView: View {
                     }
                     .opacity(vm.overlayVisible ? 1 : 0)
                 }
-            #if os(macOS)
+            #if os(macOS) || os(tvOS)
                 .overlay(alignment: .topLeading) {
                     VideoInfoOverlayView(vm: vm)
                         .padding(.top, 70)
@@ -111,6 +111,7 @@ struct MpvPlayerView: View {
                         vm.onUserInteraction()
                     }
                 }
+                #if os(macOS)
                 .onContinuousHover { [weak vm] phase in
                     if case .active = phase {
                         if let vm = vm {
@@ -118,6 +119,7 @@ struct MpvPlayerView: View {
                         }
                     }
                 }
+                #endif
                 .onKeyPress(action: { key in
                     debugPrint("key: \(key.characters)")
                     return .handled

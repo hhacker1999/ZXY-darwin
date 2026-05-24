@@ -203,7 +203,7 @@ struct VideoInfoOverlayView: View {
 extension View {
     @ViewBuilder
     func infoOverlayGlass() -> some View {
-        if #available(macOS 26, iOS 26, *) {
+        if #available(macOS 26, iOS 26, tvOS 26, *) {
             self
             background(
                 .ultraThinMaterial,

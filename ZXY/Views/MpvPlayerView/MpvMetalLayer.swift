@@ -34,8 +34,7 @@ import Foundation
             }
         }
     }
-#endif
-#if os(iOS)
+#else
     import UIKit
 
     class MetalLayer: CAMetalLayer {
@@ -51,21 +50,23 @@ import Foundation
             }
         }
 
-        /// Hack for fix [target-colorspace-hint] option:
-        /// Update wantsExtendedDynamicRangeContent need run in main thread to activate screen EDR mode, other thread can't activate
-        override var wantsExtendedDynamicRangeContent: Bool {
-            get {
-                return super.wantsExtendedDynamicRangeContent
-            }
-            set {
-                if Thread.isMainThread {
-                    super.wantsExtendedDynamicRangeContent = newValue
-                } else {
-                    DispatchQueue.main.sync {
+        #if os(iOS)
+            /// Hack for fix [target-colorspace-hint] option:
+            /// Update wantsExtendedDynamicRangeContent need run in main thread to activate screen EDR mode, other thread can't activate
+            override var wantsExtendedDynamicRangeContent: Bool {
+                get {
+                    return super.wantsExtendedDynamicRangeContent
+                }
+                set {
+                    if Thread.isMainThread {
                         super.wantsExtendedDynamicRangeContent = newValue
+                    } else {
+                        DispatchQueue.main.sync {
+                            super.wantsExtendedDynamicRangeContent = newValue
+                        }
                     }
                 }
             }
-        }
+        #endif
     }
 #endif

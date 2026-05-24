@@ -97,11 +97,11 @@
 /* Begin PBXFileReference section */
 		0A56036EBDC47624CC2FDA09 /* TrakPadAndDragListener.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = TrakPadAndDragListener.swift; sourceTree = "<group>"; };
 		1B44BDE7D0A832B4B5CA9468 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
-		1DC449894548917D9608C662 /* README.md */ = {isa = PBXFileReference; explicitFileType = net.daringfireball.markdown; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = README.md; sourceTree = "<group>"; };
+		1DC449894548917D9608C662 /* README.md */ = {isa = PBXFileReference; explicitFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		225278BC78432D767B4D164F /* MpvPlayerDelegate.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = MpvPlayerDelegate.swift; sourceTree = "<group>"; };
 		22B9534F392CD529EBD30AF0 /* MpvMetalLayer.old */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = MpvMetalLayer.old; sourceTree = "<group>"; };
-		30C0D9311A72DE0636EC56DE /* BlocAsyncImage.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; lastKnownFileType = sourcecode.swift; name = BlocAsyncImage.swift; path = BlocAsyncImage.swift; sourceTree = "<group>"; };
-		4B567BBA9F57F858E56EA35E /* ImageGradientStore.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; lastKnownFileType = sourcecode.swift; name = ImageGradientStore.swift; path = ImageGradientStore.swift; sourceTree = "<group>"; };
+		30C0D9311A72DE0636EC56DE /* BlocAsyncImage.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = BlocAsyncImage.swift; sourceTree = "<group>"; };
+		4B567BBA9F57F858E56EA35E /* ImageGradientStore.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = ImageGradientStore.swift; sourceTree = "<group>"; };
 		6980844D2F78169500FCBB80 /* ZXY.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ZXY.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		69E6A2C22FB0F25C00EBEBEA /* AppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTheme.swift; sourceTree = "<group>"; };
 		69E6A2C32FB0F25C00EBEBEA /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -825,13 +825,14 @@
 				RUNTIME_EXCEPTION_DISABLE_LIBRARY_VALIDATION = NO;
 				SDKROOT = auto;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SUPPORTED_PLATFORMS = "appletvos appletvsimulator iphoneos iphonesimulator macosx xros xrsimulator";
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,7";
+				TARGETED_DEVICE_FAMILY = "1,2,3,7";
 				XROS_DEPLOYMENT_TARGET = 26.2;
 			};
 			name = Debug;
@@ -885,13 +886,14 @@
 				RUNTIME_EXCEPTION_DISABLE_LIBRARY_VALIDATION = NO;
 				SDKROOT = auto;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SUPPORTED_PLATFORMS = "appletvos appletvsimulator iphoneos iphonesimulator macosx xros xrsimulator";
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,7";
+				TARGETED_DEVICE_FAMILY = "1,2,3,7";
 				XROS_DEPLOYMENT_TARGET = 26.2;
 			};
 			name = Release;

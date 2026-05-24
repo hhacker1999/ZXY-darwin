@@ -75,15 +75,9 @@ struct HomeView: View {
         .task {
             Task { await vm.initialise() }
         }
-        .scrollContentBackground(.hidden)
-        #if os(iOS)
-            .contentMargins(.top, 0, for: .scrollContent)
-            .ignoresSafeArea(edges: .top)
-        #elseif os(macOS)
-            .contentMargins(.top, 0, for: .scrollContent)
-            .ignoresSafeArea(edges: .top)
-        #endif
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .hideScrollContentBackground()
+        .homeHeroScrollEdgeInsets()
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
             .onChange(of: Router.router.mainRouteState) { old, new in
                 guard let oldRoute = old.last else {
                     return

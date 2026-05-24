@@ -9,7 +9,9 @@ private enum GridMetrics {
     static var cornerRadius: CGFloat {
         AppTheme.MediaLibrary.gridPosterCornerRadius
     }
-    static var titleLineLimit: Int { AppTheme.MediaLibrary.shelfRowTitleLineLimit }
+    static var titleLineLimit: Int {
+        AppTheme.MediaLibrary.shelfRowTitleLineLimit
+    }
     static var columnSpacing: CGFloat {
         AppTheme.MediaLibrary.gridColumnSpacing
     }
@@ -93,7 +95,7 @@ struct MediaGrid<T: Hashable>: View {
             }
         }
         .enableInjection()
-        .scrollContentBackground(.hidden)
+        .hideScrollContentBackground()
     }
 
     private var shimmerGrid: some View {
@@ -272,4 +274,3 @@ private struct GridPosterCard: View {
         }
     }
 }
-

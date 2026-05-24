@@ -122,7 +122,7 @@ struct DiscoverFilterSheet: View {
         .preferredColorScheme(.dark)
         #if os(macOS)
             .frame(minWidth: 560, minHeight: 700)
-        #else
+        #elseif os(iOS)
             .presentationDragIndicator(.visible)
             .presentationDetents([.large])
         #endif
@@ -175,10 +175,12 @@ private struct DiscoverFilterTypeView: View {
         }
         #if os(macOS)
             .listStyle(.inset)
-        #else
+        #elseif os(iOS)
             .listStyle(.insetGrouped)
+        #else
+            .listStyle(.plain)
         #endif
-        .scrollContentBackground(.hidden)
+        .hideScrollContentBackground()
         .background(DiscoverPalette.groupedBackground)
         .navigationTitle("Discover Filters")
         .navigationDestination(for: DiscoverFilterRoute.self) { route in
@@ -357,10 +359,12 @@ private struct DiscoverInternalFilterForm: View {
         }
         #if os(macOS)
             .listStyle(.inset)
-        #else
+        #elseif os(iOS)
             .listStyle(.insetGrouped)
+        #else
+            .listStyle(.plain)
         #endif
-        .scrollContentBackground(.hidden)
+        .hideScrollContentBackground()
         .background(DiscoverPalette.groupedBackground)
         .navigationTitle("Internal Filters")
         .toolbar {
@@ -669,10 +673,12 @@ private struct DiscoverTraktListPicker: View {
         }
         #if os(macOS)
             .listStyle(.inset)
-        #else
+        #elseif os(iOS)
             .listStyle(.insetGrouped)
+        #else
+            .listStyle(.plain)
         #endif
-        .scrollContentBackground(.hidden)
+        .hideScrollContentBackground()
         .background(DiscoverPalette.groupedBackground)
         .navigationTitle("Trakt Lists")
     }
@@ -723,18 +729,22 @@ private struct TraktOptionRow: View {
 
 private enum DiscoverPalette {
     static var groupedBackground: Color {
-        #if os(macOS)
+        #if os(macOS) || os(tvOS)
             return Color.black.opacity(0.001)
-        #else
+        #elseif os(iOS)
             return Color(.systemGroupedBackground)
+        #else
+            return Color.black.opacity(0.001)
         #endif
     }
 
     static var chipFill: Color {
-        #if os(macOS)
+        #if os(macOS) || os(tvOS)
             return Color.white.opacity(0.06)
-        #else
+        #elseif os(iOS)
             return Color(.secondarySystemFill)
+        #else
+            return Color.white.opacity(0.06)
         #endif
     }
 }

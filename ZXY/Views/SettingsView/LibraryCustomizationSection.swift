@@ -99,7 +99,9 @@ struct LibraryCustomizationSection: View {
                     )
             }
             .buttonStyle(.plain)
+            #if os(macOS)
             .help("Add a row")
+            #endif
 
             Button {
                 Task { await vm.saveLibraryItems() }

@@ -91,7 +91,7 @@ struct MovieView: View {
                 }
             }
         }
-        #if os(macOS)
+        #if os(macOS) || os(tvOS)
             .overlay(alignment: .top) {
                 switch vm.movieState {
                 case .error:
@@ -108,11 +108,13 @@ struct MovieView: View {
                     )
                 }
             }
+            #if os(macOS)
             .navigationBarBackButtonHidden(true)
             .navigationTitle("")
             .toolbarBackground(.hidden, for: .automatic)
             .toolbarBackground(.hidden, for: .windowToolbar)
-        #else
+            #endif
+        #elseif os(iOS)
             .toolbar {
                 if case .loaded = vm.movieState {
                     ToolbarItem(placement: .topBarTrailing) {

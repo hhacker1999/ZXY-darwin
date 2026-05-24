@@ -88,10 +88,10 @@ struct ProfileSelectView: View {
     private var profileGrid: some View {
         let cardWidth: CGFloat = 150
         let spacing: CGFloat = 28
-        #if os(macOS)
-            let maxColumns = 5
-        #else
+        #if os(iOS)
             let maxColumns = 3
+        #else
+            let maxColumns = 5
         #endif
         let columnCount = max(1, min(profiles.count, maxColumns))
         let gridWidth =
@@ -226,7 +226,9 @@ private struct ProfileCard: View {
             )
         }
         .buttonStyle(.plain)
+        #if os(macOS)
         .onHover { hovering = $0 }
+        #endif
     }
 
     private var avatar: some View {

@@ -114,11 +114,11 @@ struct BaseHomeview: View {
                             .fill(isSelected ? AppTheme.Colors.buttonPrimary : Color.clear)
                             .padding(.horizontal, AppTheme.Spacing.sm)
                     )
-                    .listRowSeparator(.hidden)
+                    .hideListRowSeparator()
                 }
             }
-            .listStyle(.sidebar)
-            .navigationSplitViewColumnWidth(min: 232, ideal: 256, max: 296)
+            .sidebarNavigationListStyle()
+            .sidebarColumnWidth(min: 232, ideal: 256, max: 296)
 
         } detail: {
             ZStack {

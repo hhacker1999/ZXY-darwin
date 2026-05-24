@@ -246,7 +246,10 @@ private struct MuteToggleButton: View {
             .contentShape(Circle())
         }
         .buttonStyle(.plain)
+        .accessibilityLabel(isMuted ? "Unmute trailer" : "Mute trailer")
+        #if os(macOS)
         .help(isMuted ? "Unmute trailer" : "Mute trailer")
+        #endif
     }
 }
 

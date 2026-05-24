@@ -134,8 +134,8 @@ private struct ServiceValueDialog: View {
                 .foregroundStyle(AppTheme.Colors.elementWhite)
                 #if os(iOS)
                     .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
                 #endif
-                .autocorrectionDisabled()
 
                 Button {
                     revealText.toggle()

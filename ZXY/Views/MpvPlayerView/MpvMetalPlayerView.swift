@@ -622,6 +622,7 @@ final class MpvViewModel: MPVPlayerDelegate {
         }
     }
 
+    #if os(macOS)
     func shouldHideCursor() -> Bool {
         // 1. Get the current location of the mouse cursor in global screen coordinates
         let mouseLocation = NSEvent.mouseLocation
@@ -651,4 +652,5 @@ final class MpvViewModel: MPVPlayerDelegate {
 
         return true // Safe to hide
     }
+    #endif
 }

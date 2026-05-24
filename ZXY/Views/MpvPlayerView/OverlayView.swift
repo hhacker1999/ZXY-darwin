@@ -153,6 +153,7 @@ struct OverlayView: View {
             }
             .frame(maxHeight: .infinity)
             .contentShape(Rectangle())
+            #if !os(tvOS)
             .gesture(
                 DragGesture(minimumDistance: 0)
                     .onChanged { value in
@@ -164,6 +165,7 @@ struct OverlayView: View {
                         isVolumeDragging = false
                     }
             )
+            #endif
         }
     }
 
@@ -286,6 +288,7 @@ struct OverlayView: View {
             }
             .frame(maxHeight: .infinity)
             .contentShape(Rectangle())
+            #if !os(tvOS)
             .gesture(
                 DragGesture(minimumDistance: 0)
                     .onChanged { value in
@@ -299,6 +302,7 @@ struct OverlayView: View {
                         vm.onDragEnd()
                     }
             )
+            #endif
         }
     }
 
@@ -329,11 +333,13 @@ struct OverlayView: View {
                 .settingsGlass()
             }
         }
+        #if os(macOS)
         .onContinuousHover { [weak vm] _ in
             if let vm = vm {
                 vm.onUserInteraction()
             }
         }
+        #endif
         .padding(.horizontal, 24)
         .padding(.bottom, 90)
     }
@@ -826,7 +832,7 @@ struct OverlayView: View {
 extension View {
     @ViewBuilder
     func liquidGlass() -> some View {
-        if #available(macOS 26, iOS 26, *) {
+        if #available(macOS 26, iOS 26, tvOS 26, *) {
             glassEffect(.regular)
         } else {
             background(.ultraThinMaterial, in: .capsule)
@@ -838,7 +844,7 @@ extension View {
 
     @ViewBuilder
     func liquidGlassProminent() -> some View {
-        if #available(macOS 26, iOS 26, *) {
+        if #available(macOS 26, iOS 26, tvOS 26, *) {
             glassEffect(.clear)
         } else {
             background(.thickMaterial, in: .capsule)

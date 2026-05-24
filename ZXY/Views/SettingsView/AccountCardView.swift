@@ -150,7 +150,9 @@ struct AccountActionRow: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .onHover { hovered = $0 }
+        #if os(macOS)
+            .onHover { hovered = $0 }
+        #endif
     }
 }
 
@@ -258,6 +260,8 @@ private struct TraktLoginRow: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .onHover { hovered = $0 }
+        #if os(macOS)
+            .onHover { hovered = $0 }
+        #endif
     }
 }

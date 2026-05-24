@@ -202,7 +202,9 @@ struct SettingsPickerRow: View {
                 )
             }
             .buttonStyle(.plain)
+            #if os(macOS)
             .menuStyle(.borderlessButton)
+            #endif
             .fixedSize()
         }
         .padding(AppTheme.Spacing.md)

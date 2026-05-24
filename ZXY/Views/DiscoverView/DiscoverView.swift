@@ -342,10 +342,12 @@ struct DiscoverView: View {
 
 private enum DiscoverViewPalette {
     static var groupedBackground: Color {
-        #if os(macOS)
+        #if os(macOS) || os(tvOS)
             return Color.black.opacity(0.001)
-        #else
+        #elseif os(iOS)
             return Color(.systemGroupedBackground)
+        #else
+            return Color.black.opacity(0.001)
         #endif
     }
 }
