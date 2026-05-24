@@ -20,6 +20,9 @@ struct SeriesView: View {
     }
 
     var body: some View {
+        #if os(tvOS)
+        SeriesViewTVOS(vm: vm)
+        #else
         ZStack {
             switch vm.seriesState {
             case .initial, .loading:
@@ -76,7 +79,7 @@ struct SeriesView: View {
                 }
             }
         }
-        #if os(macOS) || os(tvOS)
+        #if os(macOS)
             .overlay(alignment: .top) {
                 switch vm.seriesState {
                 case .error:
@@ -93,12 +96,10 @@ struct SeriesView: View {
                     )
                 }
             }
-            #if os(macOS)
             .navigationBarBackButtonHidden(true)
             .navigationTitle("")
             .toolbarBackground(.hidden, for: .automatic)
             .toolbarBackground(.hidden, for: .windowToolbar)
-            #endif
         #elseif os(iOS)
             .toolbar {
                 if case .loaded = vm.seriesState {
@@ -119,5 +120,7 @@ struct SeriesView: View {
             .toolbarBackground(.hidden, for: .navigationBar)
         #endif
         .enableInjection()
+        #endif
     }
 }
+

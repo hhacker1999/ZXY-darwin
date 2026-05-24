@@ -362,4 +362,105 @@ import SwiftUI
         }
     }
 
+    struct TVOSCardButtonStyle: ButtonStyle {
+        let isFocused: Bool
+        var cornerRadius: CGFloat = 16
+        func makeBody(configuration: Configuration) -> some View {
+            configuration.label
+                .scaleEffect(isFocused ? 1.06 : 1.0)
+                .shadow(color: isFocused ? Color.black.opacity(0.8) : Color.clear, radius: 15, x: 0, y: 10)
+                .overlay(
+                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                        .stroke(isFocused ? Color.white : Color.clear, lineWidth: 3)
+                        .scaleEffect(isFocused ? 1.06 : 1.0)
+                )
+                .animation(.smooth(duration: 0.2), value: isFocused)
+        }
+    }
+
+    struct TVOSCastButtonStyle: ButtonStyle {
+        let isFocused: Bool
+        func makeBody(configuration: Configuration) -> some View {
+            configuration.label
+                .scaleEffect(isFocused ? 1.1 : 1.0)
+                .shadow(color: isFocused ? Color.black.opacity(0.6) : Color.clear, radius: 10, x: 0, y: 5)
+                .overlay(
+                    Circle()
+                        .stroke(isFocused ? Color.white : Color.clear, lineWidth: 3)
+                        .scaleEffect(isFocused ? 1.1 : 1.0)
+                )
+                .animation(.smooth(duration: 0.2), value: isFocused)
+        }
+    }
+
+    struct TVOSRowButtonStyle: ButtonStyle {
+        let isFocused: Bool
+        func makeBody(configuration: Configuration) -> some View {
+            configuration.label
+                .background(
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .fill(isFocused ? Color.white : Color.white.opacity(0.06))
+                )
+                .scaleEffect(isFocused ? 1.02 : 1.0)
+                .shadow(color: isFocused ? Color.black.opacity(0.4) : Color.clear, radius: 10, x: 0, y: 5)
+                .animation(.smooth(duration: 0.2), value: isFocused)
+        }
+    }
+
+    struct TVOSNoHaloButtonStyle: ButtonStyle {
+        func makeBody(configuration: Configuration) -> some View {
+            configuration.label
+        }
+    }
+
+    struct TVOSWatchedBadge: View {
+        var body: some View {
+            HStack(spacing: 8) {
+                Image(systemName: "checkmark")
+                    .font(.system(size: 16, weight: .bold))
+                Text("WATCHED")
+                    .font(.system(size: 16, weight: .black))
+                    .tracking(1.2)
+            }
+            .foregroundStyle(.white)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+            .background(
+                Capsule(style: .continuous)
+                    .fill(.ultraThinMaterial)
+                    .overlay(
+                        Capsule(style: .continuous)
+                            .fill(AppTheme.Colors.success.opacity(0.55))
+                    )
+                    .overlay(
+                        Capsule(style: .continuous)
+                            .strokeBorder(Color.white.opacity(0.25), lineWidth: 1)
+                    )
+            )
+        }
+    }
+
+    struct TVOSUpcomingBadge: View {
+        var body: some View {
+            Text("UPCOMING")
+                .font(.system(size: 16, weight: .black))
+                .tracking(1.2)
+                .foregroundStyle(.white)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background(
+                    Capsule(style: .continuous)
+                        .fill(.ultraThinMaterial)
+                        .overlay(
+                            Capsule(style: .continuous)
+                                .fill(Color.black.opacity(0.35))
+                        )
+                        .overlay(
+                            Capsule(style: .continuous)
+                                .strokeBorder(Color.white.opacity(0.25), lineWidth: 1)
+                        )
+                )
+        }
+    }
+
 #endif

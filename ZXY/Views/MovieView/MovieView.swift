@@ -30,6 +30,9 @@ struct MovieView: View {
     }
 
     var body: some View {
+        #if os(tvOS)
+        MovieViewTVOS(vm: vm)
+        #else
         ZStack {
             switch vm.movieState {
             case .initial, .loading:
@@ -91,7 +94,7 @@ struct MovieView: View {
                 }
             }
         }
-        #if os(macOS) || os(tvOS)
+        #if os(macOS)
             .overlay(alignment: .top) {
                 switch vm.movieState {
                 case .error:
@@ -108,12 +111,10 @@ struct MovieView: View {
                     )
                 }
             }
-            #if os(macOS)
             .navigationBarBackButtonHidden(true)
             .navigationTitle("")
             .toolbarBackground(.hidden, for: .automatic)
             .toolbarBackground(.hidden, for: .windowToolbar)
-            #endif
         #elseif os(iOS)
             .toolbar {
                 if case .loaded = vm.movieState {
@@ -134,5 +135,7 @@ struct MovieView: View {
             }
             .toolbarBackground(.hidden, for: .navigationBar)
         #endif
+        #endif
     }
 }
+

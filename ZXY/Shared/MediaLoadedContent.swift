@@ -848,7 +848,7 @@ private struct PlayStreamButton: View {
     }
 }
 
-private extension View {
+extension View {
     /// On iPhone / compact layouts SwiftUI may adapt ``sheet`` to a popover-style panel; force a bottom sheet and system page sizing.
     @ViewBuilder
     func streamSheetPresentationChrome() -> some View {
@@ -860,17 +860,21 @@ private extension View {
         #elseif os(macOS)
             frame(minWidth: 500)
         #else
-            frame(minWidth: 600, minHeight: 400)
+            frame(width: 960, height: 680)
         #endif
     }
 }
 
-private struct StreamSheet: View {
+struct StreamSheet: View {
     let state: ViewItemState<[ResolutionItem]>
     let episodeNo: Int
     let seasonNo: Int
     let media: MediaDetails
     @Environment(\.dismiss) private var dismiss
+
+    #if os(tvOS)
+    @FocusState private var isCloseFocused: Bool
+    #endif
 
     private var itemCount: Int {
         if case let .loaded(streams) = state { return streams.count }
@@ -878,10 +882,14 @@ private struct StreamSheet: View {
     }
 
     private var idealHeight: CGFloat {
+        #if os(tvOS)
+        return 680
+        #else
         let base: CGFloat = 120 // header + padding
         let perItem: CGFloat = 60
         let computed = base + CGFloat(itemCount) * perItem
         return min(max(computed, 340), 700)
+        #endif
     }
 
     var body: some View {
@@ -889,39 +897,75 @@ private struct StreamSheet: View {
             // ── Header ──
             HStack {
                 Text("Available Streams")
+                    #if os(tvOS)
+                    .font(.system(size: 38, weight: .bold))
+                    #else
                     .font(AppTheme.Typography.headingMedium)
+                    #endif
                     .foregroundStyle(AppTheme.Colors.elementWhite)
                 Spacer()
                 Button {
                     dismiss()
                 } label: {
+                    #if os(tvOS)
+                    Image(systemName: "xmark")
+                        .font(.system(size: 24, weight: .bold))
+                        .foregroundStyle(isCloseFocused ? .black : .white)
+                        .padding(12)
+                        .background(isCloseFocused ? .white : Color.white.opacity(0.1))
+                        .clipShape(Circle())
+                    #else
                     Image(systemName: "xmark.circle.fill")
                         .font(.system(size: 20))
                         .symbolRenderingMode(.hierarchical)
                         .foregroundStyle(AppTheme.Colors.elementMuted)
+                    #endif
                 }
+                #if os(tvOS)
+                .buttonStyle(TVOSNoHaloButtonStyle())
+                .focused($isCloseFocused)
+                #else
                 .buttonStyle(.plain)
+                #endif
             }
+            #if os(tvOS)
+            .padding(.horizontal, 64)
+            .padding(.top, 48)
+            .padding(.bottom, 24)
+            #else
             .padding(.horizontal, AppTheme.Spacing.lg)
             .padding(.top, AppTheme.Spacing.lg)
             .padding(.bottom, AppTheme.Spacing.md)
+            #endif
 
+            #if os(tvOS)
             Divider()
                 .overlay(AppTheme.Colors.divider)
+                .padding(.horizontal, 64)
+            #else
+            Divider()
+                .overlay(AppTheme.Colors.divider)
+            #endif
 
             // ── Content ──
-            switch state {
-            case .initial, .loading:
-                streamLoadingView
-            case let .error(message):
-                streamErrorView(message: message)
-            case let .loaded(streams):
-                if streams.isEmpty {
-                    streamEmptyView
-                } else {
-                    streamListView(streams: streams)
+            Group {
+                switch state {
+                case .initial, .loading:
+                    streamLoadingView
+                case let .error(message):
+                    streamErrorView(message: message)
+                case let .loaded(streams):
+                    if streams.isEmpty {
+                        streamEmptyView
+                    } else {
+                        streamListView(streams: streams)
+                    }
                 }
             }
+            #if os(tvOS)
+            .padding(.horizontal, 64)
+            .padding(.bottom, 48)
+            #endif
         }
         .frame(idealHeight: idealHeight)
         .background(AppTheme.Colors.backgroundSecondary)
@@ -978,7 +1022,32 @@ private struct StreamSheet: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
+    @ViewBuilder
     private func streamListView(streams: [ResolutionItem]) -> some View {
+        #if os(tvOS)
+        ScrollView(.vertical, showsIndicators: false) {
+            VStack(spacing: 24) {
+                ForEach(Array(streams.enumerated()), id: \.offset) { index, stream in
+                    StreamRow(stream: stream) {
+                        dismiss()
+                        Router.router.addToRoute(
+                            route: .mpvVideoView(
+                                MPVViewArgs(
+                                    resItems: streams,
+                                    selectedIndex: index,
+                                    mediaId: media.id,
+                                    episodeNo: episodeNo,
+                                    seasonNo: seasonNo,
+                                    name: media.name
+                                )
+                            )
+                        )
+                    }
+                }
+            }
+            .padding(.vertical, 24)
+        }
+        #else
         List {
             ForEach(Array(streams.enumerated()), id: \.offset) {
                 index,
@@ -1008,13 +1077,17 @@ private struct StreamSheet: View {
         .listStyle(.plain)
         #endif
         .hideScrollContentBackground()
+        #endif
     }
 }
 
-private struct StreamRow: View {
+struct StreamRow: View {
     let stream: ResolutionItem
     let onTap: () -> Void
     @State private var isHovered = false
+    #if os(tvOS)
+    @FocusState private var isFocused: Bool
+    #endif
 
     init(stream: ResolutionItem, onTap: @escaping () -> Void) {
         self.stream = stream
@@ -1022,6 +1095,38 @@ private struct StreamRow: View {
     }
 
     var body: some View {
+        #if os(tvOS)
+        Button(action: onTap) {
+            HStack(alignment: .center, spacing: AppTheme.Spacing.sm) {
+                Text(stream.name)
+                    .font(.system(size: 26, weight: .semibold))
+                    .foregroundStyle(isFocused ? .black : AppTheme.Colors.elementWhite)
+                    .layoutPriority(1)
+
+                if !stream.description.isEmpty {
+                    Group {
+                        if isFocused {
+                            Color.black.opacity(0.3)
+                        } else {
+                            AppTheme.Colors.divider
+                        }
+                    }
+                    .frame(width: 1, height: 26)
+
+                    Text(stream.description)
+                        .font(.system(size: 22))
+                        .foregroundStyle(isFocused ? Color.black.opacity(0.7) : AppTheme.Colors.elementSubtle)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            .padding(.vertical, 18)
+            .padding(.horizontal, 24)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(TVOSRowButtonStyle(isFocused: isFocused))
+        .focused($isFocused)
+        #else
         HStack(alignment: .center, spacing: AppTheme.Spacing.sm) {
             Text(stream.name)
                 .font(AppTheme.Typography.labelLarge)
@@ -1050,6 +1155,7 @@ private struct StreamRow: View {
         .onTapGesture {
             onTap()
         }
+        #endif
     }
 }
 
