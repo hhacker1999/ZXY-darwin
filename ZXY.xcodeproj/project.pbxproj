@@ -93,6 +93,11 @@
 		A1B2C3D42FB1000100EBEBEA /* TVOSComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D12FB1000100EBEBEA /* TVOSComponents.swift */; };
 		A1B2C3D52FB1000200EBEBEA /* LoginViewTVOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D22FB1000200EBEBEA /* LoginViewTVOS.swift */; };
 		A1B2C3D62FB1000300EBEBEA /* ProfileSelectViewTVOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D32FB1000300EBEBEA /* ProfileSelectViewTVOS.swift */; };
+		B1C2D3E22FB2000100EBEBEA /* TVOSMediaBrowseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1C2D3E12FB2000100EBEBEA /* TVOSMediaBrowseView.swift */; platformFilters = (tvos, ); };
+		B1C2D3E42FB2000200EBEBEA /* DiscoverViewTVOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1C2D3E32FB2000200EBEBEA /* DiscoverViewTVOS.swift */; platformFilters = (tvos, ); };
+		B1C2D3E62FB2000300EBEBEA /* SearchViewTVOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1C2D3E52FB2000300EBEBEA /* SearchViewTVOS.swift */; platformFilters = (tvos, ); };
+		B1C2D3E82FB2000400EBEBEA /* LibraryViewTVOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1C2D3E72FB2000400EBEBEA /* LibraryViewTVOS.swift */; platformFilters = (tvos, ); };
+		B1C2D3EA2FB2000500EBEBEA /* SettingsViewTVOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1C2D3E92FB2000500EBEBEA /* SettingsViewTVOS.swift */; platformFilters = (tvos, ); };
 		C6C571BD95EDE781CB6FA57B /* BlocAsyncImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30C0D9311A72DE0636EC56DE /* BlocAsyncImage.swift */; };
 		D2D2615B8628D2F8C96236FD /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 1B44BDE7D0A832B4B5CA9468 /* .gitignore */; };
 		F9420C367E86DA90F00556EC /* Mpv.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91F1E28FAA8C1C57FC38E16F /* Mpv.swift */; };
@@ -190,6 +195,11 @@
 		A1B2C3D12FB1000100EBEBEA /* TVOSComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TVOSComponents.swift; sourceTree = "<group>"; };
 		A1B2C3D22FB1000200EBEBEA /* LoginViewTVOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewTVOS.swift; sourceTree = "<group>"; };
 		A1B2C3D32FB1000300EBEBEA /* ProfileSelectViewTVOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileSelectViewTVOS.swift; sourceTree = "<group>"; };
+		B1C2D3E12FB2000100EBEBEA /* TVOSMediaBrowseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TVOSMediaBrowseView.swift; sourceTree = "<group>"; };
+		B1C2D3E32FB2000200EBEBEA /* DiscoverViewTVOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoverViewTVOS.swift; sourceTree = "<group>"; };
+		B1C2D3E52FB2000300EBEBEA /* SearchViewTVOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchViewTVOS.swift; sourceTree = "<group>"; };
+		B1C2D3E72FB2000400EBEBEA /* LibraryViewTVOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryViewTVOS.swift; sourceTree = "<group>"; };
+		B1C2D3E92FB2000500EBEBEA /* SettingsViewTVOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewTVOS.swift; sourceTree = "<group>"; };
 		A47FC608A6FF6FFF4DC4F865 /* MpvPlayerView.old */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = MpvPlayerView.old; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -321,6 +331,7 @@
 				69E6A2DD2FB0F25C00EBEBEA /* Divider.swift */,
 				69E6A2DE2FB0F25C00EBEBEA /* Extensions.swift */,
 				A1B2C3D12FB1000100EBEBEA /* TVOSComponents.swift */,
+				B1C2D3E12FB2000100EBEBEA /* TVOSMediaBrowseView.swift */,
 				69E6A2DF2FB0F25C00EBEBEA /* MediaGrid.swift */,
 				69E6A2E02FB0F25C00EBEBEA /* MediaLoadedContent.swift */,
 				69E6A2E12FB0F25C00EBEBEA /* MediaRow.swift */,
@@ -349,6 +360,7 @@
 			children = (
 				69E6A2EB2FB0F25C00EBEBEA /* DiscoverFilterForm.swift */,
 				69E6A2EC2FB0F25C00EBEBEA /* DiscoverView.swift */,
+				B1C2D3E32FB2000200EBEBEA /* DiscoverViewTVOS.swift */,
 				69E6A2ED2FB0F25C00EBEBEA /* DiscoverViewMode.swift */,
 			);
 			path = DiscoverView;
@@ -371,6 +383,7 @@
 			isa = PBXGroup;
 			children = (
 				69E6A2F42FB0F25C00EBEBEA /* LibraryView.swift */,
+				B1C2D3E72FB2000400EBEBEA /* LibraryViewTVOS.swift */,
 				69E6A2F52FB0F25C00EBEBEA /* LibraryViewModel.swift */,
 			);
 			path = LibraryView;
@@ -426,6 +439,7 @@
 			isa = PBXGroup;
 			children = (
 				69E6A3092FB0F25C00EBEBEA /* SearchView.swift */,
+				B1C2D3E52FB2000300EBEBEA /* SearchViewTVOS.swift */,
 				69E6A30A2FB0F25C00EBEBEA /* SearchViewModel.swift */,
 			);
 			path = SearchView;
@@ -448,6 +462,7 @@
 				69E6A3112FB0F25C00EBEBEA /* LibraryCustomizationSection.swift */,
 				69E6A3122FB0F25C00EBEBEA /* SettingsView.swift */,
 				69E6A3132FB0F25C00EBEBEA /* SettingsViewModel.swift */,
+				B1C2D3E92FB2000500EBEBEA /* SettingsViewTVOS.swift */,
 				69E6A3142FB0F25C00EBEBEA /* SourcesSection.swift */,
 			);
 			path = SettingsView;
@@ -646,6 +661,11 @@
 				A1B2C3D42FB1000100EBEBEA /* TVOSComponents.swift in Sources */,
 				A1B2C3D52FB1000200EBEBEA /* LoginViewTVOS.swift in Sources */,
 				A1B2C3D62FB1000300EBEBEA /* ProfileSelectViewTVOS.swift in Sources */,
+				B1C2D3E22FB2000100EBEBEA /* TVOSMediaBrowseView.swift in Sources */,
+				B1C2D3E42FB2000200EBEBEA /* DiscoverViewTVOS.swift in Sources */,
+				B1C2D3E62FB2000300EBEBEA /* SearchViewTVOS.swift in Sources */,
+				B1C2D3E82FB2000400EBEBEA /* LibraryViewTVOS.swift in Sources */,
+				B1C2D3EA2FB2000500EBEBEA /* SettingsViewTVOS.swift in Sources */,
 				69E6A3582FB0F25C00EBEBEA /* User.swift in Sources */,
 				69E6A3592FB0F25C00EBEBEA /* MovieView.swift in Sources */,
 				69E6A35A2FB0F25C00EBEBEA /* constants.swift in Sources */,

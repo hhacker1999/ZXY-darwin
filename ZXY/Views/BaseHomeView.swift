@@ -26,9 +26,8 @@ enum BaseHomeViewPages: String, CaseIterable, Identifiable {
     }
 
     /// Pages shown in the tvOS top tab bar.
-    /// Settings lives outside the main tab strip on tvOS (accessible via a gear button or long-press).
     static var tvOSTabs: [BaseHomeViewPages] {
-        [.home, .discover, .search, .library, .settings]
+        [.home, .search, .library, .settings]
     }
 }
 
@@ -185,11 +184,23 @@ struct BaseHomeview: View {
         case .discover:
             DiscoverView(mediaUc: deps.mediaUc, authUc: deps.authUc)
         case .search:
-            SearchView(mediaUc: deps.mediaUc)
+            #if os(tvOS)
+                SearchViewTVOS(mediaUc: deps.mediaUc)
+            #else
+                SearchView(mediaUc: deps.mediaUc)
+            #endif
         case .library:
-            LibraryView(mediaUc: deps.mediaUc)
+            #if os(tvOS)
+                LibraryViewTVOS(mediaUc: deps.mediaUc)
+            #else
+                LibraryView(mediaUc: deps.mediaUc)
+            #endif
         case .settings:
-            SettingsView(authUc: deps.authUc)
+            #if os(tvOS)
+                SettingsViewTVOS(authUc: deps.authUc)
+            #else
+                SettingsView(authUc: deps.authUc)
+            #endif
         }
     }
 }
