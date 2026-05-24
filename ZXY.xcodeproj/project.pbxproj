@@ -92,6 +92,9 @@
 		C6C571BD95EDE781CB6FA57B /* BlocAsyncImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30C0D9311A72DE0636EC56DE /* BlocAsyncImage.swift */; };
 		D2D2615B8628D2F8C96236FD /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 1B44BDE7D0A832B4B5CA9468 /* .gitignore */; };
 		F9420C367E86DA90F00556EC /* Mpv.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91F1E28FAA8C1C57FC38E16F /* Mpv.swift */; };
+		A1B2C3D42FB1000100EBEBEA /* TVOSComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D12FB1000100EBEBEA /* TVOSComponents.swift */; };
+		A1B2C3D52FB1000200EBEBEA /* LoginViewTVOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D22FB1000200EBEBEA /* LoginViewTVOS.swift */; };
+		A1B2C3D62FB1000300EBEBEA /* ProfileSelectViewTVOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D32FB1000300EBEBEA /* ProfileSelectViewTVOS.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -129,6 +132,9 @@
 		69E6A2DC2FB0F25C00EBEBEA /* CastAndCrewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CastAndCrewView.swift; sourceTree = "<group>"; };
 		69E6A2DD2FB0F25C00EBEBEA /* Divider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Divider.swift; sourceTree = "<group>"; };
 		69E6A2DE2FB0F25C00EBEBEA /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
+		A1B2C3D12FB1000100EBEBEA /* TVOSComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TVOSComponents.swift; sourceTree = "<group>"; };
+		A1B2C3D22FB1000200EBEBEA /* LoginViewTVOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewTVOS.swift; sourceTree = "<group>"; };
+		A1B2C3D32FB1000300EBEBEA /* ProfileSelectViewTVOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileSelectViewTVOS.swift; sourceTree = "<group>"; };
 		69E6A2DF2FB0F25C00EBEBEA /* MediaGrid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaGrid.swift; sourceTree = "<group>"; };
 		69E6A2E02FB0F25C00EBEBEA /* MediaLoadedContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaLoadedContent.swift; sourceTree = "<group>"; };
 		69E6A2E12FB0F25C00EBEBEA /* MediaRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaRow.swift; sourceTree = "<group>"; };
@@ -312,6 +318,7 @@
 				69E6A2DC2FB0F25C00EBEBEA /* CastAndCrewView.swift */,
 				69E6A2DD2FB0F25C00EBEBEA /* Divider.swift */,
 				69E6A2DE2FB0F25C00EBEBEA /* Extensions.swift */,
+				A1B2C3D12FB1000100EBEBEA /* TVOSComponents.swift */,
 				69E6A2DF2FB0F25C00EBEBEA /* MediaGrid.swift */,
 				69E6A2E02FB0F25C00EBEBEA /* MediaLoadedContent.swift */,
 				69E6A2E12FB0F25C00EBEBEA /* MediaRow.swift */,
@@ -370,6 +377,7 @@
 			isa = PBXGroup;
 			children = (
 				69E6A2F72FB0F25C00EBEBEA /* LoginView.swift */,
+				A1B2C3D22FB1000200EBEBEA /* LoginViewTVOS.swift */,
 				69E6A2F82FB0F25C00EBEBEA /* LoginViewModel.swift */,
 			);
 			path = LoginView;
@@ -405,6 +413,7 @@
 			isa = PBXGroup;
 			children = (
 				69E6A3062FB0F25C00EBEBEA /* ProfileSelectView.swift */,
+				A1B2C3D32FB1000300EBEBEA /* ProfileSelectViewTVOS.swift */,
 				69E6A3072FB0F25C00EBEBEA /* ProfileSelectViewModel.swift */,
 			);
 			path = ProfileView;
@@ -630,6 +639,9 @@
 				69E6A3692FB0F25C00EBEBEA /* BannerAmbientBackground.swift in Sources */,
 				69E6A3562FB0F25C00EBEBEA /* BaseHomeView.swift in Sources */,
 				69E6A3572FB0F25C00EBEBEA /* Extensions.swift in Sources */,
+				A1B2C3D42FB1000100EBEBEA /* TVOSComponents.swift in Sources */,
+				A1B2C3D52FB1000200EBEBEA /* LoginViewTVOS.swift in Sources */,
+				A1B2C3D62FB1000300EBEBEA /* ProfileSelectViewTVOS.swift in Sources */,
 				69E6A3582FB0F25C00EBEBEA /* User.swift in Sources */,
 				69E6A3592FB0F25C00EBEBEA /* MovieView.swift in Sources */,
 				69E6A35A2FB0F25C00EBEBEA /* constants.swift in Sources */,

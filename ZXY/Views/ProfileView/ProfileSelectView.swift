@@ -17,6 +17,14 @@ struct ProfileSelectView: View {
     }
 
     var body: some View {
+        #if os(tvOS)
+        ProfileSelectViewTVOS(profiles: profiles, authUc: vm.authUc)
+        #else
+        defaultBody
+        #endif
+    }
+
+    private var defaultBody: some View {
         ZStack {
             ProfileBackdrop()
 
