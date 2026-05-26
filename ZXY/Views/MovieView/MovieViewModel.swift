@@ -83,6 +83,7 @@ class MovieViewModel {
         }
         do {
             try await progressUc.updateMovieToWatched(movieId: "\(id)")
+            isWatched = true
         } catch let err as HttpError {
             ToastProgressBloc.bloc.showToast(message: err.error(), isError: true)
         } catch {
