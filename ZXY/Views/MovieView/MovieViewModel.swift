@@ -29,6 +29,7 @@ class MovieViewModel {
         // Avoid shredding loaded UI when NavigationStack restores this screen after popping
         // a stacked detail—the view's `.task` runs again on reappear on compact iPhone.
         if case .loaded = movieState {
+            syncDiscordPresenceIfLoaded()
             return
         }
         movieState = .loading
@@ -66,6 +67,7 @@ class MovieViewModel {
             }
 
             movieState = .loaded(d)
+            syncDiscordPresenceIfLoaded()
             streamTask = Task {
                 await getStreams(imdbId: d.imdbId)
             }
@@ -74,6 +76,16 @@ class MovieViewModel {
         } catch {
             movieState = .error(error.localizedDescription)
         }
+    }
+
+    func syncDiscordPresenceIfLoaded() {
+        #if os(macOS)
+            guard case let .loaded(details) = movieState else { return }
+            DiscordRichPresenceBloc.bloc.setViewingMovie(
+                title: details.title,
+                backdropPath: details.backdropPath
+            )
+        #endif
     }
 
     func markWatched() async {

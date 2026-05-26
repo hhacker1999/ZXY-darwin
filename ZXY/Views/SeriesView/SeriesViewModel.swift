@@ -38,6 +38,7 @@ class SeriesViewModel {
 
     func initialise() async {
         if case .loaded = seriesState {
+            syncDiscordPresenceIfLoaded()
             return
         }
         seriesState = .loading
@@ -83,11 +84,22 @@ class SeriesViewModel {
             }
             getCurrentEpisodesStream()
             seriesState = .loaded(details)
+            syncDiscordPresenceIfLoaded()
         } catch let err as HttpError {
             seriesState = .error(err.error())
         } catch {
             seriesState = .error(error.localizedDescription)
         }
+    }
+
+    func syncDiscordPresenceIfLoaded() {
+        #if os(macOS)
+            guard case let .loaded(details) = seriesState else { return }
+            DiscordRichPresenceBloc.bloc.setViewingShow(
+                title: details.name,
+                backdropPath: details.backdropPath
+            )
+        #endif
     }
 
     func updateInLibrary() async {

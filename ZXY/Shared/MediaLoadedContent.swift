@@ -1038,7 +1038,8 @@ struct StreamSheet: View {
                                     mediaId: media.id,
                                     episodeNo: episodeNo,
                                     seasonNo: seasonNo,
-                                    name: media.name
+                                    name: media.name,
+                                    backdropPath: media.backdropPath
                                 )
                             )
                         )
@@ -1062,7 +1063,8 @@ struct StreamSheet: View {
                                 mediaId: media.id,
                                 episodeNo: episodeNo,
                                 seasonNo: seasonNo,
-                                name: media.name
+                                name: media.name,
+                                backdropPath: media.backdropPath
                             )
                         )
                     )

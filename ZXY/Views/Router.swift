@@ -14,6 +14,25 @@ struct MPVViewArgs: Hashable {
     let episodeNo: Int
     let seasonNo: Int
     let name: String
+    let backdropPath: String?
+
+    init(
+        resItems: [ResolutionItem],
+        selectedIndex: Int,
+        mediaId: String,
+        episodeNo: Int,
+        seasonNo: Int,
+        name: String,
+        backdropPath: String? = nil
+    ) {
+        self.resItems = resItems
+        self.selectedIndex = selectedIndex
+        self.mediaId = mediaId
+        self.episodeNo = episodeNo
+        self.seasonNo = seasonNo
+        self.name = name
+        self.backdropPath = backdropPath
+    }
 }
 
 enum Route: Hashable {

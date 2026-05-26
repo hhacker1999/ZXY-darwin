@@ -31,6 +31,7 @@ final class SettingsBloc {
         static let resolution = "resolution"
         static let subtitleFontSize = "size"
         static let subtitleFontPadding = "padding"
+        static let discordRichPresence = "discord_rich_presence"
     }
 
     var enableGradient: Bool = true {
@@ -81,6 +82,19 @@ final class SettingsBloc {
         didSet { persistString(Keys.subtitleFontPadding, String(subtitleFontPadding)) }
     }
 
+    var enableDiscordRichPresence: Bool = SettingsBloc.platformDefaultDiscordRichPresence {
+        didSet {
+            persistBool(Keys.discordRichPresence, enableDiscordRichPresence)
+            #if os(macOS)
+                if !enableDiscordRichPresence {
+                    DiscordRichPresenceBloc.bloc.shutdown()
+                } else if Constants.discordClientIdIsConfigured {
+                    DiscordRichPresenceBloc.bloc.handleTabSelected(.home)
+                }
+            #endif
+        }
+    }
+
     @ObservationIgnored
     private var hydrating = false
 
@@ -110,6 +124,7 @@ final class SettingsBloc {
            let v = Double(raw) { subtitleFontSize = v }
         if let raw = SecureStorage.getKey(key: Keys.subtitleFontPadding),
            let v = Double(raw) { subtitleFontPadding = v }
+        if let v = readBool(Keys.discordRichPresence) { enableDiscordRichPresence = v }
     }
 
     private func persistBool(_ key: String, _ value: Bool) {
@@ -148,6 +163,14 @@ final class SettingsBloc {
             return 20
         #else
             return 8
+        #endif
+    }
+
+    private static var platformDefaultDiscordRichPresence: Bool {
+        #if os(macOS)
+            return true
+        #else
+            return false
         #endif
     }
 }

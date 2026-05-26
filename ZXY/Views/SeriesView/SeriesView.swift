@@ -80,6 +80,9 @@ struct SeriesView: View {
             }
         }
         #if os(macOS)
+            .onAppear {
+                vm.syncDiscordPresenceIfLoaded()
+            }
             .overlay(alignment: .top) {
                 switch vm.seriesState {
                 case .error:

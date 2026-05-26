@@ -95,6 +95,9 @@ struct MovieView: View {
             }
         }
         #if os(macOS)
+            .onAppear {
+                vm.syncDiscordPresenceIfLoaded()
+            }
             .overlay(alignment: .top) {
                 switch vm.movieState {
                 case .error:

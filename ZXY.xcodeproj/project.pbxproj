@@ -65,6 +65,8 @@
 		69E6A34C2FB0F25C00EBEBEA /* SeriesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69E6A30D2FB0F25C00EBEBEA /* SeriesViewModel.swift */; };
 		69E6A34D2FB0F25C00EBEBEA /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69E6A2C92FB0F25C00EBEBEA /* ContentView.swift */; };
 		69E6A34E2FB0F25C00EBEBEA /* SettingsBloc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69E6A2C52FB0F25C00EBEBEA /* SettingsBloc.swift */; };
+		D3C4B5A82FC5000300EBEBEA /* DiscordRichPresenceBloc.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3C4B5A72FC5000200EBEBEA /* DiscordRichPresenceBloc.swift */; };
+		D3C4B5A62FC5000100EBEBEA /* DiscordIPCClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3C4B5A52FC5000000EBEBEA /* DiscordIPCClient.swift */; platformFilters = (macos, ); };
 		69E6A34F2FB0F25C00EBEBEA /* Divider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69E6A2DD2FB0F25C00EBEBEA /* Divider.swift */; };
 		69E6A3502FB0F25C00EBEBEA /* SharedModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69E6A2D32FB0F25C00EBEBEA /* SharedModels.swift */; };
 		69E6A3512FB0F25C00EBEBEA /* LoginViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69E6A2F82FB0F25C00EBEBEA /* LoginViewModel.swift */; };
@@ -120,6 +122,8 @@
 		69E6A2C32FB0F25C00EBEBEA /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		69E6A2C42FB0F25C00EBEBEA /* ProgressToastBloc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressToastBloc.swift; sourceTree = "<group>"; };
 		69E6A2C52FB0F25C00EBEBEA /* SettingsBloc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsBloc.swift; sourceTree = "<group>"; };
+		D3C4B5A72FC5000200EBEBEA /* DiscordRichPresenceBloc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscordRichPresenceBloc.swift; sourceTree = "<group>"; };
+		D3C4B5A52FC5000000EBEBEA /* DiscordIPCClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscordIPCClient.swift; sourceTree = "<group>"; };
 		69E6A2C62FB0F25C00EBEBEA /* UserBloc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserBloc.swift; sourceTree = "<group>"; };
 		69E6A2C82FB0F25C00EBEBEA /* constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = constants.swift; sourceTree = "<group>"; };
 		69E6A2C92FB0F25C00EBEBEA /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -291,6 +295,7 @@
 		69E6A2C72FB0F25C00EBEBEA /* Bloc */ = {
 			isa = PBXGroup;
 			children = (
+				D3C4B5A72FC5000200EBEBEA /* DiscordRichPresenceBloc.swift */,
 				69E6A2C42FB0F25C00EBEBEA /* ProgressToastBloc.swift */,
 				69E6A2C52FB0F25C00EBEBEA /* SettingsBloc.swift */,
 				69E6A2C62FB0F25C00EBEBEA /* UserBloc.swift */,
@@ -320,6 +325,7 @@
 		69E6A2D92FB0F25C00EBEBEA /* services */ = {
 			isa = PBXGroup;
 			children = (
+				D3C4B5A52FC5000000EBEBEA /* DiscordIPCClient.swift */,
 				69E6A2D72FB0F25C00EBEBEA /* HttpService.swift */,
 				69E6A2D82FB0F25C00EBEBEA /* SecuredStorage.swift */,
 			);
@@ -654,6 +660,8 @@
 				69E6A34C2FB0F25C00EBEBEA /* SeriesViewModel.swift in Sources */,
 				69E6A34D2FB0F25C00EBEBEA /* ContentView.swift in Sources */,
 				69E6A34E2FB0F25C00EBEBEA /* SettingsBloc.swift in Sources */,
+				D3C4B5A82FC5000300EBEBEA /* DiscordRichPresenceBloc.swift in Sources */,
+				D3C4B5A62FC5000100EBEBEA /* DiscordIPCClient.swift in Sources */,
 				69E6A34F2FB0F25C00EBEBEA /* Divider.swift in Sources */,
 				69E6A3502FB0F25C00EBEBEA /* SharedModels.swift in Sources */,
 				69E6A3512FB0F25C00EBEBEA /* LoginViewModel.swift in Sources */,

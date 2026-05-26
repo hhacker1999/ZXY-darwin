@@ -58,7 +58,7 @@ struct GeneralSection: View {
             )
             sectionDivider
 
-            // // ── AMOLED theme ─────────────────────────────────────
+            // ── Background gradient ──────────────────────────────
             SettingsToggleRow(
                 icon: "moon.fill",
                 label: "Background Gradient",
@@ -69,6 +69,16 @@ struct GeneralSection: View {
                     ImageGradientAndStoreBloc.bloc.currentGradient = .default
                 }
             }
+            #if os(macOS)
+            sectionDivider
+
+            SettingsToggleRow(
+                icon: "gamecontroller.fill",
+                label: "Discord Rich Presence",
+                helper: "Show what you're browsing in Discord (macOS only)",
+                isOn: $bloc.enableDiscordRichPresence
+            )
+            #endif
             // sectionDivider
 
             // ── Poster ratings ───────────────────────────────────

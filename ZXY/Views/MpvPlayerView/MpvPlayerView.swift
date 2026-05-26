@@ -19,7 +19,8 @@ struct MpvPlayerView: View {
         streamUc: StreamUsecase,
         progressUc: ProgressUsecase,
         mediaId: String,
-        name: String
+        name: String,
+        backdropPath: String? = nil
     ) {
         vm = MpvViewModel(
             streams: streams,
@@ -27,7 +28,8 @@ struct MpvPlayerView: View {
             streamUc: streamUc,
             progressUc: progressUc,
             mediaId: mediaId,
-            name: name
+            name: name,
+            backdropPath: backdropPath
         )
     }
 
@@ -39,7 +41,8 @@ struct MpvPlayerView: View {
         mediaId: String,
         seasonNo: Int,
         episodeNo: Int,
-        name: String
+        name: String,
+        backdropPath: String? = nil
     ) {
         vm = MpvViewModel(
             streams: streams,
@@ -49,7 +52,8 @@ struct MpvPlayerView: View {
             mediaId: mediaId,
             seasonNo: seasonNo,
             episodeNo: episodeNo,
-            name: name
+            name: name,
+            backdropPath: backdropPath
         )
     }
 
@@ -163,6 +167,18 @@ struct MpvPlayerView: View {
                 )
                 .preferredColorScheme(.dark)
                 .ignoresSafeArea()
+                #if os(macOS)
+                .onAppear {
+                    let season = vm.seasonNo >= 0 ? vm.seasonNo : nil
+                    let episode = vm.episodeNo >= 0 ? vm.episodeNo : nil
+                    DiscordRichPresenceBloc.bloc.setWatching(
+                        title: vm.name,
+                        season: season,
+                        episode: episode,
+                        backdropPath: vm.backdropPath
+                    )
+                }
+                #endif
             #if os(iOS)
                 .navigationBarBackButtonHidden(true)
                 .navigationTitle("")

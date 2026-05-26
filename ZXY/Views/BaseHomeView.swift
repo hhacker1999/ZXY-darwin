@@ -57,6 +57,14 @@ struct BaseHomeview: View {
             #endif
         }
         .accentColor(.white)
+        #if os(macOS)
+        .onChange(of: selectedPage) { _, page in
+            DiscordRichPresenceBloc.bloc.handleTabSelected(page)
+        }
+        .onAppear {
+            DiscordRichPresenceBloc.bloc.handleTabSelected(selectedPage)
+        }
+        #endif
     }
 
     // MARK: - tvOS

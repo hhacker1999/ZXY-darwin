@@ -94,7 +94,8 @@ final class MpvViewModel: MPVPlayerDelegate {
         progressUc: ProgressUsecase,
         initialProgress: Double = 0,
         mediaId: String,
-        name: String
+        name: String,
+        backdropPath: String? = nil
     ) {
         self.streams = streams
         self.streamUc = streamUc
@@ -106,6 +107,7 @@ final class MpvViewModel: MPVPlayerDelegate {
         self.initialProgress = initialProgress
         self.progressUc = progressUc
         self.name = name
+        self.backdropPath = backdropPath
     }
 
     init(
@@ -117,7 +119,8 @@ final class MpvViewModel: MPVPlayerDelegate {
         mediaId: String,
         seasonNo: Int,
         episodeNo: Int,
-        name: String
+        name: String,
+        backdropPath: String? = nil
     ) {
         self.streams = streams
         self.streamUc = streamUc
@@ -129,6 +132,7 @@ final class MpvViewModel: MPVPlayerDelegate {
         self.initialProgress = initialProgress
         self.progressUc = progressUc
         self.name = name
+        self.backdropPath = backdropPath
     }
 
     deinit {
@@ -151,6 +155,8 @@ final class MpvViewModel: MPVPlayerDelegate {
     let mediaId: String
     @ObservationIgnored
     let name: String
+    @ObservationIgnored
+    let backdropPath: String?
     @ObservationIgnored
     let seasonNo: Int
     @ObservationIgnored

@@ -54,11 +54,24 @@ enum Constants {
 
     // static let baseUrl = "https://zxyapi.tooharsh.co.in"
 
-    // static let baseUrl = "https://zxy-staging.tooharsh.co.in"
+    static let baseUrl = "https://zxy-staging.tooharsh.co.in"
 
-    static let baseUrl = "http://192.168.1.43:6969"
+    // static let baseUrl = "http://192.168.1.43:6969"
 
     static let tmdbImgBaseUrl = ""
+
+    #if os(macOS)
+        /// Discord Application **Client ID** (not a bot token).
+        /// Create an app at https://discord.com/developers/applications and paste the Client ID here.
+        static let discordClientId = "1508894345225441471"
+
+        /// Optional Rich Presence asset key uploaded in the Discord Developer Portal (Rich Presence → Art Assets).
+        static let discordLargeImageKey = "zxy"
+
+        static var discordClientIdIsConfigured: Bool {
+            !discordClientId.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        }
+    #endif
 }
 
 enum MediaMetrics {

@@ -48,6 +48,9 @@ struct SettingsView: View {
             if let profile = userBloc.profile {
                 vm.initIfNeeded(for: profile)
             }
+            #if os(macOS)
+                DiscordRichPresenceBloc.bloc.setBrowsing(page: "Settings")
+            #endif
         }
     }
 
