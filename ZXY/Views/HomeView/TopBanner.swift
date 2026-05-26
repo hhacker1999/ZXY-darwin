@@ -211,7 +211,7 @@ private struct BannerDetailsButton: View {
         }
         .buttonStyle(.plain)
         #if os(macOS)
-        .onHover { isHovered = $0 }
+            .onHover { isHovered = $0 }
         #endif
     }
 }
@@ -248,7 +248,7 @@ private struct MuteToggleButton: View {
         .buttonStyle(.plain)
         .accessibilityLabel(isMuted ? "Unmute trailer" : "Mute trailer")
         #if os(macOS)
-        .help(isMuted ? "Unmute trailer" : "Mute trailer")
+            .help(isMuted ? "Unmute trailer" : "Mute trailer")
         #endif
     }
 }
@@ -257,19 +257,11 @@ private struct BannerSlide: View {
     let media: AppMedia
     let aspectRatio: Double
 
-    private var bannerArtworkURL: URL? {
-        #if os(iOS)
-            return MediaConfig.instance.posterURL(media.posterPath, width: 780)
-        #else
-            return MediaConfig.instance.backdropURL(media.backdropPath, width: "original")
-        #endif
-    }
-
     /// Path + width fed to `BlocAsyncImage`. Kept in lockstep with
     /// `bannerArtworkURL` so cached gradients and rendered artwork match.
     private var bannerArtworkPath: String {
         #if os(iOS)
-            return media.posterPath
+            return media.nonLogoPosterPath != "" ? media.nonLogoPosterPath : media.posterPath
         #else
             return media.backdropPath
         #endif
@@ -280,6 +272,15 @@ private struct BannerSlide: View {
             return "w780"
         #else
             return "original"
+        #endif
+    }
+
+    /// Wide art for ambient sampling — posters are too dark on iPhone to tint the mesh.
+    private var samplesGradientFromHeroArt: Bool {
+        #if os(iOS)
+            false
+        #else
+            SettingsBloc.bloc.enableGradient
         #endif
     }
 
@@ -358,17 +359,53 @@ private struct BannerSlide: View {
         #endif
     }
 
+    private var overlayContentAlignment: HorizontalAlignment {
+        #if os(iOS)
+            .center
+        #else
+            .leading
+        #endif
+    }
+
+    private var overlayContentFrameAlignment: Alignment {
+        #if os(iOS)
+            .bottom
+        #else
+            .bottomLeading
+        #endif
+    }
+
     var body: some View {
         GeometryReader { geo in
             let height = geo.size.width / aspectRatio
             let width = geo.size.width
-            ZStack(alignment: .bottomLeading) {
+            #if os(iOS)
+                let overlayWidth = width
+            #else
+                let overlayWidth = max(width * 0.5, 450)
+            #endif
+            ZStack(alignment: overlayContentFrameAlignment) {
                 BannerFadingHeroImage(
                     width: width,
                     height: height,
                     path: bannerArtworkPath,
-                    imageWidth: bannerArtworkWidth
+                    imageWidth: bannerArtworkWidth,
+                    setGradientFromImage: samplesGradientFromHeroArt
                 )
+                .overlay {
+                    #if os(iOS)
+                        if SettingsBloc.bloc.enableGradient, !media.backdropPath.isEmpty {
+                            BlocAsyncImage(
+                                id: media.backdropPath,
+                                size: "w780",
+                                setGradientFromImage: true
+                            ) { _ in
+                                Color.clear
+                            }
+                            .allowsHitTesting(false)
+                        }
+                    #endif
+                }
                 .stretchableHeroBannerInScrollView()
                 .zIndex(0)
 
@@ -418,7 +455,7 @@ private struct BannerSlide: View {
                 // .frame(height: height * 0.55)
 
                 // ── Content overlay ────────────────────────────
-                VStack(alignment: .leading, spacing: 0) {
+                VStack(alignment: overlayContentAlignment, spacing: 0) {
                     Spacer()
                     // Logo or Title
                     if let path = logoPath, !path.isEmpty {
@@ -434,7 +471,7 @@ private struct BannerSlide: View {
                                     .frame(
                                         maxWidth: logoMaxWidth,
                                         maxHeight: logoMaxHeight,
-                                        alignment: .bottomLeading
+                                        alignment: overlayContentFrameAlignment
                                     )
                                     .shadow(
                                         color: .black.opacity(0.85),
@@ -455,7 +492,7 @@ private struct BannerSlide: View {
                         .frame(
                             maxWidth: logoMaxWidth,
                             maxHeight: logoMaxHeight,
-                            alignment: .bottomLeading
+                            alignment: overlayContentFrameAlignment
                         )
                     } else {
                         titleFallback
@@ -467,6 +504,10 @@ private struct BannerSlide: View {
                     Text(infoLine)
                         .font(.system(size: 13, weight: .medium))
                         .foregroundStyle(Color.white.opacity(0.9))
+                        #if os(iOS)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, AppTheme.Spacing.sm)
+                        #endif
                         .shadow(
                             color: .black.opacity(0.9),
                             radius: 3,
@@ -483,6 +524,12 @@ private struct BannerSlide: View {
                     Text(media.overview)
                         .font(AppTheme.Typography.bodySmall)
                         .foregroundStyle(AppTheme.Colors.elementSubtle)
+                        #if os(iOS)
+                            .multilineTextAlignment(.center)
+                            .lineLimit(2)
+                            .truncationMode(.tail)
+                            .padding(.horizontal, AppTheme.Spacing.sm)
+                        #endif
                         .shadow(
                             color: .black.opacity(0.85),
                             radius: 3,
@@ -496,18 +543,23 @@ private struct BannerSlide: View {
                             y: 2
                         )
 
-                    Spacer().frame(height: 16)
+                    #if !os(iOS)
+                        Spacer().frame(height: 16)
 
-                    BannerDetailsButton {
-                        MediaShelfNavigation.openDetails(for: media)
-                    }
+                        BannerDetailsButton {
+                            MediaShelfNavigation.openDetails(for: media)
+                        }
+                    #endif
 
                     Spacer().frame(height: overlayBottomSpacing)
                 }
                 .frame(
-                    maxWidth: max(width * 0.5, 450),
-                    alignment: .bottomLeading
+                    maxWidth: overlayWidth,
+                    alignment: overlayContentFrameAlignment
                 )
+                #if os(iOS)
+                    .frame(width: overlayWidth)
+                #endif
                 .padding(.horizontal, AppTheme.Spacing.md)
                 .zIndex(2)
             }
@@ -519,7 +571,11 @@ private struct BannerSlide: View {
         Text(displayTitle)
             .font(.system(size: 36, weight: .bold))
             .foregroundStyle(.white)
-            .multilineTextAlignment(.leading)
+            #if os(iOS)
+                .multilineTextAlignment(.center)
+            #else
+                .multilineTextAlignment(.leading)
+            #endif
             .lineLimit(2)
             .shadow(
                 color: .black.opacity(0.9),
@@ -533,7 +589,10 @@ private struct BannerSlide: View {
                 x: 0,
                 y: 4
             )
-            .frame(maxWidth: 420, alignment: .bottomLeading)
+            .frame(
+                maxWidth: 420,
+                alignment: overlayContentFrameAlignment
+            )
     }
 
     private var bannerPlaceholder: some View {

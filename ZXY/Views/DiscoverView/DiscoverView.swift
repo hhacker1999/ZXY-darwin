@@ -15,75 +15,15 @@ struct DiscoverView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            headerRow
-                .padding(.horizontal, AppTheme.Layout.discoverOuterHorizontalPadding)
-
-            if vm.filter.type == "trakt", let traktName = vm.activeListName {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: AppTheme.Spacing.xs) {
-                        Label(traktName, systemImage: "link")
-                            .font(.caption.weight(.medium))
-                            .foregroundStyle(AppTheme.Colors.elementSubtle)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 5)
-                            .background(AppTheme.Colors.surface)
-                            .clipShape(Capsule())
-                            .overlay(
-                                Capsule().stroke(
-                                    AppTheme.Colors.border,
-                                    lineWidth: 0.5
-                                )
-                            )
-                    }
+        Group {
+            #if os(iOS)
+                IOSAmbientTabScreen {
+                    discoverContent
                 }
-                .padding(.horizontal, AppTheme.Layout.discoverOuterHorizontalPadding)
-                .padding(.bottom, AppTheme.Spacing.sm)
-            } else if !nonTraktSummaryChips.isEmpty {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: AppTheme.Spacing.xs) {
-                        ForEach(
-                            Array(nonTraktSummaryChips.enumerated()),
-                            id: \.offset
-                        ) { _, text in
-                            Text(text)
-                                .font(.caption.weight(.medium))
-                                .foregroundStyle(AppTheme.Colors.elementSubtle)
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 5)
-                                .background(AppTheme.Colors.surface)
-                                .clipShape(Capsule())
-                                .overlay(
-                                    Capsule().stroke(
-                                        AppTheme.Colors.border,
-                                        lineWidth: 0.5
-                                    )
-                                )
-                        }
-                    }
-                }
-                .padding(.horizontal, AppTheme.Layout.discoverOuterHorizontalPadding)
-                .padding(.bottom, AppTheme.Spacing.sm)
-            }
-
-            MediaGrid(
-                itemState: vm.itemsState,
-                initialText: "Apply a filter to discover media",
-                showType: true,
-                onScrollNearEnd: {
-                    Task { await vm.loadMore() }
-                },
-                id: vm.activeFilterForId,
-                onItemTapped: { item in
-                    if item.type == "movie" {
-                        Router.router.addToRoute(route: .movieDetails(item.id))
-                    } else {
-                        Router.router.addToRoute(route: .seriesDetails(item.id))
-                    }
-                }
-            )
+            #else
+                discoverContent
+            #endif
         }
-        .padding(.top, AppTheme.Spacing.md)
         .task {
             await vm.initialLoad()
         }
@@ -209,6 +149,78 @@ struct DiscoverView: View {
                 Text(saveBanner)
             }
         }
+    }
+
+    private var discoverContent: some View {
+        VStack(spacing: 0) {
+            headerRow
+                .padding(.horizontal, AppTheme.Layout.discoverOuterHorizontalPadding)
+
+            if vm.filter.type == "trakt", let traktName = vm.activeListName {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: AppTheme.Spacing.xs) {
+                        Label(traktName, systemImage: "link")
+                            .font(.caption.weight(.medium))
+                            .foregroundStyle(AppTheme.Colors.elementSubtle)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
+                            .background(AppTheme.Colors.surface)
+                            .clipShape(Capsule())
+                            .overlay(
+                                Capsule().stroke(
+                                    AppTheme.Colors.border,
+                                    lineWidth: 0.5
+                                )
+                            )
+                    }
+                }
+                .padding(.horizontal, AppTheme.Layout.discoverOuterHorizontalPadding)
+                .padding(.bottom, AppTheme.Spacing.sm)
+            } else if !nonTraktSummaryChips.isEmpty {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: AppTheme.Spacing.xs) {
+                        ForEach(
+                            Array(nonTraktSummaryChips.enumerated()),
+                            id: \.offset
+                        ) { _, text in
+                            Text(text)
+                                .font(.caption.weight(.medium))
+                                .foregroundStyle(AppTheme.Colors.elementSubtle)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 5)
+                                .background(AppTheme.Colors.surface)
+                                .clipShape(Capsule())
+                                .overlay(
+                                    Capsule().stroke(
+                                        AppTheme.Colors.border,
+                                        lineWidth: 0.5
+                                    )
+                                )
+                        }
+                    }
+                }
+                .padding(.horizontal, AppTheme.Layout.discoverOuterHorizontalPadding)
+                .padding(.bottom, AppTheme.Spacing.sm)
+            }
+
+            MediaGrid(
+                itemState: vm.itemsState,
+                initialText: "Apply a filter to discover media",
+                showType: true,
+                onScrollNearEnd: {
+                    Task { await vm.loadMore() }
+                },
+                id: vm.activeFilterForId,
+                onItemTapped: { item in
+                    if item.type == "movie" {
+                        Router.router.addToRoute(route: .movieDetails(item.id))
+                    } else {
+                        Router.router.addToRoute(route: .seriesDetails(item.id))
+                    }
+                }
+            )
+        }
+        .padding(.top, AppTheme.Spacing.md)
     }
 
     private var nonTraktSummaryChips: [String] {

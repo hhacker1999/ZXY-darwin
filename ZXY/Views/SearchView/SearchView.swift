@@ -21,6 +21,19 @@ struct SearchView: View {
     }
 
     var body: some View {
+        Group {
+            #if os(iOS)
+                IOSAmbientTabScreen {
+                    searchContent
+                }
+            #else
+                searchContent
+            #endif
+        }
+        .enableInjection()
+    }
+
+    private var searchContent: some View {
         VStack(spacing: 0) {
             Group {
                 if useCompactSearchHeader {
@@ -69,7 +82,6 @@ struct SearchView: View {
             )
             .padding(.horizontal, AppTheme.Layout.mediaGridOuterAlignmentPadding)
         }
-        .enableInjection()
     }
 
     private var searchFieldChrome: some View {

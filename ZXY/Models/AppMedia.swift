@@ -10,7 +10,7 @@ struct AppMedia: Codable {
     let adult: Bool
     let backdropPath: String
     let id: Int
-    let title, originalTitle, overview, posterPath: String
+    let title, originalTitle, overview, posterPath, nonLogoPosterPath: String
     let type, originalLanguage: String
     let popularity: Double
     let releaseDate: String?
@@ -30,6 +30,7 @@ struct AppMedia: Codable {
         case originalTitle = "original_title"
         case overview
         case posterPath = "poster_path"
+        case nonLogoPosterPath = "non_logo_poster_path"
         case type
         case originalLanguage = "original_language"
         case popularity

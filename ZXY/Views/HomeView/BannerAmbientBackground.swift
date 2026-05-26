@@ -35,6 +35,26 @@ struct HomePageAmbientBackground: View {
     }
 }
 
+#if os(iOS)
+/// iPhone tab screens each carry the shared ambient mesh behind transparent content.
+struct IOSAmbientTabScreen<Content: View>: View {
+    @Bindable private var gradientStore = ImageGradientAndStoreBloc.bloc
+    private let content: Content
+
+    init(@ViewBuilder content: () -> Content) {
+        self.content = content()
+    }
+
+    var body: some View {
+        ZStack {
+            HomePageAmbientBackground(gradient: gradientStore.currentGradient)
+            content
+        }
+        .hideScrollContentBackground()
+    }
+}
+#endif
+
 ///
 /// /// Hero artwork — gradient mask on the `Image` (white = opaque, clear = transparent at bottom).
 /// ///
@@ -45,9 +65,10 @@ struct BannerFadingHeroImage: View {
     let height: CGFloat
     let path: String
     let imageWidth: String
+    var setGradientFromImage: Bool = SettingsBloc.bloc.enableGradient
 
     var body: some View {
-        BlocAsyncImage(id: path, size: imageWidth, setGradientFromImage: SettingsBloc.bloc.enableGradient) { phase in
+        BlocAsyncImage(id: path, size: imageWidth, setGradientFromImage: setGradientFromImage) { phase in
             switch phase {
             case let .success(image):
                 image

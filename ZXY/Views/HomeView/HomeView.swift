@@ -9,26 +9,37 @@ import SwiftUI
 
 struct HomeView: View {
     @Binding private var vm: HomeViewModel
-    // @Binding var ambientGradient: HomeAmbientGradient
 
-    init(vm: Binding<HomeViewModel>, ambientGradient _: Binding<HomeAmbientGradient>) {
+    init(vm: Binding<HomeViewModel>) {
         _vm =
             vm
-        // _ambientGradient = ambientGradient
     }
 
     var body: some View {
+        #if os(iOS)
+            IOSAmbientTabScreen {
+                homeScrollContent
+            }
+            .homeHeroScrollEdgeInsets()
+            .onChange(of: Router.router.mainRouteState) { old, new in
+                handleMainRouteChange(old: old, new: new)
+            }
+        #else
+            homeScrollContent
+                .homeHeroScrollEdgeInsets()
+                .onChange(of: Router.router.mainRouteState) { old, new in
+                    handleMainRouteChange(old: old, new: new)
+                }
+        #endif
+    }
+
+    private var homeScrollContent: some View {
         ScrollView(.vertical, showsIndicators: false) {
             VStack(alignment: .leading, spacing: 0) {
                 TopBannerSection(
                     state: vm.topBannerState,
                     onActiveMediaChange: { _ in
-                        Task {
-                            // let next = await BannerAmbientLoader.gradient(for: media)
-                            // withAnimation(.easeInOut(duration: 0.65)) {
-                            // ambientGradient = next
-                            // }
-                        }
+                        Task {}
                     }
                 )
                 #if os(macOS)
@@ -76,27 +87,27 @@ struct HomeView: View {
             Task { await vm.initialise() }
         }
         .hideScrollContentBackground()
-        .homeHeroScrollEdgeInsets()
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .onChange(of: Router.router.mainRouteState) { old, new in
-                guard let oldRoute = old.last else {
-                    return
-                }
+    }
 
-                let newRoute = new.last
-                let returnedFromDetails: Bool
-                switch oldRoute {
-                case .movieDetails, .seriesDetails:
-                    returnedFromDetails = true
-                default:
-                    returnedFromDetails = false
-                }
-                if newRoute == nil && returnedFromDetails {
-                    Task {
-                        await vm.initialiseContinueWatching()
-                    }
-                }
+    private func handleMainRouteChange(old: [Route], new: [Route]) {
+        guard let oldRoute = old.last else {
+            return
+        }
+
+        let newRoute = new.last
+        let returnedFromDetails: Bool
+        switch oldRoute {
+        case .movieDetails, .seriesDetails:
+            returnedFromDetails = true
+        default:
+            returnedFromDetails = false
+        }
+        if newRoute == nil && returnedFromDetails {
+            Task {
+                await vm.initialiseContinueWatching()
             }
+        }
     }
 }
 
@@ -217,113 +228,113 @@ private struct ContinueWatchingCard: View {
 
     private var cardContent: some View {
         HStack(spacing: 0) {
-                // ── Left: Poster thumbnail ─────────────────────
-                AsyncImage(
-                    url: MediaConfig.instance.posterURL(
-                        item.media.posterPath
-                    )
-                ) { phase in
-                    switch phase {
-                    case let .success(image):
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                    case .failure:
-                        posterPlaceholder
-                    case .empty:
-                        ShimmerView()
-                    @unknown default:
-                        posterPlaceholder
-                    }
-                }
-                .frame(
-                    width: AppTheme.MediaLibrary.cwPosterWidth,
-                    height: AppTheme.MediaLibrary.cwPosterHeight
+            // ── Left: Poster thumbnail ─────────────────────
+            AsyncImage(
+                url: MediaConfig.instance.posterURL(
+                    item.media.posterPath
                 )
-                .clipped()
+            ) { phase in
+                switch phase {
+                case let .success(image):
+                    image
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                case .failure:
+                    posterPlaceholder
+                case .empty:
+                    ShimmerView()
+                @unknown default:
+                    posterPlaceholder
+                }
+            }
+            .frame(
+                width: AppTheme.MediaLibrary.cwPosterWidth,
+                height: AppTheme.MediaLibrary.cwPosterHeight
+            )
+            .clipped()
 
-                // ── Right: Info panel ──────────────────────────
-                VStack(alignment: .leading, spacing: 0) {
-                    // Title
-                    Text(displayTitle)
-                        .font(AppTheme.MediaLibrary.cwTitleFont)
-                        .foregroundStyle(Color.white)
-                        .lineLimit(1)
-                        .truncationMode(.tail)
+            // ── Right: Info panel ──────────────────────────
+            VStack(alignment: .leading, spacing: 0) {
+                // Title
+                Text(displayTitle)
+                    .font(AppTheme.MediaLibrary.cwTitleFont)
+                    .foregroundStyle(Color.white)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
 
-                    Spacer().frame(height: 6)
+                Spacer().frame(height: 6)
 
-                    // Subtitle lines
-                    if let ep = episodeInfo {
-                        // Show: Season + Episode
-                        Text("Season \(ep.season)")
-                            .font(AppTheme.MediaLibrary.cwSubtitleFont)
-                            .foregroundStyle(Color.white.opacity(0.55))
+                // Subtitle lines
+                if let ep = episodeInfo {
+                    // Show: Season + Episode
+                    Text("Season \(ep.season)")
+                        .font(AppTheme.MediaLibrary.cwSubtitleFont)
+                        .foregroundStyle(Color.white.opacity(0.55))
 
-                        Spacer().frame(height: 2)
+                    Spacer().frame(height: 2)
 
-                        Text("Episode \(ep.episode)")
-                            .font(AppTheme.MediaLibrary.cwSubtitleFont)
-                            .foregroundStyle(Color.white.opacity(0.55))
-                    } else {
-                        // Movie: Year • Movie
-                        HStack(spacing: 0) {
-                            if let year = releaseYear {
-                                Text(year)
-                                    .font(AppTheme.MediaLibrary.cwSubtitleFont)
-                                    .foregroundStyle(Color.white.opacity(0.55))
-                                Text(" · ")
-                                    .font(AppTheme.MediaLibrary.cwSubtitleFont)
-                                    .foregroundStyle(Color.white.opacity(0.55))
-                            }
-                            Text("Movie")
+                    Text("Episode \(ep.episode)")
+                        .font(AppTheme.MediaLibrary.cwSubtitleFont)
+                        .foregroundStyle(Color.white.opacity(0.55))
+                } else {
+                    // Movie: Year • Movie
+                    HStack(spacing: 0) {
+                        if let year = releaseYear {
+                            Text(year)
+                                .font(AppTheme.MediaLibrary.cwSubtitleFont)
+                                .foregroundStyle(Color.white.opacity(0.55))
+                            Text(" · ")
                                 .font(AppTheme.MediaLibrary.cwSubtitleFont)
                                 .foregroundStyle(Color.white.opacity(0.55))
                         }
-                    }
-
-                    Spacer()
-
-                    // Progress bar
-                    GeometryReader { geo in
-                        ZStack(alignment: .leading) {
-                            // Track
-                            RoundedRectangle(
-                                cornerRadius: AppTheme.MediaLibrary.cwProgressBarRadius,
-                                style: .continuous
-                            )
-                            .fill(Color.white.opacity(0.2))
-                            .frame(height: AppTheme.MediaLibrary.cwProgressBarHeight)
-
-                            // Fill
-                            RoundedRectangle(
-                                cornerRadius: AppTheme.MediaLibrary.cwProgressBarRadius,
-                                style: .continuous
-                            )
-                            .fill(Color.white)
-                            .frame(
-                                width: geo.size.width * progressFraction,
-                                height: AppTheme.MediaLibrary.cwProgressBarHeight
-                            )
-                        }
-                    }
-                    .frame(height: AppTheme.MediaLibrary.cwProgressBarHeight)
-
-                    Spacer().frame(height: 6)
-
-                    HStack(alignment: .center, spacing: 8) {
-                        Text("\(progressPercent)% watched")
-                            .font(AppTheme.MediaLibrary.cwPercentFont)
-                            .foregroundStyle(Color.white.opacity(0.45))
-
-                        Spacer(minLength: 0)
-
-                        continueWatchingMenu
+                        Text("Movie")
+                            .font(AppTheme.MediaLibrary.cwSubtitleFont)
+                            .foregroundStyle(Color.white.opacity(0.55))
                     }
                 }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 12)
-                .frame(maxWidth: .infinity, alignment: .leading)
+
+                Spacer()
+
+                // Progress bar
+                GeometryReader { geo in
+                    ZStack(alignment: .leading) {
+                        // Track
+                        RoundedRectangle(
+                            cornerRadius: AppTheme.MediaLibrary.cwProgressBarRadius,
+                            style: .continuous
+                        )
+                        .fill(Color.white.opacity(0.2))
+                        .frame(height: AppTheme.MediaLibrary.cwProgressBarHeight)
+
+                        // Fill
+                        RoundedRectangle(
+                            cornerRadius: AppTheme.MediaLibrary.cwProgressBarRadius,
+                            style: .continuous
+                        )
+                        .fill(Color.white)
+                        .frame(
+                            width: geo.size.width * progressFraction,
+                            height: AppTheme.MediaLibrary.cwProgressBarHeight
+                        )
+                    }
+                }
+                .frame(height: AppTheme.MediaLibrary.cwProgressBarHeight)
+
+                Spacer().frame(height: 6)
+
+                HStack(alignment: .center, spacing: 8) {
+                    Text("\(progressPercent)% watched")
+                        .font(AppTheme.MediaLibrary.cwPercentFont)
+                        .foregroundStyle(Color.white.opacity(0.45))
+
+                    Spacer(minLength: 0)
+
+                    continueWatchingMenu
+                }
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 12)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
         .frame(
             width: AppTheme.MediaLibrary.cwCardWidth,
@@ -361,8 +372,8 @@ private struct ContinueWatchingCard: View {
         }
         .buttonStyle(.plain)
         #if os(macOS)
-        .menuStyle(.borderlessButton)
-        .onHover { isMenuHovered = $0 }
+            .menuStyle(.borderlessButton)
+            .onHover { isMenuHovered = $0 }
         #endif
     }
 

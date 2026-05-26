@@ -231,6 +231,7 @@ extension CollectionPart {
             originalTitle: originalTitle ?? originalName ?? "",
             overview: overview ?? "",
             posterPath: posterPath,
+            nonLogoPosterPath: "",
             type: isMovie ? "movie" : "show",
             originalLanguage: originalLanguage ?? "",
             popularity: popularity ?? 0,

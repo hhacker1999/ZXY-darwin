@@ -11,6 +11,22 @@ struct LibraryView: View {
     }
 
     var body: some View {
+        Group {
+            #if os(iOS)
+                IOSAmbientTabScreen {
+                    libraryContent
+                }
+            #else
+                libraryContent
+            #endif
+        }
+        .task {
+            await vm.initialLoad()
+        }
+        .enableInjection()
+    }
+
+    private var libraryContent: some View {
         VStack(spacing: 0) {
             // Header
             HStack {
@@ -44,9 +60,5 @@ struct LibraryView: View {
             )
             .padding(.horizontal, AppTheme.Layout.mediaGridOuterAlignmentPadding)
         }
-        .task {
-            await vm.initialLoad()
-        }
-        .enableInjection()
     }
 }
