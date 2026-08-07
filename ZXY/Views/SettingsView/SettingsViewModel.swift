@@ -112,6 +112,22 @@ final class SettingsViewModel {
                 toastBloc.showToast(message: "Invalid addon url", isError: true)
                 return
             }
+            var hasStreamResource = false
+
+            // NOTE: We only support stream based addons for now
+            for resource in addonManifest.resources {
+                if resource.name == "stream",
+                   resource.types.contains("movie") || resource.types.contains("series"),
+                   resource.idPrefixes != nil,
+                   resource.idPrefixes!.contains("tt") || resource.idPrefixes!.contains("tmdb")
+                {
+                    hasStreamResource = true
+                }
+            }
+            if !hasStreamResource {
+                toastBloc.showToast(message: "Addon does not support streams", isError: true)
+                return
+            }
             try await authUc.addAddon(manifestUrl: manifestUrl)
             let updatedProfile = try await authUc.getProfile()
             await userBloc.setProfile(incomingProfile: updatedProfile, authUc: authUc)
