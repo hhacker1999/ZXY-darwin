@@ -97,8 +97,12 @@ final class SettingsViewModel {
         }
     }
 
-    func AddAddonEnabled(manifestUrl: String) async {
+    func AddAddon(manifestUrl: String) async {
         do {
+            if !manifestUrl.hasSuffix("manifest.json") {
+                toastBloc.showToast(message: "Invalid addon url", isError: true)
+                return
+            }
             toastBloc.enableLoading()
             defer {
                 toastBloc.disableLoading()
@@ -137,7 +141,7 @@ final class SettingsViewModel {
         }
     }
 
-    func RemoveAddonEnabled(id: Int) async {
+    func RemoveAddon(id: Int) async {
         do {
             guard let addons = userBloc.streamAddons,
                   let index = addons.firstIndex(where: { $0.profileAddon.id == id })

@@ -100,6 +100,16 @@ struct SettingsView: View {
                 Task {
                     await vm.setAddonEnabled(id: id, enabled: enabled)
                 }
+            },
+            onAdd: { manifestUrl in
+                Task {
+                    await vm.AddAddon(manifestUrl: manifestUrl)
+                }
+            },
+            onRemove: { id in
+                Task {
+                    await vm.RemoveAddon(id: id)
+                }
             }
         )
     }
