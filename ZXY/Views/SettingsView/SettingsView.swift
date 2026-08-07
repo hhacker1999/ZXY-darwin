@@ -32,6 +32,7 @@ struct SettingsView: View {
                         generalBlock(profile: profile)
                         libraryBlock(profile: profile)
                         sourcesBlock(profile: profile)
+                        addonsBlock
                     } else {
                         ProgressView().tint(.white)
                     }
@@ -89,11 +90,26 @@ struct SettingsView: View {
         SettingsSectionLabel("Sources")
         SourcesSection(profile: profile, vm: vm)
     }
+
+    @ViewBuilder
+    private var addonsBlock: some View {
+        SettingsSectionLabel("Addons")
+        AddonsSection(
+            addons: userBloc.streamAddons ?? [],
+            onToggle: { id, enabled in
+                Task {
+                    await vm.setAddonEnabled(id: id, enabled: enabled)
+                }
+            }
+        )
+    }
 }
 
 struct SettingsSectionLabel: View {
     let label: String
-    init(_ label: String) { self.label = label }
+    init(_ label: String) {
+        self.label = label
+    }
 
     var body: some View {
         Text(label)

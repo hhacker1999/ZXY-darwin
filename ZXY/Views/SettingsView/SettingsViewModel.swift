@@ -15,7 +15,7 @@ final class SettingsViewModel {
     var libraryItems: [LibraryItem] = []
     var hasLibraryChanges: Bool = false
 
-    // ── Trakt login flow ───────────────────────────────────────────
+    /// ── Trakt login flow ───────────────────────────────────────────
     var waitingTraktLogin: Bool = false
 
     // ── Inline async indicators ────────────────────────────────────
@@ -97,6 +97,64 @@ final class SettingsViewModel {
         }
     }
 
+    func AddAddonEnabled(manifestUrl: String) async {
+        do {
+            toastBloc.enableLoading()
+            defer {
+                toastBloc.disableLoading()
+            }
+            let addonManifest = try await authUc.getStreamioManifestFromAddon(addonUrl: manifestUrl)
+            if addonManifest.id.isEmpty {
+                toastBloc.showToast(message: "Invalid addon url", isError: true)
+                return
+            }
+            try await authUc.addAddon(manifestUrl: manifestUrl)
+            let updatedProfile = try await authUc.getProfile()
+            await userBloc.setProfile(incomingProfile: updatedProfile, authUc: authUc)
+        } catch let error as HttpError {
+            toastBloc.showToast(message: error.error(), isError: true)
+        } catch {
+            toastBloc.showToast(message: error.localizedDescription, isError: true)
+        }
+    }
+
+    func setAddonEnabled(id: Int, enabled: Bool) async {
+        do {
+            guard var addons = userBloc.streamAddons,
+                  let index = addons.firstIndex(where: { $0.profileAddon.id == id })
+            else { return }
+            toastBloc.enableLoading()
+            defer {
+                toastBloc.disableLoading()
+            }
+            try await authUc.updateAddon(addonId: addons[index].id, enable: enabled)
+            addons[index].profileAddon.enabled = enabled
+            userBloc.streamAddons = addons
+        } catch let error as HttpError {
+            toastBloc.showToast(message: error.error(), isError: true)
+        } catch {
+            toastBloc.showToast(message: error.localizedDescription, isError: true)
+        }
+    }
+
+    func RemoveAddonEnabled(id: Int) async {
+        do {
+            guard let addons = userBloc.streamAddons,
+                  let index = addons.firstIndex(where: { $0.profileAddon.id == id })
+            else { return }
+            toastBloc.enableLoading()
+            defer {
+                toastBloc.disableLoading()
+            }
+            try await authUc.removeAddon(addonId: addons[index].id)
+            userBloc.streamAddons?.remove(at: index)
+        } catch let error as HttpError {
+            toastBloc.showToast(message: error.error(), isError: true)
+        } catch {
+            toastBloc.showToast(message: error.localizedDescription, isError: true)
+        }
+    }
+
     private func runMutatingSources(
         _ successMessage: String,
         _ work: () async throws -> Void
@@ -173,7 +231,7 @@ final class SettingsViewModel {
 
     func switchProfile() {
         guard let user = userBloc.user else { return }
-        userBloc.profile = nil
+        userBloc.resetProfile()
         SecureStorage.saveKey(key: "profile_cookie", value: "")
         httpService.clearCookie()
         // Re-load session-only cookie so profile selection can re-login.
@@ -183,8 +241,7 @@ final class SettingsViewModel {
 
     func logout() {
         authUc.logout()
-        userBloc.user = nil
-        userBloc.profile = nil
+        userBloc.resetUser()
         SecureStorage.saveKey(key: "user_cookie", value: "")
         SecureStorage.saveKey(key: "profile_cookie", value: "")
         router.mainRouteState = []

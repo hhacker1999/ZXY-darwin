@@ -53,7 +53,7 @@ class MPV {
         checkError(mpv_set_option_string(mpv, "hwdec", "videotoolbox"))
 
         // NOTE: This enabled spatial audio
-        // checkError(mpv_set_option_string(mpv, "ao", "avfoundation,coreaudio"))
+        checkError(mpv_set_option_string(mpv, "ao", "avfoundation,coreaudio"))
 
         if let langCodes = LangHelper.langToCodes[SettingsBloc.bloc.language] {
             var langString = langCodes.joined(separator: ",")

@@ -182,7 +182,6 @@ class AuthUsecase {
         }
     }
 
-
     func createProfile(name: String, pin: String?, copyKey: Bool) async throws {
         do {
             let url = URL(string: "\(Constants.baseUrl)/user/profile")!
@@ -264,7 +263,6 @@ class AuthUsecase {
         }
     }
 
-
     func getTraktLoginUrl() async throws -> String {
         do {
             let url = URL(string: "\(Constants.baseUrl)/trakt_url")!
@@ -301,7 +299,6 @@ class AuthUsecase {
         }
     }
 
-
     func deleteAccount() async throws {
         do {
             let url = URL(string: "\(Constants.baseUrl)/user")!
@@ -316,8 +313,86 @@ class AuthUsecase {
         }
     }
 
-
     func logout() {
         httpService.clearCookie()
+    }
+
+    /// Addons
+    func addAddon(manifestUrl: String) async throws {
+        do {
+            let url = URL(string: "\(Constants.baseUrl)/profile/addon")!
+            var req = URLRequest(url: url)
+            req.httpMethod = "POST"
+            req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            let body: [String: String] = [
+                "manifest_url": manifestUrl,
+            ]
+            req.httpBody = try JSONEncoder().encode(body)
+            try await httpService.sendVoid(req, cookieType: .profile)
+        } catch {
+            print("--- DEBUG ERROR ---")
+            print("Type: \(type(of: error))")
+            print("Description: \(error)")
+            throw error
+        }
+    }
+
+    func removeAddon(addonId: Int) async throws {
+        do {
+            let url = URL(string: "\(Constants.baseUrl)/profile/addon")!
+            var req = URLRequest(url: url)
+            req.httpMethod = "DELETE"
+            req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            let body: [String: Int] = [
+                "addon_id": addonId,
+            ]
+            req.httpBody = try JSONEncoder().encode(body)
+            try await httpService.sendVoid(req, cookieType: .profile)
+        } catch {
+            print("--- DEBUG ERROR ---")
+            print("Type: \(type(of: error))")
+            print("Description: \(error)")
+            throw error
+        }
+    }
+
+    func updateAddon(addonId: Int, enable: Bool) async throws {
+        do {
+            var urlString = "\(Constants.baseUrl)/profile/addon"
+            if enable {
+                urlString += "/enable"
+            } else {
+                urlString += "/disable"
+            }
+            let url = URL(string: urlString)!
+            var req = URLRequest(url: url)
+            req.httpMethod = "POST"
+            req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            let body: [String: Int] = [
+                "addon_id": addonId,
+            ]
+            req.httpBody = try JSONEncoder().encode(body)
+            try await httpService.sendVoid(req, cookieType: .profile)
+        } catch {
+            print("--- DEBUG ERROR ---")
+            print("Type: \(type(of: error))")
+            print("Description: \(error)")
+            throw error
+        }
+    }
+
+    func getStreamioManifestFromAddon(addonUrl: String) async throws -> AddonManifest {
+        do {
+            let url = URL(string: addonUrl)!
+            var req = URLRequest(url: url)
+            req.httpMethod = "GET"
+            let response: AddonManifest = try await httpService.send(req, cookieType: .profile)
+            return response
+        } catch {
+            print("--- DEBUG ERROR ---")
+            print("Type: \(type(of: error))")
+            print("Description: \(error)")
+            throw error
+        }
     }
 }

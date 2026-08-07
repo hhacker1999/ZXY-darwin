@@ -60,7 +60,10 @@ class SplashViewModel {
             profiles = user.profiles
             UserBloc.bloc.user = user
             let profile = try await authUc.getProfile()
-            UserBloc.bloc.profile = profile
+
+            // Set this is as logged in profile in userbloc
+            await UserBloc.bloc.setProfile(incomingProfile: profile, authUc: authUc)
+
             Router.router.routerState = .home
         } catch _ as UnAuthorised {
             if let profiles = profiles {

@@ -8,11 +8,13 @@
 
 /* Begin PBXBuildFile section */
 		0634A9828F1C49225B410FEF /* TrakPadAndDragListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A56036EBDC47624CC2FDA09 /* TrakPadAndDragListener.swift */; };
+		0C26B081F284D3E67BFD547A /* StreamioAddon.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00D99EF5967E346FED3442 /* StreamioAddon.swift */; };
 		0C83E04A4CF86332FFC2772F /* MpvPlayerDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 225278BC78432D767B4D164F /* MpvPlayerDelegate.swift */; };
 		2A66D3ADCEB17803562BCFB6 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 1DC449894548917D9608C662 /* README.md */; };
 		32A9ABE1CEDA487F6389A077 /* MovieViewTVOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AF75357F491EB9D34FC7E7 /* MovieViewTVOS.swift */; platformFilters = (tvos, ); };
 		4BBFED7ED1B7316ACE0C79EC /* SeriesViewTVOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F7C70F4FE3DEDCE40EE72BF /* SeriesViewTVOS.swift */; platformFilters = (tvos, ); };
 		695A196D2FAFA909005F52FB /* MPVKit in Frameworks */ = {isa = PBXBuildFile; productRef = 695A196C2FAFA909005F52FB /* MPVKit */; };
+		697B5E5E3026231700BC2124 /* AddonsSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7D05E2FB7000100ADDE0001 /* AddonsSection.swift */; };
 		69A6F3792FC2BAA200477B60 /* HomeViewTVOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69A6F3782FC2BAA200477B60 /* HomeViewTVOS.swift */; platformFilters = (tvos, ); };
 		69D908192F82AA1900FDC6BA /* Inject in Frameworks */ = {isa = PBXBuildFile; productRef = 69D908182F82AA1900FDC6BA /* Inject */; };
 		69E6A31D2FB0F25C00EBEBEA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 69E6A2C32FB0F25C00EBEBEA /* Assets.xcassets */; };
@@ -65,8 +67,6 @@
 		69E6A34C2FB0F25C00EBEBEA /* SeriesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69E6A30D2FB0F25C00EBEBEA /* SeriesViewModel.swift */; };
 		69E6A34D2FB0F25C00EBEBEA /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69E6A2C92FB0F25C00EBEBEA /* ContentView.swift */; };
 		69E6A34E2FB0F25C00EBEBEA /* SettingsBloc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69E6A2C52FB0F25C00EBEBEA /* SettingsBloc.swift */; };
-		D3C4B5A82FC5000300EBEBEA /* DiscordRichPresenceBloc.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3C4B5A72FC5000200EBEBEA /* DiscordRichPresenceBloc.swift */; };
-		D3C4B5A62FC5000100EBEBEA /* DiscordIPCClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3C4B5A52FC5000000EBEBEA /* DiscordIPCClient.swift */; platformFilters = (macos, ); };
 		69E6A34F2FB0F25C00EBEBEA /* Divider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69E6A2DD2FB0F25C00EBEBEA /* Divider.swift */; };
 		69E6A3502FB0F25C00EBEBEA /* SharedModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69E6A2D32FB0F25C00EBEBEA /* SharedModels.swift */; };
 		69E6A3512FB0F25C00EBEBEA /* LoginViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69E6A2F82FB0F25C00EBEBEA /* LoginViewModel.swift */; };
@@ -104,6 +104,8 @@
 		B1C2D3EA2FB2000500EBEBEA /* SettingsViewTVOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1C2D3E92FB2000500EBEBEA /* SettingsViewTVOS.swift */; platformFilters = (tvos, ); };
 		C6C571BD95EDE781CB6FA57B /* BlocAsyncImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30C0D9311A72DE0636EC56DE /* BlocAsyncImage.swift */; };
 		D2D2615B8628D2F8C96236FD /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 1B44BDE7D0A832B4B5CA9468 /* .gitignore */; };
+		D3C4B5A62FC5000100EBEBEA /* DiscordIPCClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3C4B5A52FC5000000EBEBEA /* DiscordIPCClient.swift */; platformFilters = (macos, ); };
+		D3C4B5A82FC5000300EBEBEA /* DiscordRichPresenceBloc.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3C4B5A72FC5000200EBEBEA /* DiscordRichPresenceBloc.swift */; };
 		F9420C367E86DA90F00556EC /* Mpv.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91F1E28FAA8C1C57FC38E16F /* Mpv.swift */; };
 /* End PBXBuildFile section */
 
@@ -118,12 +120,11 @@
 		4B567BBA9F57F858E56EA35E /* ImageGradientStore.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = ImageGradientStore.swift; sourceTree = "<group>"; };
 		6980844D2F78169500FCBB80 /* ZXY.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ZXY.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		69A6F3782FC2BAA200477B60 /* HomeViewTVOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewTVOS.swift; sourceTree = "<group>"; };
+		69C408DA2FD8AC5A0020FCBB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		69E6A2C22FB0F25C00EBEBEA /* AppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTheme.swift; sourceTree = "<group>"; };
 		69E6A2C32FB0F25C00EBEBEA /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		69E6A2C42FB0F25C00EBEBEA /* ProgressToastBloc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressToastBloc.swift; sourceTree = "<group>"; };
 		69E6A2C52FB0F25C00EBEBEA /* SettingsBloc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsBloc.swift; sourceTree = "<group>"; };
-		D3C4B5A72FC5000200EBEBEA /* DiscordRichPresenceBloc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscordRichPresenceBloc.swift; sourceTree = "<group>"; };
-		D3C4B5A52FC5000000EBEBEA /* DiscordIPCClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscordIPCClient.swift; sourceTree = "<group>"; };
 		69E6A2C62FB0F25C00EBEBEA /* UserBloc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserBloc.swift; sourceTree = "<group>"; };
 		69E6A2C82FB0F25C00EBEBEA /* constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = constants.swift; sourceTree = "<group>"; };
 		69E6A2C92FB0F25C00EBEBEA /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -203,11 +204,15 @@
 		A1B2C3D22FB1000200EBEBEA /* LoginViewTVOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewTVOS.swift; sourceTree = "<group>"; };
 		A1B2C3D32FB1000300EBEBEA /* ProfileSelectViewTVOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileSelectViewTVOS.swift; sourceTree = "<group>"; };
 		A47FC608A6FF6FFF4DC4F865 /* MpvPlayerView.old */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = MpvPlayerView.old; sourceTree = "<group>"; };
+		A7D05E2FB7000100ADDE0001 /* AddonsSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddonsSection.swift; sourceTree = "<group>"; };
 		B1C2D3E12FB2000100EBEBEA /* TVOSMediaBrowseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TVOSMediaBrowseView.swift; sourceTree = "<group>"; };
 		B1C2D3E32FB2000200EBEBEA /* DiscoverViewTVOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoverViewTVOS.swift; sourceTree = "<group>"; };
 		B1C2D3E52FB2000300EBEBEA /* SearchViewTVOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchViewTVOS.swift; sourceTree = "<group>"; };
 		B1C2D3E72FB2000400EBEBEA /* LibraryViewTVOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryViewTVOS.swift; sourceTree = "<group>"; };
 		B1C2D3E92FB2000500EBEBEA /* SettingsViewTVOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewTVOS.swift; sourceTree = "<group>"; };
+		CD00D99EF5967E346FED3442 /* StreamioAddon.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = StreamioAddon.swift; sourceTree = "<group>"; };
+		D3C4B5A52FC5000000EBEBEA /* DiscordIPCClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscordIPCClient.swift; sourceTree = "<group>"; };
+		D3C4B5A72FC5000200EBEBEA /* DiscordRichPresenceBloc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscordRichPresenceBloc.swift; sourceTree = "<group>"; };
 		D9AF75357F491EB9D34FC7E7 /* MovieViewTVOS.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = MovieViewTVOS.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -257,6 +262,7 @@
 		6043D91E8A3B5B6F30AC55D6 /* ZXY */ = {
 			isa = PBXGroup;
 			children = (
+				69C408DA2FD8AC5A0020FCBB /* Info.plist */,
 				69E6A3672FB0F2FD00EBEBEA /* ZXYApp.swift */,
 				69E6A2C22FB0F25C00EBEBEA /* AppTheme.swift */,
 				69E6A2C32FB0F25C00EBEBEA /* Assets.xcassets */,
@@ -318,6 +324,7 @@
 				69E6A2D32FB0F25C00EBEBEA /* SharedModels.swift */,
 				69E6A2D42FB0F25C00EBEBEA /* StreamModels.swift */,
 				69E6A2D52FB0F25C00EBEBEA /* User.swift */,
+				CD00D99EF5967E346FED3442 /* StreamioAddon.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -470,6 +477,7 @@
 			isa = PBXGroup;
 			children = (
 				69E6A30F2FB0F25C00EBEBEA /* AccountCardView.swift */,
+				A7D05E2FB7000100ADDE0001 /* AddonsSection.swift */,
 				69E6A3102FB0F25C00EBEBEA /* GeneralSection.swift */,
 				69E6A3112FB0F25C00EBEBEA /* LibraryCustomizationSection.swift */,
 				69E6A3122FB0F25C00EBEBEA /* SettingsView.swift */,
@@ -626,6 +634,7 @@
 				69E6A32C2FB0F25C00EBEBEA /* AppTextField.swift in Sources */,
 				69E6A32D2FB0F25C00EBEBEA /* ViewItemState.swift in Sources */,
 				69E6A32E2FB0F25C00EBEBEA /* Dependencies.swift in Sources */,
+				697B5E5E3026231700BC2124 /* AddonsSection.swift in Sources */,
 				69E6A32F2FB0F25C00EBEBEA /* TopBanner.swift in Sources */,
 				69E6A3302FB0F25C00EBEBEA /* MovieViewModel.swift in Sources */,
 				69E6A3312FB0F25C00EBEBEA /* MediaDetails.swift in Sources */,
@@ -702,6 +711,7 @@
 				C6C571BD95EDE781CB6FA57B /* BlocAsyncImage.swift in Sources */,
 				32A9ABE1CEDA487F6389A077 /* MovieViewTVOS.swift in Sources */,
 				4BBFED7ED1B7316ACE0C79EC /* SeriesViewTVOS.swift in Sources */,
+				0C26B081F284D3E67BFD547A /* StreamioAddon.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -848,6 +858,7 @@
 				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
 				ENABLE_RESOURCE_ACCESS_PHOTO_LIBRARY = NO;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ZXY/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = ZXY;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
@@ -910,6 +921,7 @@
 				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
 				ENABLE_RESOURCE_ACCESS_PHOTO_LIBRARY = NO;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ZXY/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = ZXY;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;

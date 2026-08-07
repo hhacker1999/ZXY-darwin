@@ -6,21 +6,11 @@
 
 import Foundation
 
-
 struct StreamItem: Codable {
     let name: String
     let description: String
     let url: String
-    let behaviorHints: BehaviorHints
 }
-
-
-struct BehaviorHints: Codable {
-    let bingeGroup: String?
-    let videoSize: Int?
-    let filename: String?
-}
-
 
 struct StreamResponse: Codable {
     let uhd: [ResolutionItem]
@@ -43,7 +33,6 @@ struct StreamResponse: Codable {
         hd = []
     }
 }
-
 
 struct ResolutionItem: Codable, Hashable, Equatable {
     let name: String

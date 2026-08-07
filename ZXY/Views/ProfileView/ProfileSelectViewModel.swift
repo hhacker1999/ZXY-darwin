@@ -16,7 +16,7 @@ class ProfileSelectViewModel {
     var isLoading: Bool = false
     var err: String?
     var showPinInput: Bool = false
-    private let router: Router = Router.router
+    private let router: Router = .router
 
     init(authUc: AuthUsecase) {
         self.authUc = authUc
@@ -71,9 +71,9 @@ class ProfileSelectViewModel {
 
             showPinInput = false
             let updateProfile = try await authUc.getProfile()
-
             // Set this is as logged in profile in userbloc
-            UserBloc.bloc.profile = updateProfile
+            await UserBloc.bloc.setProfile(incomingProfile: updateProfile, authUc: authUc)
+
             router.routerState = .home
         } catch let error as HttpError {
             err = error.error()

@@ -40,6 +40,7 @@ struct Profile: Codable, Hashable, Equatable {
     let libraryItems: [LibraryItem]?
     let traktLists: [TraktList]?
     let services: [ProfileService]
+    let addons: [ProfileAddon]
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -51,6 +52,7 @@ struct Profile: Codable, Hashable, Equatable {
         case libraryItems = "library_items"
         case traktLists = "trakt_lists"
         case services
+        case addons
     }
 
     init(from decoder: Decoder) throws {
@@ -65,6 +67,19 @@ struct Profile: Codable, Hashable, Equatable {
         libraryItems = try container.decodeIfPresent([LibraryItem].self, forKey: .libraryItems)
         traktLists = try container.decodeIfPresent([TraktList].self, forKey: .traktLists)
         services = try container.decodeIfPresent([ProfileService].self, forKey: .services) ?? []
+        addons = try container.decodeIfPresent([ProfileAddon].self, forKey: .addons) ?? []
+    }
+}
+
+struct ProfileAddon: Codable, Hashable, Equatable {
+    let id: Int
+    let manifestUrl: String
+    var enabled: Bool
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case manifestUrl = "manifest_url"
+        case enabled
     }
 }
 
