@@ -88,7 +88,7 @@ enum MPVProperty {
 @Observable
 final class MpvViewModel: MPVPlayerDelegate {
     init(
-        streams: [ResolutionItem],
+        streams: [VideoPlayerStream],
         selectedStreamIndex: Int,
         streamUc: StreamUsecase,
         progressUc: ProgressUsecase,
@@ -111,7 +111,7 @@ final class MpvViewModel: MPVPlayerDelegate {
     }
 
     init(
-        streams: [ResolutionItem],
+        streams: [VideoPlayerStream],
         selectedStreamIndex: Int,
         streamUc: StreamUsecase,
         progressUc: ProgressUsecase,
@@ -176,7 +176,7 @@ final class MpvViewModel: MPVPlayerDelegate {
 
     // @ObservationIgnored
     // var currentUrl: URL
-    var streams: [ResolutionItem]
+    var streams: [VideoPlayerStream]
     var selectedStreamIndex: Int = 0
 
     @ObservationIgnored

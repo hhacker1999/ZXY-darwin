@@ -28,10 +28,7 @@ class MovieViewModel: StreamViewModel {
     }
 
     var movieState: ViewItemState<MovieDetails> = .initial
-    // TODO: Remove this old streams state
-    var streamsState: ViewItemState<[ResolutionItem]> = .initial
-
-    var streamsStateNew: ViewItemState<[VideoPlayerStream]> = .initial
+    var streamsState: ViewItemState<[VideoPlayerStream]> = .initial
 
     var progress: Double = 0
     var isWatched: Bool = false
@@ -155,10 +152,10 @@ class MovieViewModel: StreamViewModel {
 
     /// NOTE: This is responsible for getting streams and setting internal state only
     private func fetchStreamsInternal() {
-        if streamsTask == nil, case .loaded = streamsStateNew {
+        if streamsTask == nil, case .loaded = streamsState {
             return
         }
-        if streamsTask == nil, case .error = streamsStateNew {
+        if streamsTask == nil, case .error = streamsState {
             return
         }
         if streamsTask == nil {
@@ -200,7 +197,7 @@ class MovieViewModel: StreamViewModel {
                 var hd: [VideoPlayerStream] = []
 
                 do {
-                    streamsStateNew = .loading
+                    streamsState = .loading
                     for addon in streamAddons {
                         var streams: [Stream]
                         guard addon.types.contains("movie") else {
@@ -217,7 +214,7 @@ class MovieViewModel: StreamViewModel {
 
                         for stream in streams {
                             if let url = stream.url {
-                                if url.starts(with: "http://") {
+                                if url.starts(with: "http://") || url.starts(with: "https://") {
                                     let hint = stream.behaviorHints
                                     if !hint.filename.isEmpty {
                                         let pttResult = PTT.parse(hint.filename).normalize()
@@ -242,14 +239,14 @@ class MovieViewModel: StreamViewModel {
                     results.append(contentsOf: fourK)
                     results.append(contentsOf: fhd)
                     results.append(contentsOf: hd)
-                    streamsStateNew = .loaded(results)
+                    streamsState = .loaded(results)
 
                 } catch is CancellationError {
                     throw CancellationError()
                 } catch let err as HttpError {
-                    streamsStateNew = .error(err.error())
+                    streamsState = .error(err.error())
                 } catch {
-                    streamsStateNew = .error(error.localizedDescription)
+                    streamsState = .error(error.localizedDescription)
                 }
             }
         }
@@ -281,10 +278,10 @@ class MovieViewModel: StreamViewModel {
         fetchStreamsInternal()
         try await streamsTask?.value
 
-        if case let .loaded(streams) = streamsStateNew {
+        if case let .loaded(streams) = streamsState {
             return streams
         }
-        if case let .error(err) = streamsStateNew {
+        if case let .error(err) = streamsState {
             throw err
         }
         fatalError("Invalid state in get streams")
@@ -293,5 +290,19 @@ class MovieViewModel: StreamViewModel {
     func getSelectedStreamIndex() -> Int {
         // FIXME: update this to reflect current selected media
         return 0
+    }
+
+    /// Returns whether the stream picker sheet should be presented.
+    func handlePlayPressed() -> Bool {
+        switch streamsState {
+        case .loaded:
+            return true
+        case let .error(message):
+            ToastProgressBloc.bloc.showToast(message: message, isError: true)
+            return false
+        case .initial, .loading:
+            fetchStreamsInternal()
+            return true
+        }
     }
 }

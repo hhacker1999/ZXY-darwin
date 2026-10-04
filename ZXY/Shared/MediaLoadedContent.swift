@@ -5,7 +5,8 @@ struct MediaLoadedContent: View {
     let details: MediaDetails
     let isMobile: Bool
     @State private var ambientGradient: HomeAmbientGradient = .default
-    var streamState: ViewItemState<[ResolutionItem]> = .initial
+    var streamsState: ViewItemState<[VideoPlayerStream]>? = nil
+    var onMoviePlay: (() -> Bool)? = nil
     var movieProgress: Double = 0
     var movieIsWatched: Bool = false
     var seriesVm: SeriesViewModel? = nil
@@ -37,7 +38,8 @@ struct MediaLoadedContent: View {
                                 details: details,
                                 width: width,
                                 height: headerHeight,
-                                streamState: streamState,
+                                streamsState: streamsState,
+                                onMoviePlay: onMoviePlay,
                                 movieProgress: movieProgress,
                                 movieIsWatched: movieIsWatched,
                                 seriesVm: seriesVm,
@@ -48,7 +50,8 @@ struct MediaLoadedContent: View {
                                 details: details,
                                 width: width,
                                 height: headerHeight,
-                                streamState: streamState,
+                                streamsState: streamsState,
+                                onMoviePlay: onMoviePlay,
                                 movieProgress: movieProgress,
                                 movieIsWatched: movieIsWatched,
                                 seriesVm: seriesVm,
@@ -167,7 +170,8 @@ private struct MediaInfoPosterView: View {
     let details: MediaDetails
     let width: CGFloat
     let height: CGFloat
-    var streamState: ViewItemState<[ResolutionItem]> = .initial
+    var streamsState: ViewItemState<[VideoPlayerStream]>? = nil
+    var onMoviePlay: (() -> Bool)? = nil
     var movieProgress: Double = 0
     var movieIsWatched: Bool = false
     var seriesVm: SeriesViewModel? = nil
@@ -179,9 +183,19 @@ private struct MediaInfoPosterView: View {
 
     @State private var showStreamSheet = false
 
-    private var effectiveStreamState: ViewItemState<[ResolutionItem]> {
+    private var effectiveStreamState: ViewItemState<[VideoPlayerStream]> {
         if let seriesVm = seriesVm { return seriesVm.episodeStreamState }
-        return streamState
+        return streamsState ?? .initial
+    }
+
+    private func playButtonTapped() {
+        if let onMoviePlay {
+            if onMoviePlay() {
+                showStreamSheet = true
+            }
+        } else {
+            showStreamSheet = true
+        }
     }
 
     private var effectiveSeasonNo: Int {
@@ -341,9 +355,7 @@ private struct MediaInfoPosterView: View {
                                 label: "Play",
                                 suffix: playButtonSuffix,
                                 progressFraction: playProgressFraction,
-                                action: {
-                                    showStreamSheet = true
-                                }
+                                action: playButtonTapped
                             )
                             if isMovieOnly {
                                 MovieWatchedCheckButton(
@@ -418,7 +430,8 @@ private struct MediaInfoBannerView: View {
     let details: MediaDetails
     let width: CGFloat
     let height: CGFloat
-    var streamState: ViewItemState<[ResolutionItem]> = .initial
+    var streamsState: ViewItemState<[VideoPlayerStream]>? = nil
+    var onMoviePlay: (() -> Bool)? = nil
     var movieProgress: Double = 0
     var movieIsWatched: Bool = false
     var seriesVm: SeriesViewModel? = nil
@@ -430,9 +443,19 @@ private struct MediaInfoBannerView: View {
 
     @State private var showStreamSheet = false
 
-    private var effectiveStreamState: ViewItemState<[ResolutionItem]> {
+    private var effectiveStreamState: ViewItemState<[VideoPlayerStream]> {
         if let seriesVm = seriesVm { return seriesVm.episodeStreamState }
-        return streamState
+        return streamsState ?? .initial
+    }
+
+    private func playButtonTapped() {
+        if let onMoviePlay {
+            if onMoviePlay() {
+                showStreamSheet = true
+            }
+        } else {
+            showStreamSheet = true
+        }
     }
 
     private var effectiveSeasonNo: Int {
@@ -604,7 +627,7 @@ private struct MediaInfoBannerView: View {
                             label: "Play",
                             suffix: playButtonSuffix,
                             progressFraction: playProgressFraction,
-                            action: { showStreamSheet = true }
+                            action: playButtonTapped
                         )
                         if isMovieOnly {
                             MovieWatchedCheckButton(
@@ -863,7 +886,7 @@ extension View {
 }
 
 struct StreamSheet: View {
-    let state: ViewItemState<[ResolutionItem]>
+    let state: ViewItemState<[VideoPlayerStream]>
     let episodeNo: Int
     let seasonNo: Int
     let media: MediaDetails
@@ -978,7 +1001,7 @@ struct StreamSheet: View {
     }
 
     @ViewBuilder
-    private func streamListView(streams: [ResolutionItem]) -> some View {
+    private func streamListView(streams: [VideoPlayerStream]) -> some View {
         List {
             ForEach(Array(streams.enumerated()), id: \.offset) {
                 index,
@@ -988,7 +1011,7 @@ struct StreamSheet: View {
                     Router.router.addToRoute(
                         route: .mpvVideoView(
                             MPVViewArgs(
-                                resItems: streams,
+                                streams: streams,
                                 selectedIndex: index,
                                 mediaId: media.id,
                                 episodeNo: episodeNo,
@@ -1013,11 +1036,11 @@ struct StreamSheet: View {
 }
 
 struct StreamRow: View {
-    let stream: ResolutionItem
+    let stream: VideoPlayerStream
     let onTap: () -> Void
     @State private var isHovered = false
 
-    init(stream: ResolutionItem, onTap: @escaping () -> Void) {
+    init(stream: VideoPlayerStream, onTap: @escaping () -> Void) {
         self.stream = stream
         self.onTap = onTap
     }

@@ -504,21 +504,19 @@ struct OverlayView: View {
                                     .foregroundStyle(.white)
 
                                 HStack(spacing: 6) {
-                                    // Quality tag
-                                    if let quality = stream.quality, !quality.isEmpty {
-                                        Text(quality)
+                                    if !stream.quality.isEmpty {
+                                        Text(stream.quality)
                                             .font(.system(size: 11, weight: .medium))
                                             .foregroundStyle(.white.opacity(0.5))
                                     }
 
-                                    // Size as bitrate proxy
-                                    if let size = stream.size, size > 0 {
-                                        if stream.quality != nil && !stream.quality!.isEmpty {
+                                    if stream.size > 0 {
+                                        if !stream.quality.isEmpty {
                                             Text("·")
                                                 .font(.system(size: 11))
                                                 .foregroundStyle(.white.opacity(0.3))
                                         }
-                                        Text(formatFileSize(size))
+                                        Text(formatFileSize(stream.size))
                                             .font(.system(size: 11, weight: .regular))
                                             .foregroundStyle(.white.opacity(0.4))
                                     }

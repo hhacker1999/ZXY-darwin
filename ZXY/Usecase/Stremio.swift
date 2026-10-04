@@ -28,8 +28,16 @@ class StremioUsecase {
             let url = URL(string: urlString)!
             var req = URLRequest(url: url)
             req.httpMethod = "GET"
-            let response: [Stream] = try await httpService.send(req, cookieType: .none, logOutput: false)
-            return response
+            guard let data = try await httpService.sendRaw(
+                req,
+                cookieType: .none,
+                logOutput: true
+            ) else {
+                return []
+            }
+
+            let response = try JSONDecoder().decode(StremioStreamsResponse.self, from: data)
+            return response.streams
         } catch {
             print("--- DEBUG ERROR ---")
             print("Type: \(type(of: error))")
@@ -37,4 +45,8 @@ class StremioUsecase {
             throw error
         }
     }
+}
+
+private struct StremioStreamsResponse: Codable {
+    let streams: [Stream]
 }

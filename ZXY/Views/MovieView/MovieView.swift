@@ -64,7 +64,8 @@ struct MovieView: View {
                 MediaLoadedContent(
                     details: MediaDetails(from: details),
                     isMobile: isMobile,
-                    streamState: vm.streamsState,
+                    streamsState: vm.streamsState,
+                    onMoviePlay: { vm.handlePlayPressed() },
                     movieProgress: vm.progress,
                     movieIsWatched: vm.isWatched,
                     onMarkMovieWatched: {

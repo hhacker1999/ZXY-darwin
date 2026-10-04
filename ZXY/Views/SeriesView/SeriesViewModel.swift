@@ -3,7 +3,7 @@ import SwiftUI
 
 @MainActor
 @Observable
-class SeriesViewModel {
+class SeriesViewModel: StreamViewModel {
     let mediaUc: MediaUsecase
     let streamUc: StreamUsecase
     let progressUc: ProgressUsecase
@@ -26,7 +26,7 @@ class SeriesViewModel {
     let isExplicitSeasonEpisode: Bool
 
     var seriesState: ViewItemState<SeriesDetails> = .initial
-    var episodeStreamState: ViewItemState<[ResolutionItem]> = .initial
+    var episodeStreamState: ViewItemState<[VideoPlayerStream]> = .initial
     var progressState: [String: WatchProgress] = [:]
     var isInLibrary: Bool = false
 
@@ -218,7 +218,7 @@ class SeriesViewModel {
                 if Task.isCancelled {
                     return
                 }
-                var items: [ResolutionItem] = []
+                var items: [VideoPlayerStream] = []
                 for item in response.uhd {
                     items.append(item)
                 }
@@ -241,5 +241,36 @@ class SeriesViewModel {
                 }
             }
         }
+    }
+
+    // MARK: - StreamViewModel (stubs — series streaming migration pending)
+
+    func isMovie() -> Bool {
+        false
+    }
+
+    func getMediaProgressSync() -> Double {
+        0
+    }
+
+    func hasNext() -> Bool {
+        false
+    }
+
+    func getCurrentMedia() -> MediaDetails {
+        if let seriesDetails {
+            return MediaDetails(from: seriesDetails)
+        }
+        fatalError("Series details are not loaded")
+    }
+
+    func updateProgress(progress _: Double) async {}
+
+    func getStreams() async throws -> [VideoPlayerStream] {
+        []
+    }
+
+    func getSelectedStreamIndex() -> Int {
+        0
     }
 }

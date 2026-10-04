@@ -8,7 +8,7 @@ import Foundation
 import SwiftUI
 
 struct MPVViewArgs: Hashable {
-    let resItems: [ResolutionItem]
+    let streams: [VideoPlayerStream]
     let selectedIndex: Int
     let mediaId: String
     let episodeNo: Int
@@ -17,7 +17,7 @@ struct MPVViewArgs: Hashable {
     let backdropPath: String?
 
     init(
-        resItems: [ResolutionItem],
+        streams: [VideoPlayerStream],
         selectedIndex: Int,
         mediaId: String,
         episodeNo: Int,
@@ -25,7 +25,7 @@ struct MPVViewArgs: Hashable {
         name: String,
         backdropPath: String? = nil
     ) {
-        self.resItems = resItems
+        self.streams = streams
         self.selectedIndex = selectedIndex
         self.mediaId = mediaId
         self.episodeNo = episodeNo

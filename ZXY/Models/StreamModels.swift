@@ -13,15 +13,15 @@ struct StreamItem: Codable {
 }
 
 struct StreamResponse: Codable {
-    let uhd: [ResolutionItem]
-    let fhd: [ResolutionItem]
-    let hd: [ResolutionItem]
+    let uhd: [VideoPlayerStream]
+    let fhd: [VideoPlayerStream]
+    let hd: [VideoPlayerStream]
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        uhd = (try? container.decode([ResolutionItem].self, forKey: .uhd)) ?? []
-        fhd = (try? container.decode([ResolutionItem].self, forKey: .fhd)) ?? []
-        hd = (try? container.decode([ResolutionItem].self, forKey: .hd)) ?? []
+        uhd = (try? container.decode([VideoPlayerStream].self, forKey: .uhd)) ?? []
+        fhd = (try? container.decode([VideoPlayerStream].self, forKey: .fhd)) ?? []
+        hd = (try? container.decode([VideoPlayerStream].self, forKey: .hd)) ?? []
     }
 
     /// Empty response with no streams
@@ -34,7 +34,7 @@ struct StreamResponse: Codable {
     }
 }
 
-struct VideoPlayerStream: Hashable, Equatable{
+struct VideoPlayerStream: Hashable, Equatable, Codable {
     let visualTags: [String]
     let audioTags: [String]
     let fileName: String
@@ -45,6 +45,34 @@ struct VideoPlayerStream: Hashable, Equatable{
     let resolution: String
     let source: String
     let hdrTags: [String]
+
+    var name: String { resolution }
+    var description: String { fileName }
+
+    enum CodingKeys: String, CodingKey {
+        case visualTags = "visual_tags"
+        case audioTags = "audio_tags"
+        case fileName = "file_name"
+        case languageCodes = "language_codes"
+        case size, url, quality, resolution, source
+        case hdrTags = "hdr_tags"
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        visualTags = (try? container.decode([String].self, forKey: .visualTags)) ?? []
+        audioTags = (try? container.decode([String].self, forKey: .audioTags)) ?? []
+        fileName = (try? container.decode(String.self, forKey: .fileName)) ?? ""
+        languageCodes = (try? container.decode([String].self, forKey: .languageCodes)) ?? []
+        size = (try? container.decode(Int.self, forKey: .size)) ?? 0
+        url = try container.decode(String.self, forKey: .url)
+        quality = (try? container.decode(String.self, forKey: .quality)) ?? ""
+        resolution = (try? container.decode(String.self, forKey: .resolution)) ?? ""
+        source =
+            (try? container.decode(String.self, forKey: .source))
+            ?? resolution
+        hdrTags = (try? container.decode([String].self, forKey: .hdrTags)) ?? []
+    }
 
     init(source: String, baseStream: Stream, ptt: PTT.Result) {
         url = baseStream.url!
@@ -64,49 +92,5 @@ struct VideoPlayerStream: Hashable, Equatable{
         var audio: [String] = []
         audio.append(contentsOf: ptt.audio)
         audioTags = audio
-    }
-}
-
-private extension String {
-    var nilIfEmpty: String? {
-        isEmpty ? nil : self
-    }
-}
-
-struct ResolutionItem: Codable, Hashable, Equatable {
-    let name: String
-    let description: String
-    let visualTags: [String]
-    let audioTags: [String]
-    let fileName: String?
-    let languageCodes: [String]
-    let size: Int?
-    let url: String
-    let quality: String?
-    let resolution: String
-    let source: String
-
-    enum CodingKeys: String, CodingKey {
-        case name, description
-        case visualTags = "visual_tags"
-        case audioTags = "audio_tags"
-        case fileName = "file_name"
-        case languageCodes = "language_codes"
-        case size, url, quality, resolution
-    }
-
-    init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        name = (try? container.decode(String.self, forKey: .name)) ?? ""
-        description = (try? container.decode(String.self, forKey: .description)) ?? ""
-        visualTags = (try? container.decode([String].self, forKey: .visualTags)) ?? []
-        audioTags = (try? container.decode([String].self, forKey: .audioTags)) ?? []
-        fileName = try container.decodeIfPresent(String.self, forKey: .fileName)
-        languageCodes = (try? container.decode([String].self, forKey: .languageCodes)) ?? []
-        size = try container.decodeIfPresent(Int.self, forKey: .size)
-        url = try container.decode(String.self, forKey: .url)
-        quality = try container.decodeIfPresent(String.self, forKey: .quality)
-        resolution = try container.decode(String.self, forKey: .resolution)
-        source = try container.decode(String.self, forKey: .resolution)
     }
 }

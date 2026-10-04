@@ -14,7 +14,7 @@ struct MpvPlayerView: View {
     #endif
 
     init(
-        streams: [ResolutionItem],
+        streams: [VideoPlayerStream],
         selectedStreamIndex: Int,
         streamUc: StreamUsecase,
         progressUc: ProgressUsecase,
@@ -34,7 +34,7 @@ struct MpvPlayerView: View {
     }
 
     init(
-        streams: [ResolutionItem],
+        streams: [VideoPlayerStream],
         selectedStreamIndex: Int,
         streamUc: StreamUsecase,
         progressUc: ProgressUsecase,

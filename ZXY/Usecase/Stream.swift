@@ -4,7 +4,7 @@ class StreamUsecase {
     private let httpService = HttpService.service
     private let streamPath = "/v2/streams"
 
-    func getMovieStreams(id: String) async throws -> [ResolutionItem] {
+    func getMovieStreams(id: String) async throws -> [VideoPlayerStream] {
         do {
             let url = HttpService.buildURL(
                 "\(Constants.baseUrl)\(streamPath)",
@@ -21,7 +21,7 @@ class StreamUsecase {
             }
 
             let streamRes = try JSONDecoder().decode(StreamResponse.self, from: data)
-            var items: [ResolutionItem] = []
+            var items: [VideoPlayerStream] = []
             for item in streamRes.uhd {
                 items.append(item)
             }
