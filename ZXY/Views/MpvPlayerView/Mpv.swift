@@ -563,6 +563,10 @@ class MPV {
         command("seek", args: [String(time), "relative"])
     }
 
+    func durationSeconds() -> Double {
+        getDouble("duration")
+    }
+
     func stop() {
         command("stop", args: [])
     }

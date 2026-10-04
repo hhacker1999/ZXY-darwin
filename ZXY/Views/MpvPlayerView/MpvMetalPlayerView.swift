@@ -124,6 +124,9 @@ final class MpvViewModel: MPVPlayerDelegate {
     var initialProgress: Double = 0
 
     @ObservationIgnored
+    private var didApplyInitialProgressSeek = false
+
+    @ObservationIgnored
     private var didSeedPlayback = false
     @ObservationIgnored
     var progressTask: Task<Void, Never>?
@@ -476,6 +479,7 @@ final class MpvViewModel: MPVPlayerDelegate {
             guard let url = URL(string: streams[selectedStreamIndex].url) else {
                 return
             }
+            didApplyInitialProgressSeek = false
             player?.mpv.loadFile(url)
         } catch {
             print("--------------------------------------------------")
@@ -495,14 +499,18 @@ final class MpvViewModel: MPVPlayerDelegate {
         player.mpv.toggleHDR(enabled: hdrEnabled)
     }
 
+    private func resumeFromSavedProgressIfNeeded() {
+        guard !didApplyInitialProgressSeek, initialProgress != 0 else { return }
+        let durationSeconds = Double(duration.components.seconds)
+        guard durationSeconds > 0 else { return }
+        let seekSeconds = durationSeconds * (initialProgress / 100)
+        player?.mpv.seek(relative: seekSeconds)
+        didApplyInitialProgressSeek = true
+    }
+
     func onFileLoaded() {
         applyLetterboxingToPlayer()
-        // NOTE: Start from where we left off
-        if initialProgress != 0 {
-            let seekSeconds =
-                Double(duration.components.seconds) * (initialProgress / 100)
-            player?.mpv.seek(relative: seekSeconds)
-        }
+        resumeFromSavedProgressIfNeeded()
     }
 
     func onFileEnd() {
@@ -520,6 +528,7 @@ final class MpvViewModel: MPVPlayerDelegate {
             loading = data as! Bool
         case MPVProperty.duration:
             duration = Duration.seconds(data as! Double)
+            resumeFromSavedProgressIfNeeded()
         case MPVProperty.timePos:
             currentPos = Duration.seconds(data as! Double)
             if !isDragging {
@@ -598,34 +607,34 @@ final class MpvViewModel: MPVPlayerDelegate {
     }
 
     #if os(macOS)
-    func shouldHideCursor() -> Bool {
-        // 1. Get the current location of the mouse cursor in global screen coordinates
-        let mouseLocation = NSEvent.mouseLocation
+        func shouldHideCursor() -> Bool {
+            // 1. Get the current location of the mouse cursor in global screen coordinates
+            let mouseLocation = NSEvent.mouseLocation
 
-        // 2. Find which screen the mouse is currently on
-        guard let currentScreen = NSScreen.screens.first(where: { NSMouseInRect(mouseLocation, $0.frame, false) }) else {
-            return true // Fallback: if we can't find the screen, allow hiding
+            // 2. Find which screen the mouse is currently on
+            guard let currentScreen = NSScreen.screens.first(where: { NSMouseInRect(mouseLocation, $0.frame, false) }) else {
+                return true // Fallback: if we can't find the screen, allow hiding
+            }
+
+            let screenFrame = currentScreen.frame
+            let visibleFrame = currentScreen.visibleFrame
+
+            // 3. Calculate the top boundary where the Menu Bar / Status Bar lives
+            // On macOS, coordinate (0,0) is the bottom-left of the primary screen.
+            let menuBarHeight = screenFrame.height - (visibleFrame.origin.y + visibleFrame.size.height)
+            let menuBarMinY = screenFrame.origin.y + screenFrame.height - menuBarHeight
+
+            // 4. Check if the mouse is inside that top Status Bar region
+            if mouseLocation.y >= menuBarMinY {
+                return false // Do NOT hide the cursor; user is interacting with the Status Bar
+            }
+
+            // Optional: Check if mouse is interacting with the Dock at the bottom
+            if mouseLocation.y < visibleFrame.origin.y {
+                return false // Do NOT hide the cursor; user is interacting with the Dock
+            }
+
+            return true // Safe to hide
         }
-
-        let screenFrame = currentScreen.frame
-        let visibleFrame = currentScreen.visibleFrame
-
-        // 3. Calculate the top boundary where the Menu Bar / Status Bar lives
-        // On macOS, coordinate (0,0) is the bottom-left of the primary screen.
-        let menuBarHeight = screenFrame.height - (visibleFrame.origin.y + visibleFrame.size.height)
-        let menuBarMinY = screenFrame.origin.y + screenFrame.height - menuBarHeight
-
-        // 4. Check if the mouse is inside that top Status Bar region
-        if mouseLocation.y >= menuBarMinY {
-            return false // Do NOT hide the cursor; user is interacting with the Status Bar
-        }
-
-        // Optional: Check if mouse is interacting with the Dock at the bottom
-        if mouseLocation.y < visibleFrame.origin.y {
-            return false // Do NOT hide the cursor; user is interacting with the Dock
-        }
-
-        return true // Safe to hide
-    }
     #endif
 }
