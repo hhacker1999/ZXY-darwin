@@ -5,8 +5,20 @@ struct SeriesView: View {
     @State var vm: SeriesViewModel
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
-    init(id: Int, mediaUc: MediaUsecase, streamUc: StreamUsecase, progressUc: ProgressUsecase) {
-        vm = SeriesViewModel(id: id, mediaUc: mediaUc, streamUc: streamUc, progressUc: progressUc)
+    init(
+        id: Int,
+        mediaUc: MediaUsecase,
+        streamUc: StreamUsecase,
+        progressUc: ProgressUsecase,
+        stremioUc: StremioUsecase
+    ) {
+        vm = SeriesViewModel(
+            id: id,
+            mediaUc: mediaUc,
+            streamUc: streamUc,
+            progressUc: progressUc,
+            stremioUc: stremioUc
+        )
     }
 
     private var isMobile: Bool {
@@ -52,6 +64,7 @@ struct SeriesView: View {
                 MediaLoadedContent(
                     details: MediaDetails(from: details),
                     isMobile: isMobile,
+                    onMoviePlay: { vm.handlePlayPressed() },
                     seriesVm: vm
                 )
             }

@@ -1415,7 +1415,9 @@ private struct SeasonEpisodeSection: View {
             season: seasonNumber,
             episode: episodeNumber
         )
-        showStreamSheet = true
+        if seriesVm.handlePlayPressed() {
+            showStreamSheet = true
+        }
     }
 }
 

@@ -85,7 +85,13 @@ struct ContentView: View {
         case let .movieDetails(id):
             MovieView(id: id, mediaUc: deps.mediaUc, streamUc: deps.streamUc, progressUc: deps.progressUc, stremioUc: deps.streamioUc)
         case let .seriesDetails(id):
-            SeriesView(id: id, mediaUc: deps.mediaUc, streamUc: deps.streamUc, progressUc: deps.progressUc)
+            SeriesView(
+                id: id,
+                mediaUc: deps.mediaUc,
+                streamUc: deps.streamUc,
+                progressUc: deps.progressUc,
+                stremioUc: deps.streamioUc
+            )
         case let .mpvVideoView(route):
             MpvPlayerView(streamVm: route.viewModel)
         default:

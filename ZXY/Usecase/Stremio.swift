@@ -31,7 +31,7 @@ class StremioUsecase {
             guard let data = try await httpService.sendRaw(
                 req,
                 cookieType: .none,
-                logOutput: true
+                logOutput: false
             ) else {
                 return []
             }
