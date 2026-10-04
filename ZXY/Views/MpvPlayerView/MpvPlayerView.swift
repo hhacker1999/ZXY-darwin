@@ -13,48 +13,8 @@ struct MpvPlayerView: View {
         @State private var showVideoStatsSheet = false
     #endif
 
-    init(
-        streams: [VideoPlayerStream],
-        selectedStreamIndex: Int,
-        streamUc: StreamUsecase,
-        progressUc: ProgressUsecase,
-        mediaId: String,
-        name: String,
-        backdropPath: String? = nil
-    ) {
-        vm = MpvViewModel(
-            streams: streams,
-            selectedStreamIndex: selectedStreamIndex,
-            streamUc: streamUc,
-            progressUc: progressUc,
-            mediaId: mediaId,
-            name: name,
-            backdropPath: backdropPath
-        )
-    }
-
-    init(
-        streams: [VideoPlayerStream],
-        selectedStreamIndex: Int,
-        streamUc: StreamUsecase,
-        progressUc: ProgressUsecase,
-        mediaId: String,
-        seasonNo: Int,
-        episodeNo: Int,
-        name: String,
-        backdropPath: String? = nil
-    ) {
-        vm = MpvViewModel(
-            streams: streams,
-            selectedStreamIndex: selectedStreamIndex,
-            streamUc: streamUc,
-            progressUc: progressUc,
-            mediaId: mediaId,
-            seasonNo: seasonNo,
-            episodeNo: episodeNo,
-            name: name,
-            backdropPath: backdropPath
-        )
+    init(streamVm: any StreamViewModel) {
+        vm = MpvViewModel(streamVm: streamVm)
     }
 
     var body: some View {
@@ -70,6 +30,7 @@ struct MpvPlayerView: View {
                 }
                 .focusable()
                 .focused($currentFocus, equals: .video)
+                .focusEffectDisabled()
                 .overlay {
                     Group {
                         #if os(iOS)

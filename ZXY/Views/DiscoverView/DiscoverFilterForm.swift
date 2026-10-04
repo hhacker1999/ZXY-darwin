@@ -135,8 +135,31 @@ private struct DiscoverFilterTypeView: View {
     let profile: Profile?
     let onApply: (Filter, String?) -> Void
     let onCancel: () -> Void
+    @State private var pushedRoute: DiscoverFilterRoute?
 
     var body: some View {
+        #if os(macOS)
+            ZStack {
+                if let pushedRoute {
+                    filterDestination(pushedRoute)
+                        .transition(.opacity)
+                } else {
+                    filterSourceList
+                        .transition(.opacity)
+                }
+            }
+            .animation(.easeInOut(duration: 0.28), value: pushedRoute)
+        #else
+            filterSourceList
+                .navigationTransition(.crossFade)
+                .navigationDestination(for: DiscoverFilterRoute.self) { route in
+                    filterDestination(route)
+                        .navigationTransition(.crossFade)
+                }
+        #endif
+    }
+
+    private var filterSourceList: some View {
         List {
             Section {
                 VStack(alignment: .leading, spacing: 8) {
@@ -152,7 +175,7 @@ private struct DiscoverFilterTypeView: View {
             }
 
             Section("Source") {
-                NavigationLink(value: DiscoverFilterRoute.internalFilters) {
+                filterLink(.internalFilters) {
                     FilterOptionRow(
                         icon: "line.3.horizontal.decrease.circle",
                         iconColor: .blue,
@@ -162,7 +185,7 @@ private struct DiscoverFilterTypeView: View {
                     )
                 }
 
-                NavigationLink(value: DiscoverFilterRoute.traktLists) {
+                filterLink(.traktLists) {
                     FilterOptionRow(
                         icon: "list.bullet.rectangle.portrait",
                         iconColor: .orange,
@@ -183,7 +206,33 @@ private struct DiscoverFilterTypeView: View {
         .hideScrollContentBackground()
         .background(DiscoverPalette.groupedBackground)
         .navigationTitle("Discover Filters")
-        .navigationDestination(for: DiscoverFilterRoute.self) { route in
+        .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+                Button("Close", action: onCancel)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func filterLink<Label: View>(
+        _ route: DiscoverFilterRoute,
+        @ViewBuilder label: () -> Label
+    ) -> some View {
+        #if os(macOS)
+            Button {
+                pushedRoute = route
+            } label: {
+                label()
+            }
+            .buttonStyle(.plain)
+        #else
+            NavigationLink(value: route, label: label)
+        #endif
+    }
+
+    @ViewBuilder
+    private func filterDestination(_ route: DiscoverFilterRoute) -> some View {
+        Group {
             switch route {
             case .internalFilters:
                 DiscoverInternalFilterForm(initialFilter: initialFilter) {
@@ -193,11 +242,17 @@ private struct DiscoverFilterTypeView: View {
                 DiscoverTraktListPicker(profile: profile, onSelect: onApply)
             }
         }
+        #if os(macOS)
         .toolbar {
-            ToolbarItem(placement: .cancellationAction) {
-                Button("Close", action: onCancel)
+            ToolbarItem(placement: .navigation) {
+                Button {
+                    pushedRoute = nil
+                } label: {
+                    Label("Back", systemImage: "chevron.left")
+                }
             }
         }
+        #endif
     }
 }
 

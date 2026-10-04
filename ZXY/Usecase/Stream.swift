@@ -74,30 +74,4 @@ class StreamUsecase {
             throw error
         }
     }
-
-
-    func getStreamUrl(tempUrl: String) async throws -> String {
-        do {
-            let url = URL(
-                string:
-                "\(Constants.baseUrl)/stream_url?temp_url=\(tempUrl)"
-            )!
-            var req = URLRequest(url: url)
-            req.httpMethod = "GET"
-
-            let response: [String: String] = try await httpService.send(
-                req,
-                cookieType: .profile, logOutput: false
-            )
-            guard let streamUrl = response["url"] else {
-                throw SomethingWentWrong()
-            }
-            return streamUrl
-        } catch {
-            print("--- DEBUG ERROR ---")
-            print("Type: \(type(of: error))")
-            print("Description: \(error)")
-            throw error
-        }
-    }
 }

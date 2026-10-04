@@ -7,6 +7,7 @@ struct MediaLoadedContent: View {
     @State private var ambientGradient: HomeAmbientGradient = .default
     var streamsState: ViewItemState<[VideoPlayerStream]>? = nil
     var onMoviePlay: (() -> Bool)? = nil
+    var streamVm: (any StreamViewModel)? = nil
     var movieProgress: Double = 0
     var movieIsWatched: Bool = false
     var seriesVm: SeriesViewModel? = nil
@@ -40,6 +41,7 @@ struct MediaLoadedContent: View {
                                 height: headerHeight,
                                 streamsState: streamsState,
                                 onMoviePlay: onMoviePlay,
+                                streamVm: streamVm,
                                 movieProgress: movieProgress,
                                 movieIsWatched: movieIsWatched,
                                 seriesVm: seriesVm,
@@ -52,6 +54,7 @@ struct MediaLoadedContent: View {
                                 height: headerHeight,
                                 streamsState: streamsState,
                                 onMoviePlay: onMoviePlay,
+                                streamVm: streamVm,
                                 movieProgress: movieProgress,
                                 movieIsWatched: movieIsWatched,
                                 seriesVm: seriesVm,
@@ -66,8 +69,7 @@ struct MediaLoadedContent: View {
                             SeasonEpisodeSection(
                                 seasons: details.seasons,
                                 seriesVm: seriesVm,
-                                isMobile: isMobile,
-                                media: details
+                                isMobile: isMobile
                             )
                             .padding(.horizontal, AppTheme.Spacing.md)
 
@@ -172,6 +174,7 @@ private struct MediaInfoPosterView: View {
     let height: CGFloat
     var streamsState: ViewItemState<[VideoPlayerStream]>? = nil
     var onMoviePlay: (() -> Bool)? = nil
+    var streamVm: (any StreamViewModel)? = nil
     var movieProgress: Double = 0
     var movieIsWatched: Bool = false
     var seriesVm: SeriesViewModel? = nil
@@ -383,13 +386,13 @@ private struct MediaInfoPosterView: View {
                 .padding(.vertical, AppTheme.Spacing.md)
         }
         .sheet(isPresented: $showStreamSheet) {
-            StreamSheet(
-                state: effectiveStreamState,
-                episodeNo: effectiveEpisodeNo,
-                seasonNo: effectiveSeasonNo,
-                media: details
-            )
-            .streamSheetPresentationChrome()
+            if let playbackVm = streamVm ?? seriesVm {
+                StreamSheet(
+                    state: effectiveStreamState,
+                    streamVm: playbackVm
+                )
+                .streamSheetPresentationChrome()
+            }
         }
     }
 
@@ -432,6 +435,7 @@ private struct MediaInfoBannerView: View {
     let height: CGFloat
     var streamsState: ViewItemState<[VideoPlayerStream]>? = nil
     var onMoviePlay: (() -> Bool)? = nil
+    var streamVm: (any StreamViewModel)? = nil
     var movieProgress: Double = 0
     var movieIsWatched: Bool = false
     var seriesVm: SeriesViewModel? = nil
@@ -644,13 +648,13 @@ private struct MediaInfoBannerView: View {
         }
         .frame(width: width, height: height)
         .sheet(isPresented: $showStreamSheet) {
-            StreamSheet(
-                state: effectiveStreamState,
-                episodeNo: effectiveEpisodeNo,
-                seasonNo: effectiveSeasonNo,
-                media: details
-            )
-            .streamSheetPresentationChrome()
+            if let playbackVm = streamVm ?? seriesVm {
+                StreamSheet(
+                    state: effectiveStreamState,
+                    streamVm: playbackVm
+                )
+                .streamSheetPresentationChrome()
+            }
         }
     }
 
@@ -887,9 +891,7 @@ extension View {
 
 struct StreamSheet: View {
     let state: ViewItemState<[VideoPlayerStream]>
-    let episodeNo: Int
-    let seasonNo: Int
-    let media: MediaDetails
+    let streamVm: any StreamViewModel
     @Environment(\.dismiss) private var dismiss
 
     private var itemCount: Int {
@@ -1008,17 +1010,10 @@ struct StreamSheet: View {
                 stream in
                 StreamRow(stream: stream) {
                     dismiss()
+                    streamVm.setSelectedStreamIndex(index)
                     Router.router.addToRoute(
                         route: .mpvVideoView(
-                            MPVViewArgs(
-                                streams: streams,
-                                selectedIndex: index,
-                                mediaId: media.id,
-                                episodeNo: episodeNo,
-                                seasonNo: seasonNo,
-                                name: media.name,
-                                backdropPath: media.backdropPath
-                            )
+                            StreamPlaybackRoute(viewModel: streamVm)
                         )
                     )
                 }
@@ -1081,7 +1076,6 @@ private struct SeasonEpisodeSection: View {
     let seasons: [Season]
     let seriesVm: SeriesViewModel
     let isMobile: Bool
-    let media: MediaDetails
 
     @State private var showStreamSheet: Bool = false
 
@@ -1111,9 +1105,7 @@ private struct SeasonEpisodeSection: View {
         .sheet(isPresented: $showStreamSheet) {
             StreamSheet(
                 state: seriesVm.episodeStreamState,
-                episodeNo: seriesVm.selectedEpisode,
-                seasonNo: seriesVm.selectedSeason,
-                media: media
+                streamVm: seriesVm
             )
             .streamSheetPresentationChrome()
         }

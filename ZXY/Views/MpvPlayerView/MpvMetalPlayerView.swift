@@ -87,52 +87,8 @@ enum MPVProperty {
 @MainActor
 @Observable
 final class MpvViewModel: MPVPlayerDelegate {
-    init(
-        streams: [VideoPlayerStream],
-        selectedStreamIndex: Int,
-        streamUc: StreamUsecase,
-        progressUc: ProgressUsecase,
-        initialProgress: Double = 0,
-        mediaId: String,
-        name: String,
-        backdropPath: String? = nil
-    ) {
-        self.streams = streams
-        self.streamUc = streamUc
-        self.selectedStreamIndex = selectedStreamIndex
-        self.mediaId = mediaId
-        isShow = false
-        episodeNo = -1
-        seasonNo = -1
-        self.initialProgress = initialProgress
-        self.progressUc = progressUc
-        self.name = name
-        self.backdropPath = backdropPath
-    }
-
-    init(
-        streams: [VideoPlayerStream],
-        selectedStreamIndex: Int,
-        streamUc: StreamUsecase,
-        progressUc: ProgressUsecase,
-        initialProgress: Double = 0,
-        mediaId: String,
-        seasonNo: Int,
-        episodeNo: Int,
-        name: String,
-        backdropPath: String? = nil
-    ) {
-        self.streams = streams
-        self.streamUc = streamUc
-        self.selectedStreamIndex = selectedStreamIndex
-        self.mediaId = mediaId
-        isShow = true
-        self.episodeNo = episodeNo
-        self.seasonNo = seasonNo
-        self.initialProgress = initialProgress
-        self.progressUc = progressUc
-        self.name = name
-        self.backdropPath = backdropPath
+    init(streamVm: any StreamViewModel) {
+        self.streamVm = streamVm
     }
 
     deinit {
@@ -146,25 +102,29 @@ final class MpvViewModel: MPVPlayerDelegate {
     }
 
     @ObservationIgnored
-    let streamUc: StreamUsecase
+    let streamVm: any StreamViewModel
+
+    var name: String {
+        streamVm.getCurrentMedia().name
+    }
+
+    var backdropPath: String? {
+        streamVm.getCurrentMedia().backdropPath
+    }
+
+    var seasonNo: Int {
+        streamVm.getSeasonNo()
+    }
+
+    var episodeNo: Int {
+        streamVm.getEpisodeNo()
+    }
 
     @ObservationIgnored
-    let progressUc: ProgressUsecase
+    var initialProgress: Double = 0
 
     @ObservationIgnored
-    let mediaId: String
-    @ObservationIgnored
-    let name: String
-    @ObservationIgnored
-    let backdropPath: String?
-    @ObservationIgnored
-    let seasonNo: Int
-    @ObservationIgnored
-    let episodeNo: Int
-    @ObservationIgnored
-    let isShow: Bool
-    @ObservationIgnored
-    var initialProgress: Double
+    private var didSeedPlayback = false
     @ObservationIgnored
     var progressTask: Task<Void, Never>?
 
@@ -176,7 +136,7 @@ final class MpvViewModel: MPVPlayerDelegate {
 
     // @ObservationIgnored
     // var currentUrl: URL
-    var streams: [VideoPlayerStream]
+    var streams: [VideoPlayerStream] = []
     var selectedStreamIndex: Int = 0
 
     @ObservationIgnored
@@ -249,19 +209,7 @@ final class MpvViewModel: MPVPlayerDelegate {
                     }
 
                     let currentProgress = (s1 / s2) * 100
-                    if self.isShow {
-                        try? await progressUc.updateWatchProgressShow(
-                            showId: self.mediaId,
-                            season: self.seasonNo,
-                            episode: self.episodeNo,
-                            progress: currentProgress
-                        )
-                    } else {
-                        try? await progressUc.updateWatchProgressMovie(
-                            movieId: self.mediaId,
-                            progress: currentProgress
-                        )
-                    }
+                    await self.streamVm.updateProgress(progress: currentProgress)
                     self.lastProgressPosition = currentPos
                 } else {
                     return
@@ -420,6 +368,7 @@ final class MpvViewModel: MPVPlayerDelegate {
         guard index >= 0, index < streams.count, index != selectedStreamIndex
         else { return }
         selectedStreamIndex = index
+        streamVm.setSelectedStreamIndex(index)
         loading = true
         player?.mpv.stop()
 
@@ -434,7 +383,7 @@ final class MpvViewModel: MPVPlayerDelegate {
             guard let self = self else {
                 return
             }
-            await self.getAndLoadFinalUrl()
+            await self.playSelectedStream()
         }
     }
 
@@ -499,18 +448,29 @@ final class MpvViewModel: MPVPlayerDelegate {
         paused = false
     }
 
-    func getAndLoadFinalUrl() async {
+    private func seedPlaybackIfNeeded() async throws {
+        guard !didSeedPlayback else { return }
+        fetchingStreams = true
+        defer { fetchingStreams = false }
+        streams = try await streamVm.getStreams()
+        selectedStreamIndex = streamVm.getSelectedStreamIndex()
+        initialProgress = streamVm.getMediaProgressSync()
+        didSeedPlayback = true
+    }
+
+    func playSelectedStream() async {
         do {
-            let finalUrl = try await streamUc.getStreamUrl(
-                tempUrl: streams[selectedStreamIndex].url
-            )
-            print("--------------------------------------------------")
-            print("final url we got is \(finalUrl)")
-            print("--------------------------------------------------")
-            player?.mpv.loadFile(URL(string: finalUrl)!)
+            try await seedPlaybackIfNeeded()
+            guard streams.indices.contains(selectedStreamIndex) else {
+                return
+            }
+            guard let url = URL(string: streams[selectedStreamIndex].url) else {
+                return
+            }
+            player?.mpv.loadFile(url)
         } catch {
             print("--------------------------------------------------")
-            print("error getting final url \(error.localizedDescription)")
+            print("error loading stream \(error.localizedDescription)")
             print("--------------------------------------------------")
         }
     }
@@ -617,7 +577,7 @@ final class MpvViewModel: MPVPlayerDelegate {
                     guard let self = self else {
                         return
                     }
-                    await self.getAndLoadFinalUrl()
+                    await self.playSelectedStream()
                 }
                 isMpvLoaded = true
                 setVolume(volume)

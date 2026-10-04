@@ -66,6 +66,7 @@ struct MovieView: View {
                     isMobile: isMobile,
                     streamsState: vm.streamsState,
                     onMoviePlay: { vm.handlePlayPressed() },
+                    streamVm: vm,
                     movieProgress: vm.progress,
                     movieIsWatched: vm.isWatched,
                     onMarkMovieWatched: {
@@ -80,21 +81,14 @@ struct MovieView: View {
         .onDisappear {
             vm.streamsTask?.cancel()
         }
-        .onChange(of: Router.router.mainRouteState) { old, _ in
-            guard let oldRoute = old.last else {
-                return
-            }
-            if case .mpvVideoView(let args) = oldRoute {
-                if args.mediaId == "\(vm.id)" {
-                    Task {
-                        await vm.fetchMovieProgress(loadOverlay: true)
-                    }
-                }
-            }
-        }
         #if os(macOS)
             .onAppear {
                 vm.syncDiscordPresenceIfLoaded()
+            }
+            .onChange(of: Router.router.mainRouteState) { _, routes in
+                if routes.last == .movieDetails(vm.id) {
+                    vm.syncDiscordPresenceIfLoaded()
+                }
             }
             .overlay(alignment: .top) {
                 switch vm.movieState {

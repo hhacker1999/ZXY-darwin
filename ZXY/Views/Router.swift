@@ -7,31 +7,19 @@
 import Foundation
 import SwiftUI
 
-struct MPVViewArgs: Hashable {
-    let streams: [VideoPlayerStream]
-    let selectedIndex: Int
-    let mediaId: String
-    let episodeNo: Int
-    let seasonNo: Int
-    let name: String
-    let backdropPath: String?
+final class StreamPlaybackRoute: Hashable {
+    let viewModel: any StreamViewModel
 
-    init(
-        streams: [VideoPlayerStream],
-        selectedIndex: Int,
-        mediaId: String,
-        episodeNo: Int,
-        seasonNo: Int,
-        name: String,
-        backdropPath: String? = nil
-    ) {
-        self.streams = streams
-        self.selectedIndex = selectedIndex
-        self.mediaId = mediaId
-        self.episodeNo = episodeNo
-        self.seasonNo = seasonNo
-        self.name = name
-        self.backdropPath = backdropPath
+    init(viewModel: any StreamViewModel) {
+        self.viewModel = viewModel
+    }
+
+    static func == (lhs: StreamPlaybackRoute, rhs: StreamPlaybackRoute) -> Bool {
+        lhs.viewModel === rhs.viewModel
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(ObjectIdentifier(viewModel))
     }
 }
 
@@ -39,7 +27,7 @@ enum Route: Hashable {
     case home
     case movieDetails(Int)
     case seriesDetails(Int)
-    case mpvVideoView(MPVViewArgs)
+    case mpvVideoView(StreamPlaybackRoute)
 }
 
 enum RouterState: Hashable, Equatable {
@@ -64,13 +52,13 @@ class Router {
     var mainRouteState: [Route] = []
 
     func addToRoute(route: Route) {
-        withAnimation(.easeInOut) {
+        withAnimation(.easeInOut(duration: 0.28)) {
             mainRouteState.append(route)
         }
     }
 
     func popRoute() {
-        _ = withAnimation(.easeInOut) {
+        _ = withAnimation(.easeInOut(duration: 0.28)) {
             mainRouteState.popLast()
         }
     }

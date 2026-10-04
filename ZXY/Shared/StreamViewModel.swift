@@ -8,4 +8,7 @@ protocol StreamViewModel: AnyObject {
     func updateProgress(progress: Double) async
     func getStreams() async throws -> [VideoPlayerStream]
     func getSelectedStreamIndex() -> Int
+    func setSelectedStreamIndex(_ index: Int)
+    func getSeasonNo() -> Int
+    func getEpisodeNo() -> Int
 }

@@ -21,6 +21,7 @@ class SeriesViewModel: StreamViewModel {
 
     var selectedEpisode: Int
     var selectedSeason: Int
+    private var selectedStreamIndex: Int = 0
 
     @ObservationIgnored
     let isExplicitSeasonEpisode: Bool
@@ -136,8 +137,8 @@ class SeriesViewModel: StreamViewModel {
         }
     }
 
-    func fetchShowProgress(loadOverlay: Bool = false, afterVideoEnds: Bool = false) async {
-        guard let d = seriesDetails else {
+    func fetchShowProgress(loadOverlay: Bool = false) async {
+        guard seriesDetails != nil else {
             return
         }
 
@@ -156,12 +157,6 @@ class SeriesViewModel: StreamViewModel {
                 tempProgress[progress.mediaId] = progress
             }
             progressState = tempProgress
-
-            let id = "\(d.id):\(selectedSeason):\(selectedEpisode)"
-            if afterVideoEnds, progressState[id]?.isWatched ?? false {
-                updateCurrentSeasonAndEpisodeFromProgress()
-                getCurrentEpisodesStream()
-            }
         } catch let err as HttpError {
             ToastProgressBloc.bloc.showToast(message: err.error(), isError: true)
         } catch {
@@ -250,7 +245,8 @@ class SeriesViewModel: StreamViewModel {
     }
 
     func getMediaProgressSync() -> Double {
-        0
+        let key = "\(id):\(selectedSeason):\(selectedEpisode)"
+        return progressState[key]?.progress ?? 0
     }
 
     func hasNext() -> Bool {
@@ -264,13 +260,52 @@ class SeriesViewModel: StreamViewModel {
         fatalError("Series details are not loaded")
     }
 
-    func updateProgress(progress _: Double) async {}
+    func updateProgress(progress: Double) async {
+        let key = "\(id):\(selectedSeason):\(selectedEpisode)"
+        let current = progressState[key]
+        progressState[key] = WatchProgress(
+            mediaId: current?.mediaId ?? key,
+            progress: progress,
+            userId: current?.userId ?? 0,
+            profileId: current?.profileId ?? 0,
+            isWatched: current?.isWatched ?? false,
+            createdAt: current?.createdAt ?? "",
+            updatedAt: current?.updatedAt ?? ""
+        )
+        try? await progressUc.updateWatchProgressShow(
+            showId: "\(id)",
+            season: selectedSeason,
+            episode: selectedEpisode,
+            progress: progress
+        )
+    }
 
     func getStreams() async throws -> [VideoPlayerStream] {
-        []
+        if let streamsTask {
+            await streamsTask.value
+        }
+        if case let .loaded(streams) = episodeStreamState {
+            return streams
+        }
+        if case let .error(message) = episodeStreamState {
+            throw SomethingWentWrong(err: message)
+        }
+        return []
     }
 
     func getSelectedStreamIndex() -> Int {
-        0
+        selectedStreamIndex
+    }
+
+    func setSelectedStreamIndex(_ index: Int) {
+        selectedStreamIndex = index
+    }
+
+    func getSeasonNo() -> Int {
+        selectedSeason
+    }
+
+    func getEpisodeNo() -> Int {
+        selectedEpisode
     }
 }

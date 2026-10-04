@@ -128,15 +128,18 @@ final class DiscordRichPresenceBloc {
         }
 
         switch last {
-        case let .mpvVideoView(args):
-            let season = args.seasonNo >= 0 ? args.seasonNo : nil
-            let episode = args.episodeNo >= 0 ? args.episodeNo : nil
+        case let .mpvVideoView(route):
+            let media = route.viewModel.getCurrentMedia()
+            let seasonNo = route.viewModel.getSeasonNo()
+            let episodeNo = route.viewModel.getEpisodeNo()
+            let season = seasonNo >= 0 ? seasonNo : nil
+            let episode = episodeNo >= 0 ? episodeNo : nil
             setPresence(
                 .watching(
-                    title: args.name,
+                    title: media.name,
                     season: season,
                     episode: episode,
-                    backdropURL: Self.backdropURL(from: args.backdropPath)
+                    backdropURL: Self.backdropURL(from: media.backdropPath)
                 )
             )
         case .movieDetails, .seriesDetails:

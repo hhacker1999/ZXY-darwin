@@ -30,31 +30,54 @@ struct ContentView: View {
         case let .profileLogIn(profiles):
             ProfileSelectView(profiles: profiles, authUc: deps.authUc, stremioUc: deps.streamioUc)
         case .home:
+            homeRoute
+        }
+    }
+
+    @ViewBuilder
+    private var homeRoute: some View {
+        #if os(iOS)
             NavigationStack(path: $router.mainRouteState) {
-                BaseHomeview(deps: deps).navigationDestination(for: Route.self) { route in
-                    switch route {
-                    case let .movieDetails(id):
-                        MovieView(id: id, mediaUc: deps.mediaUc, streamUc: deps.streamUc, progressUc: deps.progressUc, stremioUc: deps.streamioUc)
-                    case let .seriesDetails(id):
-                        SeriesView(id: id, mediaUc: deps.mediaUc, streamUc: deps.streamUc, progressUc: deps.progressUc)
-                    case let .mpvVideoView(args):
-                        if args.seasonNo != -1 && args.episodeNo != -1 {
-                            MpvPlayerView(streams: args.streams, selectedStreamIndex: args.selectedIndex, streamUc: deps.streamUc, progressUc: deps.progressUc, mediaId: args.mediaId, seasonNo: args.seasonNo, episodeNo: args.episodeNo, name: args.name, backdropPath: args.backdropPath)
-                        } else {
-                            MpvPlayerView(streams: args.streams, selectedStreamIndex: args.selectedIndex, streamUc: deps.streamUc, progressUc: deps.progressUc, mediaId: args.mediaId, name: args.name, backdropPath: args.backdropPath)
-                        }
-                    default:
-                        Text("Invalid route")
+                BaseHomeview(deps: deps)
+                    .navigationTransition(.crossFade)
+                    .navigationDestination(for: Route.self) { route in
+                        destination(for: route)
+                            .navigationTransition(.crossFade)
+                    }
+            }
+        #else
+            NavigationStack {
+                ZStack {
+                    BaseHomeview(deps: deps)
+                        .allowsHitTesting(router.mainRouteState.isEmpty)
+
+                    ForEach(router.mainRouteState, id: \.self) { route in
+                        destination(for: route)
+                            .transition(.opacity)
+                            .allowsHitTesting(router.mainRouteState.last == route)
                     }
                 }
+                .animation(.easeInOut(duration: 0.28), value: router.mainRouteState)
             }
-            #if os(macOS)
             .navigationTitle("")
             .toolbarBackground(.hidden, for: .automatic)
             .toolbarBackground(.hidden, for: .windowToolbar)
             .toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
             .windowToolbarFullScreenVisibility(.onHover)
-            #endif
+        #endif
+    }
+
+    @ViewBuilder
+    private func destination(for route: Route) -> some View {
+        switch route {
+        case let .movieDetails(id):
+            MovieView(id: id, mediaUc: deps.mediaUc, streamUc: deps.streamUc, progressUc: deps.progressUc, stremioUc: deps.streamioUc)
+        case let .seriesDetails(id):
+            SeriesView(id: id, mediaUc: deps.mediaUc, streamUc: deps.streamUc, progressUc: deps.progressUc)
+        case let .mpvVideoView(route):
+            MpvPlayerView(streamVm: route.viewModel)
+        default:
+            Text("Invalid route")
         }
     }
 }

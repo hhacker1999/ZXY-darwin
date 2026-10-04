@@ -62,21 +62,14 @@ struct SeriesView: View {
         .onDisappear {
             vm.streamsTask?.cancel()
         }
-        .onChange(of: Router.router.mainRouteState) { old, _ in
-            guard let oldRoute = old.last else {
-                return
-            }
-            if case let .mpvVideoView(args) = oldRoute {
-                if args.mediaId == "\(vm.id)" {
-                    Task {
-                        await vm.fetchShowProgress(loadOverlay: true, afterVideoEnds: true)
-                    }
-                }
-            }
-        }
         #if os(macOS)
             .onAppear {
                 vm.syncDiscordPresenceIfLoaded()
+            }
+            .onChange(of: Router.router.mainRouteState) { _, routes in
+                if routes.last == .seriesDetails(vm.id) {
+                    vm.syncDiscordPresenceIfLoaded()
+                }
             }
             .overlay(alignment: .top) {
                 switch vm.seriesState {

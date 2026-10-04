@@ -33,6 +33,7 @@ class MovieViewModel: StreamViewModel {
     var progress: Double = 0
     var isWatched: Bool = false
     var isInLibrary: Bool = false
+    private var selectedStreamIndex: Int = 0
 
     func initialise() async {
         // Avoid shredding loaded UI when NavigationStack restores this screen after popping
@@ -123,26 +124,6 @@ class MovieViewModel: StreamViewModel {
                 try await mediaUc.addToLibrary(tmdbId: id, tp: "movie")
             }
             isInLibrary.toggle()
-        } catch let err as HttpError {
-            ToastProgressBloc.bloc.showToast(message: err.error(), isError: true)
-        } catch {
-            ToastProgressBloc.bloc.showToast(message: error.localizedDescription, isError: true)
-        }
-    }
-
-    func fetchMovieProgress(loadOverlay: Bool = false) async {
-        if loadOverlay {
-            ToastProgressBloc.bloc.enableLoading()
-        }
-        defer {
-            if loadOverlay {
-                ToastProgressBloc.bloc.disableLoading()
-            }
-        }
-        do {
-            let serverProgress = try await progressUc.getMovieProgress(movieId: id)
-            progress = serverProgress?.progress ?? 0
-            isWatched = serverProgress?.isWatched ?? false
         } catch let err as HttpError {
             ToastProgressBloc.bloc.showToast(message: err.error(), isError: true)
         } catch {
@@ -272,7 +253,13 @@ class MovieViewModel: StreamViewModel {
         fatalError("Movie details are not loaded")
     }
 
-    func updateProgress(progress _: Double) async {}
+    func updateProgress(progress: Double) async {
+        self.progress = progress
+        try? await progressUc.updateWatchProgressMovie(
+            movieId: "\(id)",
+            progress: progress
+        )
+    }
 
     func getStreams() async throws -> [VideoPlayerStream] {
         fetchStreamsInternal()
@@ -282,14 +269,25 @@ class MovieViewModel: StreamViewModel {
             return streams
         }
         if case let .error(err) = streamsState {
-            throw err
+            throw SomethingWentWrong(err: err)
         }
         fatalError("Invalid state in get streams")
     }
 
     func getSelectedStreamIndex() -> Int {
-        // FIXME: update this to reflect current selected media
-        return 0
+        selectedStreamIndex
+    }
+
+    func setSelectedStreamIndex(_ index: Int) {
+        selectedStreamIndex = index
+    }
+
+    func getSeasonNo() -> Int {
+        -1
+    }
+
+    func getEpisodeNo() -> Int {
+        -1
     }
 
     /// Returns whether the stream picker sheet should be presented.
