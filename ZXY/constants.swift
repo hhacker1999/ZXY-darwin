@@ -56,7 +56,7 @@ enum Constants {
 
     // static let baseUrl = "http://homelab.server.com:6969"
 
-    static let baseUrl = "http://192.168.1.130:6969"
+    static let baseUrl = "http://192.168.1.48:6969"
 
     static let tmdbImgBaseUrl = ""
 

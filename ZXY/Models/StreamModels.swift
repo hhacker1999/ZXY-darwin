@@ -34,6 +34,46 @@ struct StreamResponse: Codable {
     }
 }
 
+struct VideoPlayerStream: Hashable, Equatable{
+    let visualTags: [String]
+    let audioTags: [String]
+    let fileName: String
+    let languageCodes: [String]
+    let size: Int
+    let url: String
+    let quality: String
+    let resolution: String
+    let source: String
+    let hdrTags: [String]
+
+    init(source: String, baseStream: Stream, ptt: PTT.Result) {
+        url = baseStream.url!
+        fileName = baseStream.behaviorHints?.filename ?? ""
+        let videoSize = baseStream.behaviorHints?.videoSize ?? 0
+        size = videoSize
+        quality = ptt.quality
+        resolution = ptt.resolution
+        self.source = source
+        languageCodes = ptt.languages
+
+        var visual: [String] = []
+        hdrTags = ptt.hdr
+        if !ptt.codec.isEmpty { visual.append(ptt.codec) }
+        if ptt.upscaled { visual.append("Upscaled") }
+        visualTags = visual
+
+        var audio: [String] = []
+        audio.append(contentsOf: ptt.audio)
+        audioTags = audio
+    }
+}
+
+private extension String {
+    var nilIfEmpty: String? {
+        isEmpty ? nil : self
+    }
+}
+
 struct ResolutionItem: Codable, Hashable, Equatable {
     let name: String
     let description: String
@@ -45,6 +85,7 @@ struct ResolutionItem: Codable, Hashable, Equatable {
     let url: String
     let quality: String?
     let resolution: String
+    let source: String
 
     enum CodingKeys: String, CodingKey {
         case name, description
@@ -67,5 +108,6 @@ struct ResolutionItem: Codable, Hashable, Equatable {
         url = try container.decode(String.self, forKey: .url)
         quality = try container.decodeIfPresent(String.self, forKey: .quality)
         resolution = try container.decode(String.self, forKey: .resolution)
+        source = try container.decode(String.self, forKey: .resolution)
     }
 }

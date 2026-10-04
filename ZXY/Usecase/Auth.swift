@@ -380,19 +380,4 @@ class AuthUsecase {
             throw error
         }
     }
-
-    func getStreamioManifestFromAddon(addonUrl: String) async throws -> AddonManifest {
-        do {
-            let url = URL(string: addonUrl)!
-            var req = URLRequest(url: url)
-            req.httpMethod = "GET"
-            let response: AddonManifest = try await httpService.send(req, cookieType: .profile)
-            return response
-        } catch {
-            print("--- DEBUG ERROR ---")
-            print("Type: \(type(of: error))")
-            print("Description: \(error)")
-            throw error
-        }
-    }
 }

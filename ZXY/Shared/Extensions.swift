@@ -13,6 +13,7 @@ extension View {
             self
         }
     }
+
     func wrapInBg() -> some View {
         ZStack { Constants.bgColor.ignoresSafeArea(); self }
     }
@@ -72,10 +73,10 @@ extension View {
     func homeHeroScrollEdgeInsets() -> some View {
         #if os(iOS)
             contentMargins(.top, 0, for: .scrollContent)
-            .ignoresSafeArea(edges: .top)
+                .ignoresSafeArea(edges: .top)
         #elseif os(macOS)
             contentMargins(.top, 0, for: .scrollContent)
-            .ignoresSafeArea(edges: .top)
+                .ignoresSafeArea(edges: .top)
         #else
             self
         #endif
@@ -91,7 +92,7 @@ extension View {
     func stretchableHeroBannerInScrollView(
         maxPullScale: CGFloat = 1.42,
         maxScrollZoomExtra: CGFloat = 0.14,
-        /// Lower = zoom ramps over more scroll before hitting `maxScrollZoomExtra`.
+        // Lower = zoom ramps over more scroll before hitting `maxScrollZoomExtra`.
         scrollZoomSensitivity: CGFloat = 0.28
     ) -> some View {
         #if os(tvOS)
@@ -115,5 +116,11 @@ extension View {
                 return effect.scaleEffect(scale, anchor: .bottom)
             }
         #endif
+    }
+}
+
+extension String: LocalizedError {
+    public var errorDescription: String? {
+        return self
     }
 }

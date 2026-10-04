@@ -10,8 +10,10 @@
 		0634A9828F1C49225B410FEF /* TrakPadAndDragListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A56036EBDC47624CC2FDA09 /* TrakPadAndDragListener.swift */; };
 		0C26B081F284D3E67BFD547A /* StreamioAddon.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD00D99EF5967E346FED3442 /* StreamioAddon.swift */; };
 		0C83E04A4CF86332FFC2772F /* MpvPlayerDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 225278BC78432D767B4D164F /* MpvPlayerDelegate.swift */; };
+		172026733590A895A81032B6 /* StreamViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5773C2B893C90AAA2779825E /* StreamViewModel.swift */; };
 		2A66D3ADCEB17803562BCFB6 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 1DC449894548917D9608C662 /* README.md */; };
 		32A9ABE1CEDA487F6389A077 /* MovieViewTVOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AF75357F491EB9D34FC7E7 /* MovieViewTVOS.swift */; platformFilters = (tvos, ); };
+		41E730AF3B140DFECB888753 /* Stremio.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52F5992A9EFB22614A54E51E /* Stremio.swift */; };
 		4BBFED7ED1B7316ACE0C79EC /* SeriesViewTVOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F7C70F4FE3DEDCE40EE72BF /* SeriesViewTVOS.swift */; platformFilters = (tvos, ); };
 		695A196D2FAFA909005F52FB /* MPVKit in Frameworks */ = {isa = PBXBuildFile; productRef = 695A196C2FAFA909005F52FB /* MPVKit */; };
 		697B5E5E3026231700BC2124 /* AddonsSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7D05E2FB7000100ADDE0001 /* AddonsSection.swift */; };
@@ -97,6 +99,7 @@
 		A1B2C3D42FB1000100EBEBEA /* TVOSComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D12FB1000100EBEBEA /* TVOSComponents.swift */; };
 		A1B2C3D52FB1000200EBEBEA /* LoginViewTVOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D22FB1000200EBEBEA /* LoginViewTVOS.swift */; };
 		A1B2C3D62FB1000300EBEBEA /* ProfileSelectViewTVOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D32FB1000300EBEBEA /* ProfileSelectViewTVOS.swift */; };
+		AC910ED83A6227044C919A10 /* PTT.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D8B2434E406CCC4283A6BE /* PTT.swift */; };
 		B1C2D3E22FB2000100EBEBEA /* TVOSMediaBrowseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1C2D3E12FB2000100EBEBEA /* TVOSMediaBrowseView.swift */; platformFilters = (tvos, ); };
 		B1C2D3E42FB2000200EBEBEA /* DiscoverViewTVOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1C2D3E32FB2000200EBEBEA /* DiscoverViewTVOS.swift */; platformFilters = (tvos, ); };
 		B1C2D3E62FB2000300EBEBEA /* SearchViewTVOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1C2D3E52FB2000300EBEBEA /* SearchViewTVOS.swift */; platformFilters = (tvos, ); };
@@ -118,6 +121,8 @@
 		2F7C70F4FE3DEDCE40EE72BF /* SeriesViewTVOS.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = SeriesViewTVOS.swift; sourceTree = "<group>"; };
 		30C0D9311A72DE0636EC56DE /* BlocAsyncImage.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = BlocAsyncImage.swift; sourceTree = "<group>"; };
 		4B567BBA9F57F858E56EA35E /* ImageGradientStore.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = ImageGradientStore.swift; sourceTree = "<group>"; };
+		52F5992A9EFB22614A54E51E /* Stremio.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; lastKnownFileType = sourcecode.swift; path = Stremio.swift; sourceTree = "<group>"; };
+		5773C2B893C90AAA2779825E /* StreamViewModel.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; lastKnownFileType = sourcecode.swift; path = StreamViewModel.swift; sourceTree = "<group>"; };
 		6980844D2F78169500FCBB80 /* ZXY.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ZXY.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		69A6F3782FC2BAA200477B60 /* HomeViewTVOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewTVOS.swift; sourceTree = "<group>"; };
 		69C408DA2FD8AC5A0020FCBB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -214,6 +219,7 @@
 		D3C4B5A52FC5000000EBEBEA /* DiscordIPCClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscordIPCClient.swift; sourceTree = "<group>"; };
 		D3C4B5A72FC5000200EBEBEA /* DiscordRichPresenceBloc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscordRichPresenceBloc.swift; sourceTree = "<group>"; };
 		D9AF75357F491EB9D34FC7E7 /* MovieViewTVOS.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = MovieViewTVOS.swift; sourceTree = "<group>"; };
+		F1D8B2434E406CCC4283A6BE /* PTT.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; lastKnownFileType = sourcecode.swift; name = PTT.swift; path = PTT.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -335,6 +341,7 @@
 				D3C4B5A52FC5000000EBEBEA /* DiscordIPCClient.swift */,
 				69E6A2D72FB0F25C00EBEBEA /* HttpService.swift */,
 				69E6A2D82FB0F25C00EBEBEA /* SecuredStorage.swift */,
+				F1D8B2434E406CCC4283A6BE /* PTT.swift */,
 			);
 			path = services;
 			sourceTree = "<group>";
@@ -357,6 +364,7 @@
 				69E6A2E42FB0F25C00EBEBEA /* ViewItemState.swift */,
 				0A56036EBDC47624CC2FDA09 /* TrakPadAndDragListener.swift */,
 				30C0D9311A72DE0636EC56DE /* BlocAsyncImage.swift */,
+				5773C2B893C90AAA2779825E /* StreamViewModel.swift */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -368,6 +376,7 @@
 				69E6A2E72FB0F25C00EBEBEA /* Media.swift */,
 				69E6A2E82FB0F25C00EBEBEA /* ProgressUsecase.swift */,
 				69E6A2E92FB0F25C00EBEBEA /* Stream.swift */,
+				52F5992A9EFB22614A54E51E /* Stremio.swift */,
 			);
 			path = Usecase;
 			sourceTree = "<group>";
@@ -712,6 +721,9 @@
 				32A9ABE1CEDA487F6389A077 /* MovieViewTVOS.swift in Sources */,
 				4BBFED7ED1B7316ACE0C79EC /* SeriesViewTVOS.swift in Sources */,
 				0C26B081F284D3E67BFD547A /* StreamioAddon.swift in Sources */,
+				172026733590A895A81032B6 /* StreamViewModel.swift in Sources */,
+				41E730AF3B140DFECB888753 /* Stremio.swift in Sources */,
+				AC910ED83A6227044C919A10 /* PTT.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -25,6 +25,8 @@ final class SettingsViewModel {
     @ObservationIgnored
     private let authUc: AuthUsecase
     @ObservationIgnored
+    private let stremioUc: StremioUsecase
+    @ObservationIgnored
     private let userBloc: UserBloc = .bloc
     @ObservationIgnored
     private let httpService: HttpService = .service
@@ -37,8 +39,9 @@ final class SettingsViewModel {
     @ObservationIgnored
     private var traktPollTask: Task<Void, Never>?
 
-    init(authUc: AuthUsecase) {
+    init(authUc: AuthUsecase, stremioUc: StremioUsecase) {
         self.authUc = authUc
+        self.stremioUc = stremioUc
     }
 
     func initIfNeeded(for profile: Profile) {
@@ -107,7 +110,7 @@ final class SettingsViewModel {
             defer {
                 toastBloc.disableLoading()
             }
-            let addonManifest = try await authUc.getStreamioManifestFromAddon(addonUrl: manifestUrl)
+            let addonManifest = try await stremioUc.getStreamioManifestFromAddon(addonUrl: manifestUrl)
             if addonManifest.id.isEmpty {
                 toastBloc.showToast(message: "Invalid addon url", isError: true)
                 return

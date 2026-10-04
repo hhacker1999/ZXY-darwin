@@ -9,6 +9,9 @@ import Foundation
 struct StreamAddon: Identifiable {
     var profileAddon: ProfileAddon
     let addonManifest: AddonManifest
+    let types: [String]
+    let idPrefixes: [String]
+    let baseUrl: String
 
     var id: Int {
         profileAddon.id
@@ -26,11 +29,11 @@ class UserBloc {
     var profile: Profile?
     var streamAddons: [StreamAddon]?
 
-    func setProfile(incomingProfile: Profile, authUc: AuthUsecase) async {
+    func setProfile(incomingProfile: Profile, stremioUc: StremioUsecase) async {
         profile = incomingProfile
         if let profile = profile {
             if !profile.addons.isEmpty {
-                let authUc = authUc
+                let stremioUc = stremioUc
                 let addons = await withTaskGroup(
                     of: (Int, StreamAddon?).self,
                     returning: [StreamAddon].self
@@ -38,12 +41,29 @@ class UserBloc {
                     for (index, addon) in profile.addons.enumerated() {
                         group.addTask {
                             do {
-                                let manifest = try await authUc.getStreamioManifestFromAddon(
+                                let manifest = try await stremioUc.getStreamioManifestFromAddon(
                                     addonUrl: addon.manifestUrl
                                 )
+
+                                var types: [String] = []
+                                var prefixes: [String] = []
+                                for resource in manifest.resources {
+                                    if resource.name == "stream" {
+                                        for type in resource.types {
+                                            types.append(type)
+                                        }
+
+                                        for prefix in resource.idPrefixes! {
+                                            prefixes.append(prefix)
+                                        }
+                                    }
+                                }
+                                var manifestUrlCopy = addon.manifestUrl
+                                let manifestString = "/manifest.json"
+                                manifestUrlCopy.removeLast(manifestString.count)
                                 return (
                                     index,
-                                    StreamAddon(profileAddon: addon, addonManifest: manifest)
+                                    StreamAddon(profileAddon: addon, addonManifest: manifest, types: types, idPrefixes: prefixes, baseUrl: manifestUrlCopy)
                                 )
                             } catch let error as HttpError {
                                 await ToastProgressBloc.bloc.showToast(

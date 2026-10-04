@@ -3,21 +3,36 @@ import SwiftUI
 
 @MainActor
 @Observable
-class MovieViewModel {
+class MovieViewModel: StreamViewModel {
+    @ObservationIgnored
     let mediaUc: MediaUsecase
+    @ObservationIgnored
     let streamUc: StreamUsecase
+    @ObservationIgnored
     let progressUc: ProgressUsecase
+    @ObservationIgnored
+    let stremioUc: StremioUsecase
+    @ObservationIgnored
     let userBloc: UserBloc = .bloc
+
+    @ObservationIgnored
+    var streamsTask: Task<Void, Error>? = nil
+
     let id: Int
-    init(id: Int, mediaUc: MediaUsecase, streamUc: StreamUsecase, progressUc: ProgressUsecase) {
+    init(id: Int, mediaUc: MediaUsecase, streamUc: StreamUsecase, progressUc: ProgressUsecase, stremioUc: StremioUsecase) {
         self.id = id
         self.mediaUc = mediaUc
         self.streamUc = streamUc
         self.progressUc = progressUc
+        self.stremioUc = stremioUc
     }
 
     var movieState: ViewItemState<MovieDetails> = .initial
+    // TODO: Remove this old streams state
     var streamsState: ViewItemState<[ResolutionItem]> = .initial
+
+    var streamsStateNew: ViewItemState<[VideoPlayerStream]> = .initial
+
     var progress: Double = 0
     var isWatched: Bool = false
     var isInLibrary: Bool = false
@@ -155,5 +170,151 @@ class MovieViewModel {
         } catch {
             streamsState = .error(error.localizedDescription)
         }
+    }
+
+    /// NOTE: This is responsible for getting streams and setting internal state only
+    private func fetchStreamsInternal() async {
+        if streamsTask == nil {
+            streamsTask = Task<Void, Error> {
+
+                guard let streamAddons = userBloc.streamAddons else {
+                    ToastProgressBloc.bloc.showToast(
+                        message: "Add addons in settings",
+                        isError: true
+                    )
+                    return
+                }
+                guard !streamAddons.isEmpty else {
+                    ToastProgressBloc.bloc.showToast(
+                        message: "Add addons in settings",
+                        isError: true
+                    )
+                    return
+                }
+                var containsMovie = false
+                for addon in streamAddons {
+                    if addon.types.contains("movie") {
+                        containsMovie = true
+                        break
+                    }
+                }
+                guard containsMovie else {
+                    ToastProgressBloc.bloc.showToast(
+                        message: "Add addons in settings for movies",
+                        isError: true
+                    )
+                    return
+                }
+                var results: [VideoPlayerStream] = []
+                var fourK: [VideoPlayerStream] = []
+                var fhd: [VideoPlayerStream] = []
+                var hd: [VideoPlayerStream] = []
+
+                do {
+                    streamsStateNew = .loading
+                    for addon in streamAddons {
+                        var streams: [Stream]
+                        guard addon.types.contains("movie") else {
+                            continue
+                        }
+
+                        if addon.idPrefixes.contains(
+                            "tmdb"
+                        ) {
+                            streams = try await stremioUc.getStreams(baseUrl: addon.baseUrl, itemId: "tmdb\(getCurrentMedia().id)", isMovie: true)
+                        } else {
+                            streams = try await stremioUc.getStreams(baseUrl: addon.baseUrl, itemId: getCurrentMedia().imdbId!, isMovie: true)
+                        }
+
+                        for stream in streams {
+                            if let url = stream.url {
+                                if url.starts(with: "http://") {
+                                    if let hint = stream.behaviorHints {
+                                        if !hint.filename.isEmpty {
+                                            let pttResult = PTT.parse(hint.filename).normalize()
+                                            if pttResult.resolution == "4k" {
+                                                fourK.append(VideoPlayerStream(source: addon.addonManifest.name, baseStream: stream, ptt: pttResult))
+                                            }
+                                            if pttResult.resolution == "1080p" {
+                                                fhd.append(VideoPlayerStream(source: addon.addonManifest.name, baseStream: stream, ptt: pttResult))
+                                            }
+                                            if pttResult.resolution == "720p" {
+                                                hd.append(VideoPlayerStream(source: addon.addonManifest.name, baseStream: stream, ptt: pttResult))
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    fourK = fourK.sorted { $0.size < $1.size }
+                    fhd = fhd.sorted { $0.size < $1.size }
+                    hd = hd.sorted { $0.size < $1.size }
+                    results.append(contentsOf: fourK)
+                    results.append(contentsOf: fhd)
+                    results.append(contentsOf: hd)
+                    streamsStateNew = .loaded(results)
+
+                } catch let err as HttpError {
+                    streamsStateNew = .error(err.error())
+                } catch {
+                    streamsStateNew = .error(error.localizedDescription)
+                }
+            }
+        } else {
+            print("Streams task is already in progress")
+        }
+
+        defer { streamsTask = nil }
+
+        do {
+            try await streamsTask!.value
+        } catch {
+            fatalError("Error in streams task")
+        }
+    }
+
+
+    // ------------------- Methods for StreamviewModel-----------------------------
+    func isMovie() -> Bool {
+        return true
+    }
+
+    func getMediaProgressSync() -> Double {
+        return progress
+    }
+
+    func hasNext() -> Bool {
+        return false
+    }
+
+    func getCurrentMedia() -> MediaDetails {
+        if case let .loaded(movieDetails) = movieState {
+            return MediaDetails(from: movieDetails)
+        }
+        fatalError("Movie details are not loaded")
+    }
+
+    func updateProgress(progress _: Double) async {}
+
+
+    func getStreams() async throws -> [VideoPlayerStream] {
+        if case .loading = streamsStateNew, case .initial = streamsStateNew {
+            await fetchStreamsInternal()
+        }
+
+        if case let .loaded(streams) = streamsStateNew {
+            return streams
+        }
+        if case let .error(err) = streamsStateNew {
+            throw err
+        }
+        fatalError("Invalid state in get streams")
+    }
+
+    func getSelectedStreamIndex() -> Int {
+        // FIXME: update this to reflect current selected media
+        return 0
     }
 }
