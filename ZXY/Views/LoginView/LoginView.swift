@@ -26,11 +26,7 @@ struct LoginView: View {
     }
 
     var body: some View {
-        #if os(tvOS)
-        LoginViewTVOS(authUc: vm.authUc)
-        #else
         defaultBody
-        #endif
     }
 
     private var defaultBody: some View {

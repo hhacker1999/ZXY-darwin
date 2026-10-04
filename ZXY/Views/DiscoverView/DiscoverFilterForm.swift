@@ -729,7 +729,7 @@ private struct TraktOptionRow: View {
 
 private enum DiscoverPalette {
     static var groupedBackground: Color {
-        #if os(macOS) || os(tvOS)
+        #if os(macOS)
             return Color.black.opacity(0.001)
         #elseif os(iOS)
             return Color(.systemGroupedBackground)
@@ -739,7 +739,7 @@ private enum DiscoverPalette {
     }
 
     static var chipFill: Color {
-        #if os(macOS) || os(tvOS)
+        #if os(macOS)
             return Color.white.opacity(0.06)
         #elseif os(iOS)
             return Color(.secondarySystemFill)

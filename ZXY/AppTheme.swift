@@ -86,7 +86,7 @@ enum AppTheme {
         // ── Accent ─────────────────────────────────────────────────
         /// Primary CTA accent – white (full Apple TV style)
         static let accent               = Color.white
-        /// Optional blue tint accent (like tvOS focus ring)
+        /// Optional blue tint accent for focus/highlight states
         static let accentBlue           = Color(hex: "#3B82F6")
 
         // ── Borders ────────────────────────────────────────────────

@@ -98,7 +98,7 @@ struct MpvPlayerView: View {
                     }
                     .opacity(vm.overlayVisible ? 1 : 0)
                 }
-            #if os(macOS) || os(tvOS)
+            #if os(macOS)
                 .overlay(alignment: .topLeading) {
                     VideoInfoOverlayView(vm: vm)
                         .padding(.top, 70)

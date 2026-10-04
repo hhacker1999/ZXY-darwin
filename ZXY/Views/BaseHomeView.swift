@@ -21,11 +21,6 @@ enum BaseHomeViewPages: String, CaseIterable, Identifiable {
         case .settings: return "gearshape.fill"
         }
     }
-
-    /// Pages shown in the tvOS top tab bar.
-    static var tvOSTabs: [BaseHomeViewPages] {
-        [.home, .search, .library, .settings]
-    }
 }
 
 struct BaseHomeview: View {
@@ -44,9 +39,7 @@ struct BaseHomeview: View {
 
     var body: some View {
         Group {
-            #if os(tvOS)
-                tvosTabChrome
-            #elseif os(iOS)
+            #if os(iOS)
                 if UIDevice.current.userInterfaceIdiom == .phone {
                     iosTabChrome
                 } else {
@@ -67,27 +60,6 @@ struct BaseHomeview: View {
         #endif
     }
 
-    // MARK: - tvOS
-
-    #if os(tvOS)
-        private var tvosTabChrome: some View {
-            TabView(selection: $selectedPage) {
-                ForEach(BaseHomeViewPages.tvOSTabs) { page in
-                    detailContent(for: page)
-                        .tabItem {
-                            Label(page.rawValue, systemImage: page.icon)
-                        }
-                        .tag(page)
-                }
-            }
-            .background {
-                if selectedPage != .home {
-                    HomePageAmbientBackground(gradient: ImageGradientAndStoreBloc.bloc.currentGradient)
-                }
-            }
-        }
-    #endif
-
     // MARK: - iOS
 
     #if os(iOS)
@@ -106,101 +78,83 @@ struct BaseHomeview: View {
 
     // MARK: - macOS / iPad sidebar
 
-    #if !os(tvOS)
-        private var macSidebarSplitChrome: some View {
-            NavigationSplitView {
-                List {
-                    Spacer().frame(height: AppTheme.Spacing.lg)
+    private var macSidebarSplitChrome: some View {
+        NavigationSplitView {
+            List {
+                Spacer().frame(height: AppTheme.Spacing.lg)
 
-                    ForEach(BaseHomeViewPages.allCases) { item in
-                        let isSelected = selectedPage == item
-                        Button {
-                            selectedPage = item
-                        } label: {
-                            HStack(spacing: AppTheme.Spacing.md) {
-                                Image(systemName: item.icon)
-                                    .font(.system(size: 18, weight: .medium))
-                                    .frame(width: 24, alignment: .center)
+                ForEach(BaseHomeViewPages.allCases) { item in
+                    let isSelected = selectedPage == item
+                    Button {
+                        selectedPage = item
+                    } label: {
+                        HStack(spacing: AppTheme.Spacing.md) {
+                            Image(systemName: item.icon)
+                                .font(.system(size: 18, weight: .medium))
+                                .frame(width: 24, alignment: .center)
 
-                                Text(item.rawValue)
-                                    .font(AppTheme.Typography.bodyLarge.weight(.medium))
+                            Text(item.rawValue)
+                                .font(AppTheme.Typography.bodyLarge.weight(.medium))
 
-                                Spacer()
-                            }
-                            .foregroundStyle(isSelected ? AppTheme.Colors.buttonPrimaryLabel : AppTheme.Colors.elementSubtle)
-                            .padding(.vertical, 10)
-                            .padding(.horizontal, AppTheme.Spacing.sm)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .contentShape(Rectangle())
+                            Spacer()
                         }
-                        .buttonStyle(.plain)
-                        .listRowInsets(
-                            EdgeInsets(
-                                top: 4,
-                                leading: AppTheme.Spacing.md,
-                                bottom: 4,
-                                trailing: AppTheme.Spacing.md
-                            )
-                        )
-                        .listRowBackground(
-                            RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous)
-                                .fill(isSelected ? AppTheme.Colors.buttonPrimary : Color.clear)
-                                .padding(.horizontal, AppTheme.Spacing.sm)
-                        )
-                        .hideListRowSeparator()
+                        .foregroundStyle(isSelected ? AppTheme.Colors.buttonPrimaryLabel : AppTheme.Colors.elementSubtle)
+                        .padding(.vertical, 10)
+                        .padding(.horizontal, AppTheme.Spacing.sm)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .contentShape(Rectangle())
                     }
-                }
-                .sidebarNavigationListStyle()
-                .sidebarColumnWidth(min: 232, ideal: 256, max: 296)
-
-            } detail: {
-                ZStack {
-                    HomePageAmbientBackground(gradient: ImageGradientAndStoreBloc.bloc.currentGradient)
-                    detailContent(for: selectedPage)
+                    .buttonStyle(.plain)
+                    .listRowInsets(
+                        EdgeInsets(
+                            top: 4,
+                            leading: AppTheme.Spacing.md,
+                            bottom: 4,
+                            trailing: AppTheme.Spacing.md
+                        )
+                    )
+                    .listRowBackground(
+                        RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous)
+                            .fill(isSelected ? AppTheme.Colors.buttonPrimary : Color.clear)
+                            .padding(.horizontal, AppTheme.Spacing.sm)
+                    )
+                    .hideListRowSeparator()
                 }
             }
-            #if os(macOS)
-            .navigationTitle("")
-            .toolbarBackground(.hidden, for: .automatic)
-            .toolbarBackground(.hidden, for: .windowToolbar)
-            .toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
-            .windowToolbarFullScreenVisibility(.onHover)
-            #endif
+            .sidebarNavigationListStyle()
+            .sidebarColumnWidth(min: 232, ideal: 256, max: 296)
+
+        } detail: {
+            ZStack {
+                HomePageAmbientBackground(gradient: ImageGradientAndStoreBloc.bloc.currentGradient)
+                detailContent(for: selectedPage)
+            }
         }
-    #endif
+        #if os(macOS)
+        .navigationTitle("")
+        .toolbarBackground(.hidden, for: .automatic)
+        .toolbarBackground(.hidden, for: .windowToolbar)
+        .toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
+        .windowToolbarFullScreenVisibility(.onHover)
+        #endif
+    }
 
     @ViewBuilder
     private func detailContent(for page: BaseHomeViewPages) -> some View {
         Group {
             switch page {
             case .home:
-                #if os(tvOS)
-                    HomeViewTVOS(vm: vm)
-                #else
-                    HomeView(
-                        vm: $vm
-                    )
-                #endif
+                HomeView(
+                    vm: $vm
+                )
             case .discover:
                 DiscoverView(mediaUc: deps.mediaUc, authUc: deps.authUc)
             case .search:
-                #if os(tvOS)
-                    SearchViewTVOS(mediaUc: deps.mediaUc)
-                #else
-                    SearchView(mediaUc: deps.mediaUc)
-                #endif
+                SearchView(mediaUc: deps.mediaUc)
             case .library:
-                #if os(tvOS)
-                    LibraryViewTVOS(mediaUc: deps.mediaUc)
-                #else
-                    LibraryView(mediaUc: deps.mediaUc)
-                #endif
+                LibraryView(mediaUc: deps.mediaUc)
             case .settings:
-                #if os(tvOS)
-                    SettingsViewTVOS(authUc: deps.authUc, stremioUc: deps.streamioUc)
-                #else
-                    SettingsView(authUc: deps.authUc, stremioUc: deps.streamioUc)
-                #endif
+                SettingsView(authUc: deps.authUc, stremioUc: deps.streamioUc)
             }
         }
     }

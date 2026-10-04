@@ -37,14 +37,12 @@ class MovieViewModel: StreamViewModel {
     var isWatched: Bool = false
     var isInLibrary: Bool = false
 
-    @ObservationIgnored
-    var streamTask: Task<Void, Never>?
-
     func initialise() async {
         // Avoid shredding loaded UI when NavigationStack restores this screen after popping
         // a stacked detail—the view's `.task` runs again on reappear on compact iPhone.
         if case .loaded = movieState {
             syncDiscordPresenceIfLoaded()
+            fetchStreamsInternal()
             return
         }
         movieState = .loading
@@ -83,9 +81,7 @@ class MovieViewModel: StreamViewModel {
 
             movieState = .loaded(d)
             syncDiscordPresenceIfLoaded()
-            streamTask = Task {
-                await getStreams(imdbId: d.imdbId)
-            }
+            fetchStreamsInternal()
         } catch let err as HttpError {
             movieState = .error(err.error())
         } catch {
@@ -157,25 +153,18 @@ class MovieViewModel: StreamViewModel {
         }
     }
 
-    private func getStreams(imdbId: String) async {
-        streamsState = .loading
-        do {
-            let streams = try await streamUc.getMovieStreams(id: imdbId)
-            if Task.isCancelled {
-                return
-            }
-            streamsState = .loaded(streams)
-        } catch let err as HttpError {
-            streamsState = .error(err.error())
-        } catch {
-            streamsState = .error(error.localizedDescription)
-        }
-    }
-
     /// NOTE: This is responsible for getting streams and setting internal state only
-    private func fetchStreamsInternal() async {
+    private func fetchStreamsInternal() {
+        if streamsTask == nil, case .loaded = streamsStateNew {
+            return
+        }
+        if streamsTask == nil, case .error = streamsStateNew {
+            return
+        }
         if streamsTask == nil {
-            streamsTask = Task<Void, Error> {
+            streamsTask = Task<Void, Error> { [weak self] in
+                guard let self else { return }
+                defer { self.streamsTask = nil }
 
                 guard let streamAddons = userBloc.streamAddons else {
                     ToastProgressBloc.bloc.showToast(
@@ -255,27 +244,18 @@ class MovieViewModel: StreamViewModel {
                     results.append(contentsOf: hd)
                     streamsStateNew = .loaded(results)
 
+                } catch is CancellationError {
+                    throw CancellationError()
                 } catch let err as HttpError {
                     streamsStateNew = .error(err.error())
                 } catch {
                     streamsStateNew = .error(error.localizedDescription)
                 }
             }
-        } else {
-            print("Streams task is already in progress")
-        }
-
-        defer { streamsTask = nil }
-
-        do {
-            try await streamsTask!.value
-        } catch {
-            fatalError("Error in streams task")
         }
     }
 
-
-    // ------------------- Methods for StreamviewModel-----------------------------
+    /// ------------------- Methods for StreamviewModel-----------------------------
     func isMovie() -> Bool {
         return true
     }
@@ -297,11 +277,9 @@ class MovieViewModel: StreamViewModel {
 
     func updateProgress(progress _: Double) async {}
 
-
     func getStreams() async throws -> [VideoPlayerStream] {
-        if case .loading = streamsStateNew, case .initial = streamsStateNew {
-            await fetchStreamsInternal()
-        }
+        fetchStreamsInternal()
+        try await streamsTask?.value
 
         if case let .loaded(streams) = streamsStateNew {
             return streams

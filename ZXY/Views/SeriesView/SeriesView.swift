@@ -18,9 +18,6 @@ struct SeriesView: View {
     }
 
     var body: some View {
-        #if os(tvOS)
-        SeriesViewTVOS(vm: vm)
-        #else
         ZStack {
             switch vm.seriesState {
             case .initial, .loading:
@@ -119,7 +116,6 @@ struct SeriesView: View {
                 }
             }
             .toolbarBackground(.hidden, for: .navigationBar)
-        #endif
         #endif
     }
 }

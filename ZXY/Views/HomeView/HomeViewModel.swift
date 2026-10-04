@@ -40,9 +40,8 @@ class HomeViewModel {
         self.progressUc = progressUc
     }
 
-    /// Bootstrap home state. Pass `loadTopBanner: false` for surfaces that
-    /// render their own banner (e.g. tvOS) so we don't fetch trakt rows we'll
-    /// never display.
+    /// Bootstrap home state. Pass `loadTopBanner: false` when the top banner
+    /// should not be loaded for the current surface.
     func initialise(loadTopBanner: Bool = true) async {
         guard !hasInitialised else { return }
 

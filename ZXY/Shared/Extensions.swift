@@ -18,54 +18,34 @@ extension View {
         ZStack { Constants.bgColor.ignoresSafeArea(); self }
     }
 
-    /// Hides the default scroll/list background on iOS and macOS. No-op on tvOS.
+    /// Hides the default scroll/list background on iOS and macOS.
     @ViewBuilder
     func hideScrollContentBackground() -> some View {
-        #if os(tvOS)
-            self
-        #else
-            scrollContentBackground(.hidden)
-        #endif
+        scrollContentBackground(.hidden)
     }
 
-    /// Hides list row separators where supported. No-op on tvOS.
+    /// Hides list row separators where supported.
     @ViewBuilder
     func hideListRowSeparator() -> some View {
-        #if os(tvOS)
-            self
-        #else
-            listRowSeparator(.hidden)
-        #endif
+        listRowSeparator(.hidden)
     }
 
-    /// Applies list row separator tint where supported. No-op on tvOS.
+    /// Applies list row separator tint where supported.
     @ViewBuilder
     func listRowSeparatorTintIfAvailable(_ color: Color) -> some View {
-        #if os(tvOS)
-            self
-        #else
-            listRowSeparatorTint(color)
-        #endif
+        listRowSeparatorTint(color)
     }
 
-    /// Sidebar list chrome for `NavigationSplitView`. tvOS uses plain list style.
+    /// Sidebar list chrome for `NavigationSplitView`.
     @ViewBuilder
     func sidebarNavigationListStyle() -> some View {
-        #if os(tvOS)
-            listStyle(.plain)
-        #else
-            listStyle(.sidebar)
-        #endif
+        listStyle(.sidebar)
     }
 
-    /// Sidebar column width for `NavigationSplitView`. No-op on tvOS.
+    /// Sidebar column width for `NavigationSplitView`.
     @ViewBuilder
     func sidebarColumnWidth(min: CGFloat, ideal: CGFloat, max: CGFloat) -> some View {
-        #if os(tvOS)
-            self
-        #else
-            navigationSplitViewColumnWidth(min: min, ideal: ideal, max: max)
-        #endif
+        navigationSplitViewColumnWidth(min: min, ideal: ideal, max: max)
     }
 
     /// Pins hero scroll content to the top edge on iOS and macOS.
@@ -95,27 +75,23 @@ extension View {
         // Lower = zoom ramps over more scroll before hitting `maxScrollZoomExtra`.
         scrollZoomSensitivity: CGFloat = 0.28
     ) -> some View {
-        #if os(tvOS)
-            self
-        #else
-            visualEffect { effect, geometry in
-                let frame = geometry.frame(in: .scrollView)
-                let height = max(geometry.size.height, 0.0001)
+        visualEffect { effect, geometry in
+            let frame = geometry.frame(in: .scrollView)
+            let height = max(geometry.size.height, 0.0001)
 
-                let pull = max(0, frame.minY)
-                let pullScale = min((height + pull) / height, maxPullScale)
+            let pull = max(0, frame.minY)
+            let pullScale = min((height + pull) / height, maxPullScale)
 
-                let scrolledAboveViewport = max(0, -frame.minY)
-                let scrollZoomBoost = min(
-                    scrolledAboveViewport / height * scrollZoomSensitivity,
-                    maxScrollZoomExtra
-                )
-                let scrollScale = 1 + scrollZoomBoost
+            let scrolledAboveViewport = max(0, -frame.minY)
+            let scrollZoomBoost = min(
+                scrolledAboveViewport / height * scrollZoomSensitivity,
+                maxScrollZoomExtra
+            )
+            let scrollScale = 1 + scrollZoomBoost
 
-                let scale = min(pullScale * scrollScale, maxPullScale)
-                return effect.scaleEffect(scale, anchor: .bottom)
-            }
-        #endif
+            let scale = min(pullScale * scrollScale, maxPullScale)
+            return effect.scaleEffect(scale, anchor: .bottom)
+        }
     }
 }
 

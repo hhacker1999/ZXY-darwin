@@ -869,24 +869,16 @@ struct StreamSheet: View {
     let media: MediaDetails
     @Environment(\.dismiss) private var dismiss
 
-    #if os(tvOS)
-    @FocusState private var isCloseFocused: Bool
-    #endif
-
     private var itemCount: Int {
         if case let .loaded(streams) = state { return streams.count }
         return 0
     }
 
     private var idealHeight: CGFloat {
-        #if os(tvOS)
-        return 680
-        #else
         let base: CGFloat = 120 // header + padding
         let perItem: CGFloat = 60
         let computed = base + CGFloat(itemCount) * perItem
         return min(max(computed, 340), 700)
-        #endif
     }
 
     var body: some View {
@@ -894,55 +886,25 @@ struct StreamSheet: View {
             // ── Header ──
             HStack {
                 Text("Available Streams")
-                    #if os(tvOS)
-                    .font(.system(size: 38, weight: .bold))
-                    #else
                     .font(AppTheme.Typography.headingMedium)
-                    #endif
                     .foregroundStyle(AppTheme.Colors.elementWhite)
                 Spacer()
                 Button {
                     dismiss()
                 } label: {
-                    #if os(tvOS)
-                    Image(systemName: "xmark")
-                        .font(.system(size: 24, weight: .bold))
-                        .foregroundStyle(isCloseFocused ? .black : .white)
-                        .padding(12)
-                        .background(isCloseFocused ? .white : Color.white.opacity(0.1))
-                        .clipShape(Circle())
-                    #else
                     Image(systemName: "xmark.circle.fill")
                         .font(.system(size: 20))
                         .symbolRenderingMode(.hierarchical)
                         .foregroundStyle(AppTheme.Colors.elementMuted)
-                    #endif
                 }
-                #if os(tvOS)
-                .buttonStyle(TVOSNoHaloButtonStyle())
-                .focused($isCloseFocused)
-                #else
                 .buttonStyle(.plain)
-                #endif
             }
-            #if os(tvOS)
-            .padding(.horizontal, 64)
-            .padding(.top, 48)
-            .padding(.bottom, 24)
-            #else
             .padding(.horizontal, AppTheme.Spacing.lg)
             .padding(.top, AppTheme.Spacing.lg)
             .padding(.bottom, AppTheme.Spacing.md)
-            #endif
 
-            #if os(tvOS)
             Divider()
                 .overlay(AppTheme.Colors.divider)
-                .padding(.horizontal, 64)
-            #else
-            Divider()
-                .overlay(AppTheme.Colors.divider)
-            #endif
 
             // ── Content ──
             Group {
@@ -959,10 +921,6 @@ struct StreamSheet: View {
                     }
                 }
             }
-            #if os(tvOS)
-            .padding(.horizontal, 64)
-            .padding(.bottom, 48)
-            #endif
         }
         .frame(idealHeight: idealHeight)
         .background(AppTheme.Colors.backgroundSecondary)
@@ -1021,31 +979,6 @@ struct StreamSheet: View {
 
     @ViewBuilder
     private func streamListView(streams: [ResolutionItem]) -> some View {
-        #if os(tvOS)
-        ScrollView(.vertical, showsIndicators: false) {
-            VStack(spacing: 24) {
-                ForEach(Array(streams.enumerated()), id: \.offset) { index, stream in
-                    StreamRow(stream: stream) {
-                        dismiss()
-                        Router.router.addToRoute(
-                            route: .mpvVideoView(
-                                MPVViewArgs(
-                                    resItems: streams,
-                                    selectedIndex: index,
-                                    mediaId: media.id,
-                                    episodeNo: episodeNo,
-                                    seasonNo: seasonNo,
-                                    name: media.name,
-                                    backdropPath: media.backdropPath
-                                )
-                            )
-                        )
-                    }
-                }
-            }
-            .padding(.vertical, 24)
-        }
-        #else
         List {
             ForEach(Array(streams.enumerated()), id: \.offset) {
                 index,
@@ -1076,7 +1009,6 @@ struct StreamSheet: View {
         .listStyle(.plain)
         #endif
         .hideScrollContentBackground()
-        #endif
     }
 }
 
@@ -1084,9 +1016,6 @@ struct StreamRow: View {
     let stream: ResolutionItem
     let onTap: () -> Void
     @State private var isHovered = false
-    #if os(tvOS)
-    @FocusState private var isFocused: Bool
-    #endif
 
     init(stream: ResolutionItem, onTap: @escaping () -> Void) {
         self.stream = stream
@@ -1094,38 +1023,6 @@ struct StreamRow: View {
     }
 
     var body: some View {
-        #if os(tvOS)
-        Button(action: onTap) {
-            HStack(alignment: .center, spacing: AppTheme.Spacing.sm) {
-                Text(stream.name)
-                    .font(.system(size: 26, weight: .semibold))
-                    .foregroundStyle(isFocused ? .black : AppTheme.Colors.elementWhite)
-                    .layoutPriority(1)
-
-                if !stream.description.isEmpty {
-                    Group {
-                        if isFocused {
-                            Color.black.opacity(0.3)
-                        } else {
-                            AppTheme.Colors.divider
-                        }
-                    }
-                    .frame(width: 1, height: 26)
-
-                    Text(stream.description)
-                        .font(.system(size: 22))
-                        .foregroundStyle(isFocused ? Color.black.opacity(0.7) : AppTheme.Colors.elementSubtle)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-            }
-            .padding(.vertical, 18)
-            .padding(.horizontal, 24)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(TVOSRowButtonStyle(isFocused: isFocused))
-        .focused($isFocused)
-        #else
         HStack(alignment: .center, spacing: AppTheme.Spacing.sm) {
             Text(stream.name)
                 .font(AppTheme.Typography.labelLarge)
@@ -1154,7 +1051,6 @@ struct StreamRow: View {
         .onTapGesture {
             onTap()
         }
-        #endif
     }
 }
 
@@ -1644,8 +1540,8 @@ private struct EpisodeCard: View {
     }
 }
 
-#if os(macOS) || os(tvOS)
-    /// macOS / tvOS: system navigation chrome is minimal or absent.
+#if os(macOS)
+    /// macOS: system navigation chrome is minimal or absent.
     /// These controls sit over the hero like the hidden navigation bar on iOS.
     struct MediaDetailMacTopBar: View {
         let showLibraryButton: Bool
