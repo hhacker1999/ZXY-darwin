@@ -5,8 +5,29 @@ enum FocusElement {
     case video
 }
 
+/// `@State` initializers run on every `View` init, and SwiftUI drops the extras.
+/// This box is the cheap discarded object; `MpvViewModel` is created once, on first use.
+@MainActor
+private final class MpvPlayerSession {
+    private let streamVm: any StreamViewModel
+    private var viewModel: MpvViewModel?
+
+    init(streamVm: any StreamViewModel) {
+        self.streamVm = streamVm
+    }
+
+    func resolve() -> MpvViewModel {
+        if let viewModel {
+            return viewModel
+        }
+        let created = MpvViewModel(streamVm: streamVm)
+        viewModel = created
+        return created
+    }
+}
+
 struct MpvPlayerView: View {
-    @State var vm: MpvViewModel
+    @State private var session: MpvPlayerSession
     @FocusState var currentFocus: FocusElement?
 
     #if os(iOS)
@@ -14,10 +35,11 @@ struct MpvPlayerView: View {
     #endif
 
     init(streamVm: any StreamViewModel) {
-        vm = MpvViewModel(streamVm: streamVm)
+        _session = State(initialValue: MpvPlayerSession(streamVm: streamVm))
     }
 
     var body: some View {
+        let vm = session.resolve()
         VStack {
             MPVMetalPlayerView(coordinator: vm)
                 .onChange(of: vm.videoInFocus) {
