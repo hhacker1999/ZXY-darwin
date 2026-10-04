@@ -11,8 +11,7 @@ class MPV {
     var mpv: OpaquePointer!
     var playDelegate: MPVPlayerDelegate?
     lazy var queue = DispatchQueue(label: "mpv", qos: .userInitiated)
-    private let resizeDebounce = 0.08
-    private var lastResizeDate = Date()
+    private var didTerminate = false
 
     var playUrl: URL?
     var hdrAvailable: Bool = false
@@ -27,6 +26,13 @@ class MPV {
                 mpv_set_option_string(mpv, "target-colorspace-hint", "no")
             )
         }
+    }
+
+    /// Re-attach the VO after the Metal layer gets a valid size (e.g. after navigation layout).
+    func rebindRenderSurface(metalLayer: inout MetalLayer) {
+        guard mpv != nil else { return }
+        var layer = metalLayer
+        checkError(mpv_set_property(mpv, "wid", MPV_FORMAT_INT64, &layer))
     }
 
     func setupMpv(metalLayer: inout MetalLayer) {
@@ -152,19 +158,19 @@ class MPV {
     }
 
     func cleanup() {
-        if mpv != nil {
-            mpv_set_wakeup_callback(mpv, nil, nil)
+        guard !didTerminate, mpv != nil else { return }
+        didTerminate = true
 
-            // Wait for any pending queue operations to complete
-            queue.sync {
-                if self.mpv != nil {
-                    mpv_terminate_destroy(self.mpv)
-                    self.mpv = nil
-                }
+        mpv_set_wakeup_callback(mpv, nil, nil)
+
+        queue.sync {
+            if self.mpv != nil {
+                mpv_terminate_destroy(self.mpv)
+                self.mpv = nil
             }
-
-            Unmanaged.passUnretained(self).release()
         }
+
+        Unmanaged.passUnretained(self).release()
     }
 
     func readEvents() {

@@ -42,7 +42,11 @@ struct ContentView: View {
                     .navigationTransition(.crossFade)
                     .navigationDestination(for: Route.self) { route in
                         destination(for: route)
-                            .navigationTransition(.crossFade)
+                            .navigationTransition(
+                                route.isMpvPlayback
+                                    ? .automatic
+                                    : .crossFade
+                            )
                     }
             }
         #else
@@ -53,11 +57,11 @@ struct ContentView: View {
 
                     ForEach(router.mainRouteState, id: \.self) { route in
                         destination(for: route)
-                            .transition(.opacity)
+                            .transition(navigationTransition(for: route))
                             .allowsHitTesting(router.mainRouteState.last == route)
                     }
                 }
-                .animation(.easeInOut(duration: 0.28), value: router.mainRouteState)
+                .animation(.easeInOut(duration: Router.navigationTransitionDuration), value: router.mainRouteState)
             }
             .navigationTitle("")
             .toolbarBackground(.hidden, for: .automatic)
@@ -65,6 +69,14 @@ struct ContentView: View {
             .toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
             .windowToolbarFullScreenVisibility(.onHover)
         #endif
+    }
+
+    private func navigationTransition(for route: Route) -> AnyTransition {
+        if case .mpvVideoView = route {
+            // Opacity push animates the layer mpv binds to; VO can stay black while audio plays.
+            return .identity
+        }
+        return .opacity
     }
 
     @ViewBuilder

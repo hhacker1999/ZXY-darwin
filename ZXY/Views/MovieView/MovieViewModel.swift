@@ -40,7 +40,6 @@ class MovieViewModel: StreamViewModel {
         // a stacked detail—the view's `.task` runs again on reappear on compact iPhone.
         if case .loaded = movieState {
             syncDiscordPresenceIfLoaded()
-            fetchStreamsInternal()
             return
         }
         movieState = .loading
@@ -214,9 +213,9 @@ class MovieViewModel: StreamViewModel {
                         }
                     }
 
-                    fourK = fourK.sorted { $0.size < $1.size }
-                    fhd = fhd.sorted { $0.size < $1.size }
-                    hd = hd.sorted { $0.size < $1.size }
+                    fourK = fourK.sorted { $0.size > $1.size }
+                    fhd = fhd.sorted { $0.size > $1.size }
+                    hd = hd.sorted { $0.size > $1.size }
                     results.append(contentsOf: fourK)
                     results.append(contentsOf: fhd)
                     results.append(contentsOf: hd)

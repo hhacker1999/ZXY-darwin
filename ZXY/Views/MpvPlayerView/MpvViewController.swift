@@ -1,6 +1,7 @@
 import CoreMedia
 import Foundation
 import Libmpv
+import Metal
 
 #if os(macOS)
     import AppKit
@@ -14,25 +15,18 @@ import Libmpv
             }
         }
 
-        private let resizeDebounce = 0.08
-        private var lastResizeDate = Date()
-
-        // var hdrAvailable: Bool = false
-        // var hdrEnabled = false
-        // {
-        // didSet {
-        //     // FIXME: target-colorspace-hint does not support being changed at runtime.
-        //     // this option should be set when mpv init otherwise can cause player slow and hangs.
-        //     // not recommended to use this way.
-        //     if hdrEnabled {
-        //         checkError(mpv_set_option_string(mpv, "target-colorspace-hint", "yes"))
-        //     } else {
-        //         checkError(mpv_set_option_string(mpv, "target-colorspace-hint", "no"))
-        //     }
-        // }
-        // }
+        private let resizeDebounce: TimeInterval = 0.08
+        private var lastResizeDate = Date.distantPast
+        private var didSetupMpv = false
+        private var didAppear = false
+        private var didCleanUp = false
+        private var lastAppliedBounds: CGSize = .zero
+        private var lastAppliedScale: CGFloat = 0
+        private var lastDrawableSize: CGSize = .zero
+        private var screenParamsObserver: NSObjectProtocol?
 
         override func viewDidAppear() {
+            super.viewDidAppear()
             guard let window = view.window else { return }
 
             if !window.styleMask.contains(.fullScreen) {
@@ -40,6 +34,9 @@ import Libmpv
             }
 
             window.styleMask.remove(.resizable)
+
+            didAppear = true
+            view.needsLayout = true
         }
 
         override func viewWillDisappear() {
@@ -66,71 +63,112 @@ import Libmpv
         override func viewDidLoad() {
             super.viewDidLoad()
 
-            metalLayer.frame = view.frame
-            metalLayer.contentsScale = NSScreen.main!.backingScaleFactor
-            metalLayer.framebufferOnly = true
-            metalLayer.backgroundColor = NSColor.black.cgColor
-            view.layer = metalLayer
-            view.wantsLayer = true
-
-            mpv.setupMpv(metalLayer: &metalLayer)
-
-            // observer EDR range value change
-            NotificationCenter.default.addObserver(
-                forName: NSApplication.didChangeScreenParametersNotification,
-                object: nil,
-                queue: .main
-            ) { [weak self] _ in
-                guard let self = self else { return }
-
-                if let screen = NSScreen.screens.first {
-                    let maxRange = screen
-                        .maximumExtendedDynamicRangeColorComponentValue
-                    DispatchQueue.main.async {
-                        self.playDelegate?.propertyChange(
-                            propertyName: "edr",
-                            data: maxRange
-                        )
-                    }
-                }
-            }
+            configureMetalLayerHierarchy()
+            setupScreenParameterObserver()
         }
 
         override func viewDidLayout() {
             super.viewDidLayout()
 
-            if let window = view.window {
-                let now = Date()
-                guard now.timeIntervalSince(lastResizeDate) > resizeDebounce
-                else {
-                    return
-                }
-                lastResizeDate = now
+            let now = Date()
+            guard now.timeIntervalSince(lastResizeDate) > resizeDebounce else {
+                return
+            }
+            lastResizeDate = now
 
-                let scale = window.screen!.backingScaleFactor
-                let layerSize = view.bounds.size
+            synchronizeMetalSurface()
+        }
 
-                metalLayer.frame = CGRect(
-                    x: 0,
-                    y: 0,
-                    width: layerSize.width,
-                    height: layerSize.height
-                )
-                metalLayer.drawableSize = CGSize(
-                    width: layerSize.width * scale,
-                    height: layerSize.height * scale
-                )
+        private func configureMetalLayerHierarchy() {
+            if metalLayer.device == nil {
+                metalLayer.device = MTLCreateSystemDefaultDevice()
+            }
+            metalLayer.framebufferOnly = true
+            metalLayer.backgroundColor = NSColor.black.cgColor
+            view.layer = metalLayer
+            view.wantsLayer = true
+        }
+
+        private var backingScaleFactor: CGFloat {
+            view.window?.screen?.backingScaleFactor
+                ?? NSScreen.main?.backingScaleFactor
+                ?? 2
+        }
+
+        /// Updates layer geometry when bounds or scale changed. Returns whether anything changed.
+        @discardableResult
+        private func updateMetalLayerGeometryIfNeeded() -> Bool {
+            guard view.bounds.width > 1, view.bounds.height > 1 else { return false }
+
+            let scale = backingScaleFactor
+            let bounds = view.bounds.size
+            if bounds == lastAppliedBounds, scale == lastAppliedScale {
+                return false
+            }
+
+            lastAppliedBounds = bounds
+            lastAppliedScale = scale
+            metalLayer.frame = CGRect(origin: .zero, size: bounds)
+            metalLayer.contentsScale = scale
+            metalLayer.drawableSize = CGSize(
+                width: bounds.width * scale,
+                height: bounds.height * scale
+            )
+            return true
+        }
+
+        private func synchronizeMetalSurface() {
+            updateMetalLayerGeometryIfNeeded()
+
+            if !didSetupMpv {
+                guard didAppear else { return }
+                guard metalLayer.drawableSize.width > 1,
+                      metalLayer.drawableSize.height > 1
+                else { return }
+
+                didSetupMpv = true
+                lastDrawableSize = metalLayer.drawableSize
+                mpv.setupMpv(metalLayer: &metalLayer)
+                return
+            }
+
+            rebindRenderSurfaceIfDrawableSizeChanged()
+        }
+
+        private func rebindRenderSurfaceIfDrawableSizeChanged() {
+            let size = metalLayer.drawableSize
+            guard size.width > 1, size.height > 1 else { return }
+            guard size != lastDrawableSize else { return }
+            lastDrawableSize = size
+            mpv.rebindRenderSurface(metalLayer: &metalLayer)
+        }
+
+        private func setupScreenParameterObserver() {
+            screenParamsObserver = NotificationCenter.default.addObserver(
+                forName: NSApplication.didChangeScreenParametersNotification,
+                object: nil,
+                queue: .main
+            ) { [weak self] _ in
+                guard let self else { return }
+                guard let screen = NSScreen.screens.first else { return }
+                let maxRange = screen.maximumExtendedDynamicRangeColorComponentValue
+                self.playDelegate?.propertyChange(propertyName: "edr", data: maxRange)
             }
         }
 
         func cleanup() {
-            NotificationCenter.default.removeObserver(self)
+            guard !didCleanUp else { return }
+            didCleanUp = true
+
+            if let screenParamsObserver {
+                NotificationCenter.default.removeObserver(screenParamsObserver)
+                self.screenParamsObserver = nil
+            }
 
             mpv.cleanup()
         }
 
         deinit {
-            print("Deinit called inside of controller")
             cleanup()
         }
     }
@@ -150,6 +188,12 @@ import Libmpv
 
         private let resizeDebounce: TimeInterval = 0.08
         private var lastResizeDate = Date.distantPast
+        private var didSetupMpv = false
+        private var didAppear = false
+        private var didCleanUp = false
+        private var lastAppliedBounds: CGSize = .zero
+        private var lastAppliedScale: CGFloat = 0
+        private var lastDrawableSize: CGSize = .zero
 
         override func viewDidLoad() {
             super.viewDidLoad()
@@ -157,38 +201,87 @@ import Libmpv
             view.isOpaque = true
             view.backgroundColor = .black
 
-            metalLayer.frame = view.bounds
-            metalLayer.contentsScale = screenNativeScale
-            metalLayer.framebufferOnly = true
-            metalLayer.backgroundColor = UIColor.black.cgColor
-
-            view.layer.addSublayer(metalLayer)
-
-            mpv.setupMpv(metalLayer: &metalLayer)
+            configureMetalLayerHierarchy()
             setupNotification()
+        }
+
+        override func viewDidAppear(_ animated: Bool) {
+            super.viewDidAppear(animated)
+            didAppear = true
+            view.setNeedsLayout()
         }
 
         override func viewDidLayoutSubviews() {
             super.viewDidLayoutSubviews()
 
             let now = Date()
-            guard view.bounds.width > 0, view.bounds.height > 0 else { return }
+            guard view.bounds.width > 1, view.bounds.height > 1 else { return }
             guard now.timeIntervalSince(lastResizeDate) > resizeDebounce else {
                 return
             }
             lastResizeDate = now
 
-            let scale = screenNativeScale
-            metalLayer.frame = view.bounds
-            metalLayer.contentsScale = scale
-            metalLayer.drawableSize = CGSize(
-                width: view.bounds.width * scale,
-                height: view.bounds.height * scale
-            )
+            synchronizeMetalSurface()
+        }
+
+        private func configureMetalLayerHierarchy() {
+            if metalLayer.device == nil {
+                metalLayer.device = MTLCreateSystemDefaultDevice()
+            }
+            metalLayer.framebufferOnly = true
+            metalLayer.backgroundColor = UIColor.black.cgColor
+            view.layer.addSublayer(metalLayer)
         }
 
         private var screenNativeScale: CGFloat {
             view.window?.screen.nativeScale ?? UIScreen.main.nativeScale
+        }
+
+        @discardableResult
+        private func updateMetalLayerGeometryIfNeeded() -> Bool {
+            guard view.bounds.width > 1, view.bounds.height > 1 else { return false }
+
+            let scale = screenNativeScale
+            let bounds = view.bounds.size
+            if bounds == lastAppliedBounds, scale == lastAppliedScale {
+                return false
+            }
+
+            lastAppliedBounds = bounds
+            lastAppliedScale = scale
+            metalLayer.frame = view.bounds
+            metalLayer.contentsScale = scale
+            metalLayer.drawableSize = CGSize(
+                width: bounds.width * scale,
+                height: bounds.height * scale
+            )
+            return true
+        }
+
+        private func synchronizeMetalSurface() {
+            updateMetalLayerGeometryIfNeeded()
+
+            if !didSetupMpv {
+                guard didAppear else { return }
+                guard metalLayer.drawableSize.width > 1,
+                      metalLayer.drawableSize.height > 1
+                else { return }
+
+                didSetupMpv = true
+                lastDrawableSize = metalLayer.drawableSize
+                mpv.setupMpv(metalLayer: &metalLayer)
+                return
+            }
+
+            rebindRenderSurfaceIfDrawableSizeChanged()
+        }
+
+        private func rebindRenderSurfaceIfDrawableSizeChanged() {
+            let size = metalLayer.drawableSize
+            guard size.width > 1, size.height > 1 else { return }
+            guard size != lastDrawableSize else { return }
+            lastDrawableSize = size
+            mpv.rebindRenderSurface(metalLayer: &metalLayer)
         }
 
         func setupNotification() {
@@ -207,7 +300,6 @@ import Libmpv
         }
 
         @objc func enterBackground() {
-            // fix black screen issue when app enter foreground again
             mpv.pause()
             mpv.checkErrPublic(option: "vid", args: "no")
         }
@@ -218,13 +310,14 @@ import Libmpv
         }
 
         func cleanup() {
-            NotificationCenter.default.removeObserver(self)
+            guard !didCleanUp else { return }
+            didCleanUp = true
 
+            NotificationCenter.default.removeObserver(self)
             mpv.cleanup()
         }
 
         deinit {
-            print("Deinit called inside of controller")
             cleanup()
         }
     }

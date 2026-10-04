@@ -94,3 +94,59 @@ struct VideoPlayerStream: Hashable, Equatable, Codable {
         audioTags = audio
     }
 }
+
+extension VideoPlayerStream {
+    var displayResolution: String {
+        switch resolution.lowercased() {
+        case "4k": return "4K"
+        case "1080p", "1080i": return resolution
+        case "720p": return resolution
+        default:
+            if resolution.isEmpty { return "—" }
+            return resolution
+        }
+    }
+
+    var formattedFileSize: String? {
+        guard size > 0 else { return nil }
+        let gb = Double(size) / 1_073_741_824
+        if gb >= 1.0 {
+            return String(format: "%.1f GB", gb)
+        }
+        let mb = Double(size) / 1_048_576
+        return String(format: "%.0f MB", mb)
+    }
+
+    /// HDR + codec / visual hints, de-duplicated in display order.
+    var combinedVideoTags: [String] {
+        var seen = Set<String>()
+        var ordered: [String] = []
+        for tag in hdrTags + visualTags {
+            let key = tag.lowercased()
+            if seen.insert(key).inserted {
+                ordered.append(tag)
+            }
+        }
+        return ordered
+    }
+
+    var combinedAudioTags: [String] {
+        var seen = Set<String>()
+        var ordered: [String] = []
+        for tag in audioTags {
+            let key = tag.lowercased()
+            if seen.insert(key).inserted {
+                ordered.append(tag)
+            }
+        }
+        return ordered
+    }
+
+    var languageSummary: String? {
+        let codes = languageCodes
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+        guard !codes.isEmpty else { return nil }
+        return codes.joined(separator: " · ")
+    }
+}

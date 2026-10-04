@@ -53,9 +53,9 @@ enum MPVProperty {
 
         static func dismantleNSViewController(
             _ nsViewController: MPVMetalViewController,
-            coordinator _: MpvViewModel
+            coordinator: MpvViewModel
         ) {
-            print("Deinit called inside of metal player view")
+            coordinator.detachPlayer()
             nsViewController.cleanup()
         }
     }
@@ -76,9 +76,9 @@ enum MPVProperty {
 
         static func dismantleUIViewController(
             _ uiViewController: MPVMetalViewController,
-            coordinator _: MpvViewModel
+            coordinator: MpvViewModel
         ) {
-            print("Deinit called inside of metal player view (iOS)")
+            coordinator.detachPlayer()
             uiViewController.cleanup()
         }
     }
@@ -130,6 +130,8 @@ final class MpvViewModel: MPVPlayerDelegate {
 
     @ObservationIgnored
     weak var player: MPVMetalViewController?
+    @ObservationIgnored
+    private var didCleanUp = false
 
     var hdrAvailable: Bool = false
     var edrRange: String = "1.0"
@@ -327,12 +329,19 @@ final class MpvViewModel: MPVPlayerDelegate {
         showVideoInfoOverlay.toggle()
     }
 
+    /// Cancels overlay/progress work. MPV teardown is owned by the representable dismantle path.
     func cleanUp() {
+        guard !didCleanUp else { return }
+        didCleanUp = true
         overlayTask?.cancel()
         progressTask?.cancel()
         progressTask = nil
         overlayTask = nil
-        player?.cleanup()
+        detachPlayer()
+    }
+
+    func detachPlayer() {
+        player = nil
     }
 
     func toggleMute() {

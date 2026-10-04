@@ -900,19 +900,26 @@ struct StreamSheet: View {
     }
 
     private var idealHeight: CGFloat {
-        let base: CGFloat = 120 // header + padding
-        let perItem: CGFloat = 60
+        let base: CGFloat = 132 // header + padding
+        let perItem: CGFloat = 118
         let computed = base + CGFloat(itemCount) * perItem
-        return min(max(computed, 340), 700)
+        return min(max(computed, 380), 720)
     }
 
     var body: some View {
         VStack(spacing: 0) {
             // ── Header ──
-            HStack {
-                Text("Available Streams")
-                    .font(AppTheme.Typography.headingMedium)
-                    .foregroundStyle(AppTheme.Colors.elementWhite)
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: AppTheme.Spacing.xs) {
+                    Text("Choose a Stream")
+                        .font(AppTheme.Typography.headingMedium)
+                        .foregroundStyle(AppTheme.Colors.elementWhite)
+                    if itemCount > 0 {
+                        Text("\(itemCount) available")
+                            .font(AppTheme.Typography.bodySmall)
+                            .foregroundStyle(AppTheme.Colors.elementMuted)
+                    }
+                }
                 Spacer()
                 Button {
                     dismiss()
@@ -1018,7 +1025,15 @@ struct StreamSheet: View {
                     )
                 }
                 .listRowBackground(Color.clear)
-                .listRowSeparatorTintIfAvailable(AppTheme.Colors.divider)
+                .listRowSeparator(.hidden)
+                .listRowInsets(
+                    EdgeInsets(
+                        top: AppTheme.Spacing.xs,
+                        leading: AppTheme.Spacing.md,
+                        bottom: AppTheme.Spacing.xs,
+                        trailing: AppTheme.Spacing.md
+                    )
+                )
             }
         }
         #if os(iOS)
@@ -1030,45 +1045,232 @@ struct StreamSheet: View {
     }
 }
 
+private enum StreamTagStyle {
+    case hdr
+    case video
+    case audio
+
+    var foreground: Color {
+        switch self {
+        case .hdr: return Color(hex: "#FDE68A")
+        case .video: return AppTheme.Colors.elementSubtle
+        case .audio: return Color(hex: "#93C5FD")
+        }
+    }
+
+    var background: Color {
+        switch self {
+        case .hdr: return Color(hex: "#FBBF24").opacity(0.14)
+        case .video: return AppTheme.Colors.surface
+        case .audio: return AppTheme.Colors.info.opacity(0.14)
+        }
+    }
+
+    var border: Color {
+        switch self {
+        case .hdr: return Color(hex: "#FBBF24").opacity(0.35)
+        case .video: return AppTheme.Colors.border
+        case .audio: return AppTheme.Colors.info.opacity(0.35)
+        }
+    }
+}
+
+private struct StreamMetadataTag: View {
+    let text: String
+    let style: StreamTagStyle
+
+    var body: some View {
+        Text(text)
+            .font(.system(size: 11, weight: .semibold))
+            .foregroundStyle(style.foreground)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(
+                Capsule(style: .continuous)
+                    .fill(style.background)
+            )
+            .overlay(
+                Capsule(style: .continuous)
+                    .strokeBorder(style.border, lineWidth: 0.5)
+            )
+    }
+}
+
 struct StreamRow: View {
     let stream: VideoPlayerStream
     let onTap: () -> Void
     @State private var isHovered = false
+    @State private var isPressed = false
 
     init(stream: VideoPlayerStream, onTap: @escaping () -> Void) {
         self.stream = stream
         self.onTap = onTap
     }
 
+    private var isUHD: Bool {
+        stream.resolution.lowercased() == "4k"
+    }
+
     var body: some View {
-        HStack(alignment: .center, spacing: AppTheme.Spacing.sm) {
-            Text(stream.name)
-                .font(AppTheme.Typography.labelLarge)
-                .foregroundStyle(AppTheme.Colors.elementWhite)
-                .layoutPriority(1)
+        Button(action: onTap) {
+            HStack(alignment: .top, spacing: AppTheme.Spacing.md) {
+                resolutionBadge
 
-            if !stream.description.isEmpty {
-                AppTheme.Colors.divider
-                    .frame(width: 1)
+                VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+                    HStack(alignment: .firstTextBaseline, spacing: AppTheme.Spacing.xs) {
+                        Label {
+                            Text(stream.source)
+                                .font(AppTheme.Typography.labelLarge)
+                                .foregroundStyle(AppTheme.Colors.elementWhite)
+                                .lineLimit(1)
+                        } icon: {
+                            Image(systemName: "puzzlepiece.extension.fill")
+                                .font(.system(size: 12, weight: .semibold))
+                                .foregroundStyle(AppTheme.Colors.elementMuted)
+                        }
+                        .labelStyle(.titleAndIcon)
 
-                Text(stream.description)
-                    .font(AppTheme.Typography.bodySmall)
-                    .foregroundStyle(AppTheme.Colors.elementMuted)
-                    .fixedSize(horizontal: false, vertical: true)
+                        Spacer(minLength: AppTheme.Spacing.sm)
+
+                        metadataSummary
+                    }
+
+                    if !stream.combinedVideoTags.isEmpty || !stream.combinedAudioTags.isEmpty {
+                        tagRows
+                    }
+
+                    if let languages = stream.languageSummary {
+                        Text(languages.uppercased())
+                            .font(.system(size: 10, weight: .medium, design: .rounded))
+                            .foregroundStyle(AppTheme.Colors.elementPlaceholder)
+                            .tracking(0.4)
+                    }
+
+                    if !stream.fileName.isEmpty {
+                        Text(stream.fileName)
+                            .font(AppTheme.Typography.bodySmall)
+                            .foregroundStyle(AppTheme.Colors.elementMuted)
+                            .lineLimit(2)
+                            .multilineTextAlignment(.leading)
+                    }
+                }
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(AppTheme.Colors.elementPlaceholder)
+                    .padding(.top, 2)
             }
+            .padding(AppTheme.Spacing.md)
+            .background(cardBackground)
+            .overlay(
+                RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous)
+                    .strokeBorder(cardBorder, lineWidth: 1)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous))
+            .contentShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous))
         }
-        .padding(.vertical, AppTheme.Spacing.xs)
-        .contentShape(Rectangle())
-        .opacity(isHovered ? 0.7 : 1.0)
+        .buttonStyle(.plain)
+        .scaleEffect(isPressed ? 0.98 : 1)
         .animation(.easeOut(duration: 0.15), value: isHovered)
+        .animation(.easeOut(duration: 0.1), value: isPressed)
         #if os(macOS)
         .onHover { hovering in
             isHovered = hovering
         }
         #endif
-        .onTapGesture {
-            onTap()
+        #if os(iOS)
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { _ in isPressed = true }
+                .onEnded { _ in isPressed = false }
+        )
+        #endif
+    }
+
+    private var resolutionBadge: some View {
+        Text(stream.displayResolution)
+            .font(.system(size: 15, weight: .bold, design: .rounded))
+            .foregroundStyle(isUHD ? Color(hex: "#FDE68A") : AppTheme.Colors.elementWhite)
+            .frame(minWidth: 52)
+            .padding(.vertical, 10)
+            .padding(.horizontal, 6)
+            .background(
+                RoundedRectangle(cornerRadius: AppTheme.Radius.sm, style: .continuous)
+                    .fill(
+                        isUHD
+                            ? Color(hex: "#FBBF24").opacity(0.12)
+                            : AppTheme.Colors.surface
+                    )
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: AppTheme.Radius.sm, style: .continuous)
+                    .strokeBorder(
+                        isUHD
+                            ? Color(hex: "#FBBF24").opacity(0.4)
+                            : AppTheme.Colors.border,
+                        lineWidth: 1
+                    )
+            )
+    }
+
+    @ViewBuilder
+    private var metadataSummary: some View {
+        HStack(spacing: 4) {
+            if !stream.quality.isEmpty {
+                Text(stream.quality.uppercased())
+                    .font(.system(size: 10, weight: .bold, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.elementSubtle)
+            }
+            if let size = stream.formattedFileSize {
+                if !stream.quality.isEmpty {
+                    Text("·")
+                        .foregroundStyle(AppTheme.Colors.elementPlaceholder)
+                }
+                Text(size)
+                    .font(.system(size: 11, weight: .medium, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.elementMuted)
+            }
         }
+    }
+
+    @ViewBuilder
+    private var tagRows: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            if !stream.combinedVideoTags.isEmpty {
+                tagRow(tags: stream.combinedVideoTags, style: .video, hdrTags: Set(stream.hdrTags.map { $0.lowercased() }))
+            }
+            if !stream.combinedAudioTags.isEmpty {
+                tagRow(tags: stream.combinedAudioTags, style: .audio, hdrTags: [])
+            }
+        }
+    }
+
+    private func tagRow(tags: [String], style: StreamTagStyle, hdrTags: Set<String>) -> some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 6) {
+                ForEach(tags, id: \.self) { tag in
+                    let tagStyle: StreamTagStyle =
+                        hdrTags.contains(tag.lowercased()) ? .hdr : style
+                    StreamMetadataTag(text: tag, style: tagStyle)
+                }
+            }
+        }
+    }
+
+    private var cardBackground: some View {
+        RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous)
+            .fill(
+                isHovered || isPressed
+                    ? AppTheme.Colors.surfaceHovered
+                    : AppTheme.Colors.backgroundTertiary
+            )
+    }
+
+    private var cardBorder: Color {
+        if isHovered || isPressed {
+            return AppTheme.Colors.borderStrong
+        }
+        return AppTheme.Colors.border
     }
 }
 

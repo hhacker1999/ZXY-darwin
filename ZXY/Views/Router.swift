@@ -28,6 +28,11 @@ enum Route: Hashable {
     case movieDetails(Int)
     case seriesDetails(Int)
     case mpvVideoView(StreamPlaybackRoute)
+
+    var isMpvPlayback: Bool {
+        if case .mpvVideoView = self { return true }
+        return false
+    }
 }
 
 enum RouterState: Hashable, Equatable {
@@ -42,6 +47,9 @@ enum RouterState: Hashable, Equatable {
 class Router {
     static let router = Router()
 
+    /// Matches `addToRoute` / `popRoute` and home-route push animations.
+    static let navigationTransitionDuration: TimeInterval = 0.28
+
     private init() {}
 
     var routerState: RouterState = .splash
@@ -52,13 +60,13 @@ class Router {
     var mainRouteState: [Route] = []
 
     func addToRoute(route: Route) {
-        withAnimation(.easeInOut(duration: 0.28)) {
+        withAnimation(.easeInOut(duration: Self.navigationTransitionDuration)) {
             mainRouteState.append(route)
         }
     }
 
     func popRoute() {
-        _ = withAnimation(.easeInOut(duration: 0.28)) {
+        _ = withAnimation(.easeInOut(duration: Self.navigationTransitionDuration)) {
             mainRouteState.popLast()
         }
     }
