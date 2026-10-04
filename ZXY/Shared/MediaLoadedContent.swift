@@ -1,9 +1,7 @@
 import Foundation
-import Inject
 import SwiftUI
 
 struct MediaLoadedContent: View {
-    @ObserveInjection var inject
     let details: MediaDetails
     let isMobile: Bool
     @State private var ambientGradient: HomeAmbientGradient = .default
@@ -162,7 +160,6 @@ struct MediaLoadedContent: View {
         #if os(iOS)
         .ignoresSafeArea(edges: isMobile ? .top : [])
         #endif
-        .enableInjection()
     }
 }
 

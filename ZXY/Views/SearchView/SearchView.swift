@@ -1,9 +1,7 @@
 import Foundation
-import Inject
 import SwiftUI
 
 struct SearchView: View {
-    @ObserveInjection var inject
     @State var vm: SearchViewModel
     @State private var searchText: String = ""
 
@@ -30,7 +28,6 @@ struct SearchView: View {
                 searchContent
             #endif
         }
-        .enableInjection()
     }
 
     private var searchContent: some View {

@@ -29,7 +29,7 @@ class MediaUsecase {
             req.httpBody = data
 
             let response: PaginatedResponse<AppMedia> =
-                try await httpService.send(req, cookieType: .profile)
+                try await httpService.send(req, cookieType: .profile, logOutput: false)
             return response
         } catch {
             print("--- DEBUG ERROR ---")
@@ -51,7 +51,7 @@ class MediaUsecase {
             req.httpMethod = "GET"
 
             let response: PaginatedResponse<AppMedia> =
-                try await httpService.send(req, cookieType: .profile)
+                try await httpService.send(req, cookieType: .profile, logOutput: false)
             return response
         } catch {
             print("--- DEBUG ERROR ---")
@@ -73,7 +73,7 @@ class MediaUsecase {
             req.httpMethod = "GET"
 
             let response: PaginatedResponse<AppMedia> =
-                try await httpService.send(req, cookieType: .profile)
+                try await httpService.send(req, cookieType: .profile, logOutput: false)
             return response
         } catch {
             print("--- DEBUG ERROR ---")
@@ -94,7 +94,7 @@ class MediaUsecase {
 
             let details: MovieDetails = try await httpService.send(
                 req,
-                cookieType: .profile
+                cookieType: .profile, logOutput: false
             )
             return details
         } catch {
@@ -116,7 +116,7 @@ class MediaUsecase {
 
             let details: SeriesDetails = try await httpService.send(
                 req,
-                cookieType: .profile
+                cookieType: .profile, logOutput: false
             )
             return details
         } catch {
@@ -138,7 +138,7 @@ class MediaUsecase {
 
             let season: Season = try await httpService.send(
                 req,
-                cookieType: .profile
+                cookieType: .profile, logOutput: false
             )
             return season
         } catch {
@@ -164,7 +164,7 @@ class MediaUsecase {
 
             let episode: Episode = try await httpService.send(
                 req,
-                cookieType: .profile
+                cookieType: .profile, logOutput: false
             )
             return episode
         } catch {
@@ -187,7 +187,7 @@ class MediaUsecase {
             req.httpMethod = "GET"
 
             let response: PaginatedResponse<AppMedia> =
-                try await httpService.send(req, cookieType: .profile)
+                try await httpService.send(req, cookieType: .profile, logOutput: false)
             return response
         } catch {
             print("--- DEBUG ERROR ---")
@@ -209,7 +209,7 @@ class MediaUsecase {
             req.httpMethod = "GET"
 
             let response: PaginatedResponse<AppMedia> =
-                try await httpService.send(req, cookieType: .profile)
+                try await httpService.send(req, cookieType: .profile, logOutput: false)
             return response
         } catch {
             print("--- DEBUG ERROR ---")
@@ -227,7 +227,7 @@ class MediaUsecase {
 
             let response: GenreResponse = try await httpService.send(
                 req,
-                cookieType: .none
+                cookieType: .none, logOutput: false
             )
             return response
         } catch {
@@ -247,7 +247,7 @@ class MediaUsecase {
             let response: ImageConfigurationResponse =
                 try await httpService.send(
                     req,
-                    cookieType: .profile
+                    cookieType: .profile, logOutput: false
                 )
             return response.images
         } catch {
@@ -271,7 +271,7 @@ class MediaUsecase {
             req.httpMethod = "GET"
 
             let response: PaginatedResponse<AppMedia> =
-                try await httpService.send(req, cookieType: .profile)
+                try await httpService.send(req, cookieType: .profile, logOutput: false)
             return response
         } catch {
             print("--- DEBUG ERROR ---")
@@ -294,7 +294,7 @@ class MediaUsecase {
             req.httpMethod = "GET"
 
             let response: PaginatedResponse<AppMedia> =
-                try await httpService.send(req, cookieType: .profile)
+                try await httpService.send(req, cookieType: .profile, logOutput: false)
             return response
         } catch {
             print("--- DEBUG ERROR ---")
@@ -318,7 +318,7 @@ class MediaUsecase {
                 withJSONObject: body,
                 options: []
             )
-            try await httpService.sendVoid(req, cookieType: .profile)
+            try await httpService.sendVoid(req, cookieType: .profile, logOutput: false)
         } catch {
             print("--- DEBUG ERROR ---")
             print("Type: \(type(of: error))")
@@ -341,7 +341,7 @@ class MediaUsecase {
                 withJSONObject: body,
                 options: []
             )
-            try await httpService.sendVoid(req, cookieType: .profile)
+            try await httpService.sendVoid(req, cookieType: .profile, logOutput: false)
         } catch {
             print("--- DEBUG ERROR ---")
             print("Type: \(type(of: error))")
@@ -369,7 +369,7 @@ class MediaUsecase {
 
             let response: [String: Bool] = try await httpService.send(
                 req,
-                cookieType: .profile
+                cookieType: .profile, logOutput: false
             )
             return response["found"] ?? false
         } catch {

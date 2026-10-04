@@ -48,9 +48,8 @@ struct VideoPlayerStream: Hashable, Equatable{
 
     init(source: String, baseStream: Stream, ptt: PTT.Result) {
         url = baseStream.url!
-        fileName = baseStream.behaviorHints?.filename ?? ""
-        let videoSize = baseStream.behaviorHints?.videoSize ?? 0
-        size = videoSize
+        fileName = baseStream.behaviorHints.filename
+        size = baseStream.behaviorHints.videoSize
         quality = ptt.quality
         resolution = ptt.resolution
         self.source = source

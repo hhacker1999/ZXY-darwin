@@ -1,9 +1,7 @@
 import Foundation
-import Inject
 import SwiftUI
 
 struct SeriesView: View {
-    @ObserveInjection var inject
     @State var vm: SeriesViewModel
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
@@ -122,7 +120,6 @@ struct SeriesView: View {
             }
             .toolbarBackground(.hidden, for: .navigationBar)
         #endif
-        .enableInjection()
         #endif
     }
 }

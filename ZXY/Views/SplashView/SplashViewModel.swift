@@ -11,14 +11,16 @@ import Foundation
 class SplashViewModel {
     let mediaUc: MediaUsecase
     let authUc: AuthUsecase
+    let stremioUc: StremioUsecase
     let httpService: HttpService = .service
     let router: Router = .router
 
     var err: String?
 
-    init(mediaUc: MediaUsecase, authUc: AuthUsecase) {
+    init(mediaUc: MediaUsecase, authUc: AuthUsecase, stremioUc: StremioUsecase) {
         self.mediaUc = mediaUc
         self.authUc = authUc
+        self.stremioUc = stremioUc
     }
 
     func initialise() async {
@@ -62,7 +64,7 @@ class SplashViewModel {
             let profile = try await authUc.getProfile()
 
             // Set this is as logged in profile in userbloc
-            await UserBloc.bloc.setProfile(incomingProfile: profile, authUc: authUc)
+            await UserBloc.bloc.setProfile(incomingProfile: profile, stremioUc: stremioUc)
 
             Router.router.routerState = .home
         } catch _ as UnAuthorised {

@@ -15,7 +15,7 @@ class StreamUsecase {
 
             guard let data = try await httpService.sendRaw(
                 req,
-                cookieType: .profile
+                cookieType: .profile, logOutput: false
             ) else {
                 return []
             }
@@ -61,7 +61,7 @@ class StreamUsecase {
 
             guard let data = try await httpService.sendRaw(
                 req,
-                cookieType: .profile
+                cookieType: .profile, logOutput: false
             ) else {
                 return .empty
             }
@@ -87,7 +87,7 @@ class StreamUsecase {
 
             let response: [String: String] = try await httpService.send(
                 req,
-                cookieType: .profile
+                cookieType: .profile, logOutput: false
             )
             guard let streamUrl = response["url"] else {
                 throw SomethingWentWrong()

@@ -8,7 +8,7 @@ class StremioUsecase {
             let url = URL(string: addonUrl)!
             var req = URLRequest(url: url)
             req.httpMethod = "GET"
-            let response: AddonManifest = try await httpService.send(req, cookieType: .none)
+            let response: AddonManifest = try await httpService.send(req, cookieType: .none, logOutput: false)
             return response
         } catch {
             print("--- DEBUG ERROR ---")
@@ -28,7 +28,7 @@ class StremioUsecase {
             let url = URL(string: urlString)!
             var req = URLRequest(url: url)
             req.httpMethod = "GET"
-            let response: [Stream] = try await httpService.send(req, cookieType: .none)
+            let response: [Stream] = try await httpService.send(req, cookieType: .none, logOutput: false)
             return response
         } catch {
             print("--- DEBUG ERROR ---")

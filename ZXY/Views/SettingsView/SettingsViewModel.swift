@@ -133,7 +133,7 @@ final class SettingsViewModel {
             }
             try await authUc.addAddon(manifestUrl: manifestUrl)
             let updatedProfile = try await authUc.getProfile()
-            await userBloc.setProfile(incomingProfile: updatedProfile, authUc: authUc)
+            await userBloc.setProfile(incomingProfile: updatedProfile, stremioUc: stremioUc)
         } catch let error as HttpError {
             toastBloc.showToast(message: error.error(), isError: true)
         } catch {

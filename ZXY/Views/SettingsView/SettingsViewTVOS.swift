@@ -36,8 +36,8 @@ struct SettingsViewTVOS: View {
     @State private var showLogoutConfirm = false
     @State private var showDeleteConfirm = false
 
-    init(authUc: AuthUsecase) {
-        _vm = State(initialValue: SettingsViewModel(authUc: authUc))
+    init(authUc: AuthUsecase, stremioUc: StremioUsecase) {
+        _vm = State(initialValue: SettingsViewModel(authUc: authUc, stremioUc: stremioUc))
     }
 
     var body: some View {

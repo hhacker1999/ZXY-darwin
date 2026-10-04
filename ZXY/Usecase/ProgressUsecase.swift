@@ -18,7 +18,7 @@ class ProgressUsecase {
             guard
                 let data = try await httpService.sendRaw(
                     req,
-                    cookieType: .profile
+                    cookieType: .profile, logOutput: false
                 )
             else {
                 return []
@@ -43,7 +43,7 @@ class ProgressUsecase {
             )!
             var req = URLRequest(url: url)
             req.httpMethod = "DELETE"
-            try await httpService.sendVoid(req, cookieType: .profile)
+            try await httpService.sendVoid(req, cookieType: .profile, logOutput: false)
         } catch {
             print("--- DEBUG ERROR ---")
             print("Type: \(type(of: error))")
@@ -63,7 +63,7 @@ class ProgressUsecase {
             guard
                 let data = try await httpService.sendRaw(
                     req,
-                    cookieType: .profile
+                    cookieType: .profile, logOutput: false
                 )
             else {
                 return nil
@@ -97,7 +97,7 @@ class ProgressUsecase {
                 withJSONObject: body,
                 options: []
             )
-            try await httpService.sendVoid(req, cookieType: .profile)
+            try await httpService.sendVoid(req, cookieType: .profile, logOutput: false)
         } catch {
             print("--- DEBUG ERROR ---")
             print("Type: \(type(of: error))")
@@ -113,7 +113,7 @@ class ProgressUsecase {
             )!
             var req = URLRequest(url: url)
             req.httpMethod = "POST"
-            try await httpService.sendVoid(req, cookieType: .profile)
+            try await httpService.sendVoid(req, cookieType: .profile, logOutput: false)
         } catch {
             print("--- DEBUG ERROR ---")
             print("Type: \(type(of: error))")
@@ -133,7 +133,7 @@ class ProgressUsecase {
             guard
                 let data = try await httpService.sendRaw(
                     req,
-                    cookieType: .profile
+                    cookieType: .profile, logOutput: false
                 )
             else {
                 return []
@@ -171,7 +171,7 @@ class ProgressUsecase {
                 withJSONObject: body,
                 options: []
             )
-            try await httpService.sendVoid(req, cookieType: .profile)
+            try await httpService.sendVoid(req, cookieType: .profile, logOutput: false)
         } catch {
             print("--- DEBUG ERROR ---")
             print("Type: \(type(of: error))")
@@ -187,7 +187,7 @@ class ProgressUsecase {
             )!
             var req = URLRequest(url: url)
             req.httpMethod = "POST"
-            try await httpService.sendVoid(req, cookieType: .profile)
+            try await httpService.sendVoid(req, cookieType: .profile, logOutput: false)
         } catch {
             print("--- DEBUG ERROR ---")
             print("Type: \(type(of: error))")

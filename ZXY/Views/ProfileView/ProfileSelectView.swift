@@ -11,9 +11,9 @@ struct ProfileSelectView: View {
     @State private var appeared = false
     let profiles: [Profile]
 
-    init(profiles: [Profile], authUc: AuthUsecase) {
+    init(profiles: [Profile], authUc: AuthUsecase, stremioUc: StremioUsecase) {
         self.profiles = profiles
-        self.vm = ProfileSelectViewModel(authUc: authUc)
+        self.vm = ProfileSelectViewModel(authUc: authUc, stremioUc: stremioUc)
     }
 
     var body: some View {

@@ -197,9 +197,9 @@ struct BaseHomeview: View {
                 #endif
             case .settings:
                 #if os(tvOS)
-                    SettingsViewTVOS(authUc: deps.authUc)
+                    SettingsViewTVOS(authUc: deps.authUc, stremioUc: deps.streamioUc)
                 #else
-                    SettingsView(authUc: deps.authUc)
+                    SettingsView(authUc: deps.authUc, stremioUc: deps.streamioUc)
                 #endif
             }
         }

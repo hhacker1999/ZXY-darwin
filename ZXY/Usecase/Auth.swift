@@ -29,7 +29,7 @@ class AuthUsecase {
 
             let user: User = try await httpService.send(
                 req,
-                cookieType: .none
+                cookieType: .none, logOutput: false
             )
             return user
 
@@ -53,7 +53,7 @@ class AuthUsecase {
                 "password": password,
             ]
             req.httpBody = try JSONEncoder().encode(body)
-            try await httpService.sendVoid(req, cookieType: .none)
+            try await httpService.sendVoid(req, cookieType: .none, logOutput: false)
         } catch {
             print("--- DEBUG ERROR ---")
             print("Type: \(type(of: error))")
@@ -81,7 +81,7 @@ class AuthUsecase {
 
             let _: Empty = try await httpService.send(
                 req,
-                cookieType: .user
+                cookieType: .user, logOutput: false
             )
         } catch {
             print("--- DEBUG ERROR ---")
@@ -97,7 +97,7 @@ class AuthUsecase {
             var req = URLRequest(url: url)
             req.httpMethod = "GET"
 
-            let user: User = try await httpService.send(req, cookieType: .user)
+            let user: User = try await httpService.send(req, cookieType: .user, logOutput: false)
             return user
         } catch {
             print("--- DEBUG ERROR ---")
@@ -115,7 +115,7 @@ class AuthUsecase {
 
             let profile: Profile = try await httpService.send(
                 req,
-                cookieType: .profile
+                cookieType: .profile, logOutput: false
             )
             return profile
 
@@ -138,7 +138,7 @@ class AuthUsecase {
                 "api_key": apiKey,
             ]
             req.httpBody = try JSONEncoder().encode(body)
-            try await httpService.sendVoid(req, cookieType: .profile)
+            try await httpService.sendVoid(req, cookieType: .profile, logOutput: false)
         } catch {
             print("--- DEBUG ERROR ---")
             print("Type: \(type(of: error))")
@@ -152,7 +152,7 @@ class AuthUsecase {
             let url = URL(string: "\(Constants.baseUrl)/user/debrid/api")!
             var req = URLRequest(url: url)
             req.httpMethod = "DELETE"
-            try await httpService.sendVoid(req, cookieType: .profile)
+            try await httpService.sendVoid(req, cookieType: .profile, logOutput: false)
         } catch {
             print("--- DEBUG ERROR ---")
             print("Type: \(type(of: error))")
@@ -173,7 +173,7 @@ class AuthUsecase {
             var body: [String: Any] = ["type": tp]
             if let value = value { body["value"] = value }
             req.httpBody = try JSONSerialization.data(withJSONObject: body, options: [])
-            try await httpService.sendVoid(req, cookieType: .profile)
+            try await httpService.sendVoid(req, cookieType: .profile, logOutput: false)
         } catch {
             print("--- DEBUG ERROR ---")
             print("Type: \(type(of: error))")
@@ -197,7 +197,7 @@ class AuthUsecase {
                 withJSONObject: body,
                 options: []
             )
-            try await httpService.sendVoid(req, cookieType: .profile)
+            try await httpService.sendVoid(req, cookieType: .profile, logOutput: false)
         } catch {
             print("--- DEBUG ERROR ---")
             print("Type: \(type(of: error))")
@@ -221,7 +221,7 @@ class AuthUsecase {
                 withJSONObject: body,
                 options: []
             )
-            try await httpService.sendVoid(req, cookieType: .profile)
+            try await httpService.sendVoid(req, cookieType: .profile, logOutput: false)
         } catch {
             print("--- DEBUG ERROR ---")
             print("Type: \(type(of: error))")
@@ -237,7 +237,7 @@ class AuthUsecase {
             req.httpMethod = "PUT"
             req.setValue("application/json", forHTTPHeaderField: "Content-Type")
             req.httpBody = try JSONEncoder().encode(list)
-            try await httpService.sendVoid(req, cookieType: .profile)
+            try await httpService.sendVoid(req, cookieType: .profile, logOutput: false)
         } catch {
             print("--- DEBUG ERROR ---")
             print("Type: \(type(of: error))")
@@ -254,7 +254,7 @@ class AuthUsecase {
             )!
             var req = URLRequest(url: url)
             req.httpMethod = "DELETE"
-            try await httpService.sendVoid(req, cookieType: .profile)
+            try await httpService.sendVoid(req, cookieType: .profile, logOutput: false)
         } catch {
             print("--- DEBUG ERROR ---")
             print("Type: \(type(of: error))")
@@ -271,7 +271,7 @@ class AuthUsecase {
 
             let response: [String: String] = try await httpService.send(
                 req,
-                cookieType: .profile
+                cookieType: .profile, logOutput: false
             )
             guard let traktUrl = response["url"] else {
                 throw SomethingWentWrong()
@@ -290,7 +290,7 @@ class AuthUsecase {
             let url = URL(string: "\(Constants.baseUrl)/trakt")!
             var req = URLRequest(url: url)
             req.httpMethod = "DELETE"
-            try await httpService.sendVoid(req, cookieType: .profile)
+            try await httpService.sendVoid(req, cookieType: .profile, logOutput: false)
         } catch {
             print("--- DEBUG ERROR ---")
             print("Type: \(type(of: error))")
@@ -304,7 +304,7 @@ class AuthUsecase {
             let url = URL(string: "\(Constants.baseUrl)/user")!
             var req = URLRequest(url: url)
             req.httpMethod = "DELETE"
-            try await httpService.sendVoid(req, cookieType: .profile)
+            try await httpService.sendVoid(req, cookieType: .profile, logOutput: false)
         } catch {
             print("--- DEBUG ERROR ---")
             print("Type: \(type(of: error))")
@@ -328,7 +328,7 @@ class AuthUsecase {
                 "manifest_url": manifestUrl,
             ]
             req.httpBody = try JSONEncoder().encode(body)
-            try await httpService.sendVoid(req, cookieType: .profile)
+            try await httpService.sendVoid(req, cookieType: .profile, logOutput: false)
         } catch {
             print("--- DEBUG ERROR ---")
             print("Type: \(type(of: error))")
@@ -347,7 +347,7 @@ class AuthUsecase {
                 "addon_id": addonId,
             ]
             req.httpBody = try JSONEncoder().encode(body)
-            try await httpService.sendVoid(req, cookieType: .profile)
+            try await httpService.sendVoid(req, cookieType: .profile, logOutput: false)
         } catch {
             print("--- DEBUG ERROR ---")
             print("Type: \(type(of: error))")
@@ -372,7 +372,7 @@ class AuthUsecase {
                 "addon_id": addonId,
             ]
             req.httpBody = try JSONEncoder().encode(body)
-            try await httpService.sendVoid(req, cookieType: .profile)
+            try await httpService.sendVoid(req, cookieType: .profile, logOutput: false)
         } catch {
             print("--- DEBUG ERROR ---")
             print("Type: \(type(of: error))")

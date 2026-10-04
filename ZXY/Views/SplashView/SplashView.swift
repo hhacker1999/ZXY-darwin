@@ -9,8 +9,8 @@ import SwiftUI
 
 struct SplashView: View {
     let vm: SplashViewModel
-    init(mediaUc: MediaUsecase, authUc: AuthUsecase) {
-        vm = SplashViewModel(mediaUc: mediaUc, authUc: authUc)
+    init(mediaUc: MediaUsecase, authUc: AuthUsecase, stremioUc: StremioUsecase) {
+        vm = SplashViewModel(mediaUc: mediaUc, authUc: authUc, stremioUc: stremioUc)
     }
 
     var body: some View {
@@ -32,5 +32,5 @@ struct SplashView: View {
 }
 
 #Preview {
-    SplashView(mediaUc: MediaUsecase(), authUc: AuthUsecase())
+    SplashView(mediaUc: MediaUsecase(), authUc: AuthUsecase(), stremioUc: StremioUsecase())
 }

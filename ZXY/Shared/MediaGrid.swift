@@ -1,4 +1,3 @@
-import Inject
 import SwiftUI
 
 private enum GridMetrics {
@@ -19,8 +18,6 @@ private enum GridMetrics {
 }
 
 struct MediaGrid<T: Hashable>: View {
-    @ObserveInjection var inject
-
     let itemState: ViewItemState<[AppMedia]>
     let initialText: String
     var showType: Bool = false
@@ -94,7 +91,6 @@ struct MediaGrid<T: Hashable>: View {
                 }
             }
         }
-        .enableInjection()
         .hideScrollContentBackground()
     }
 

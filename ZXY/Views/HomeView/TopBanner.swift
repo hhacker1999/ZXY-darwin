@@ -5,11 +5,9 @@
 //
 
 import Foundation
-import Inject
 import SwiftUI
 
 struct TopBannerSection: View {
-    @ObserveInjection var inject
     let state: ViewItemState<[AppMedia]>
     var onActiveMediaChange: ((AppMedia) -> Void)? = nil
 
@@ -23,7 +21,6 @@ struct TopBannerSection: View {
                     items: items,
                     onActiveMediaChange: onActiveMediaChange
                 )
-                .enableInjection()
                 .onAppear {
                     onActiveMediaChange?(items[0])
                 }

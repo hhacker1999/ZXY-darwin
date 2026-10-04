@@ -1,8 +1,6 @@
-import Inject
 import SwiftUI
 
 struct DiscoverView: View {
-    @ObserveInjection var inject
     @State private var vm: DiscoverViewModel
     @State private var showFilterSheet = false
     @State private var showSaveSheet = false
@@ -27,7 +25,6 @@ struct DiscoverView: View {
         .task {
             await vm.initialLoad()
         }
-        .enableInjection()
         .sheet(isPresented: $showFilterSheet) {
             DiscoverFilterSheet(
                 initialFilter: vm.filter,

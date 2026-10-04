@@ -1,9 +1,7 @@
 import Foundation
-import Inject
 import SwiftUI
 
 struct LibraryView: View {
-    @ObserveInjection var inject
     @State var vm: LibraryViewModel
 
     init(mediaUc: MediaUsecase) {
@@ -23,7 +21,6 @@ struct LibraryView: View {
         .task {
             await vm.initialLoad()
         }
-        .enableInjection()
     }
 
     private var libraryContent: some View {

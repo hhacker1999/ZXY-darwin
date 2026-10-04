@@ -4,7 +4,6 @@
 //  Created by Harsh Kumar on 28/03/26.
 //
 
-import Inject
 import SwiftUI
 
 struct ContentView: View {
@@ -25,17 +24,17 @@ struct ContentView: View {
     private var rootRoute: some View {
         switch router.routerState {
         case .splash:
-            SplashView(mediaUc: deps.mediaUc, authUc: deps.authUc)
+            SplashView(mediaUc: deps.mediaUc, authUc: deps.authUc, stremioUc: deps.streamioUc)
         case .logIn:
             LoginView(authUc: deps.authUc)
         case let .profileLogIn(profiles):
-            ProfileSelectView(profiles: profiles, authUc: deps.authUc)
+            ProfileSelectView(profiles: profiles, authUc: deps.authUc, stremioUc: deps.streamioUc)
         case .home:
             NavigationStack(path: $router.mainRouteState) {
                 BaseHomeview(deps: deps).navigationDestination(for: Route.self) { route in
                     switch route {
                     case let .movieDetails(id):
-                        MovieView(id: id, mediaUc: deps.mediaUc, streamUc: deps.streamUc, progressUc: deps.progressUc)
+                        MovieView(id: id, mediaUc: deps.mediaUc, streamUc: deps.streamUc, progressUc: deps.progressUc, stremioUc: deps.streamioUc)
                     case let .seriesDetails(id):
                         SeriesView(id: id, mediaUc: deps.mediaUc, streamUc: deps.streamUc, progressUc: deps.progressUc)
                     case let .mpvVideoView(args):

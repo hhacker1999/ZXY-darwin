@@ -13,8 +13,8 @@ struct SettingsView: View {
     @State private var userBloc = UserBloc.bloc
     @Environment(\.openURL) private var openURL
 
-    init(authUc: AuthUsecase) {
-        _vm = State(initialValue: SettingsViewModel(authUc: authUc))
+    init(authUc: AuthUsecase, stremioUc: StremioUsecase) {
+        _vm = State(initialValue: SettingsViewModel(authUc: authUc, stremioUc: stremioUc))
     }
 
     var body: some View {

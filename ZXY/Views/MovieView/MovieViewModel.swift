@@ -229,18 +229,17 @@ class MovieViewModel: StreamViewModel {
                         for stream in streams {
                             if let url = stream.url {
                                 if url.starts(with: "http://") {
-                                    if let hint = stream.behaviorHints {
-                                        if !hint.filename.isEmpty {
-                                            let pttResult = PTT.parse(hint.filename).normalize()
-                                            if pttResult.resolution == "4k" {
-                                                fourK.append(VideoPlayerStream(source: addon.addonManifest.name, baseStream: stream, ptt: pttResult))
-                                            }
-                                            if pttResult.resolution == "1080p" {
-                                                fhd.append(VideoPlayerStream(source: addon.addonManifest.name, baseStream: stream, ptt: pttResult))
-                                            }
-                                            if pttResult.resolution == "720p" {
-                                                hd.append(VideoPlayerStream(source: addon.addonManifest.name, baseStream: stream, ptt: pttResult))
-                                            }
+                                    let hint = stream.behaviorHints
+                                    if !hint.filename.isEmpty {
+                                        let pttResult = PTT.parse(hint.filename).normalize()
+                                        if pttResult.resolution == "4k" {
+                                            fourK.append(VideoPlayerStream(source: addon.addonManifest.name, baseStream: stream, ptt: pttResult))
+                                        }
+                                        if pttResult.resolution == "1080p" {
+                                            fhd.append(VideoPlayerStream(source: addon.addonManifest.name, baseStream: stream, ptt: pttResult))
+                                        }
+                                        if pttResult.resolution == "720p" {
+                                            hd.append(VideoPlayerStream(source: addon.addonManifest.name, baseStream: stream, ptt: pttResult))
                                         }
                                     }
                                 }

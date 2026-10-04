@@ -1,9 +1,7 @@
 import Foundation
-import Inject
 import SwiftUI
 
 struct MovieView: View {
-    @ObserveInjection var inject
     @State var vm: MovieViewModel
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
@@ -11,13 +9,15 @@ struct MovieView: View {
         id: Int,
         mediaUc: MediaUsecase,
         streamUc: StreamUsecase,
-        progressUc: ProgressUsecase
+        progressUc: ProgressUsecase,
+        stremioUc: StremioUsecase
     ) {
         vm = MovieViewModel(
             id: id,
             mediaUc: mediaUc,
             streamUc: streamUc,
-            progressUc: progressUc
+            progressUc: progressUc,
+            stremioUc: stremioUc
         )
     }
 

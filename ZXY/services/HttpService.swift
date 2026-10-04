@@ -71,14 +71,24 @@ class HttpService {
     }
 
     /// Send a request and discard the response body (fire-and-forget)
-    func sendVoid(_ request: URLRequest, cookieType: CookieType) async throws {
-        let _: Empty = try await send(request, cookieType: cookieType)
+    func sendVoid(
+        _ request: URLRequest,
+        cookieType: CookieType,
+        logOutput: Bool
+    ) async throws {
+        let _: Empty = try await send(
+            request,
+            cookieType: cookieType,
+            logOutput: logOutput
+        )
     }
 
     /// Send a request and return raw Data (for endpoints that may return null/empty bodies)
-    func sendRaw(_ request: URLRequest, cookieType: CookieType) async throws
-        -> Data?
-    {
+    func sendRaw(
+        _ request: URLRequest,
+        cookieType: CookieType,
+        logOutput: Bool
+    ) async throws -> Data? {
         var httpReq = request
         if cookieType == .user {
             if userCookie == nil {
@@ -131,6 +141,12 @@ class HttpService {
         }
 
         let statusCode = httpResponse.statusCode
+
+        if logOutput {
+            let rawBody = String(data: data, encoding: .utf8) ?? ""
+            print(rawBody)
+        }
+
         let decoder = JSONDecoder()
 
         switch statusCode {
@@ -169,9 +185,11 @@ class HttpService {
     }
 
     /// Use this when expecting result back from the server
-    func send<T: Decodable>(_ request: URLRequest, cookieType: CookieType)
-        async throws -> T
-    {
+    func send<T: Decodable>(
+        _ request: URLRequest,
+        cookieType: CookieType,
+        logOutput: Bool
+    ) async throws -> T {
         var httpReq = request
         if cookieType == .user {
             if userCookie == nil {
@@ -226,10 +244,10 @@ class HttpService {
 
         let statusCode = httpResponse.statusCode
 
-        // let rawBody = String(data: data, encoding: .utf8)
-        // if rawBody != nil {
-        //     print(rawBody!)
-        // }
+        if logOutput {
+            let rawBody = String(data: data, encoding: .utf8) ?? ""
+            print(rawBody)
+        }
 
         let decoder = JSONDecoder()
 

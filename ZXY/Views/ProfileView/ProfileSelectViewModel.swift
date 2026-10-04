@@ -11,6 +11,7 @@ import Observation
 @MainActor
 class ProfileSelectViewModel {
     let authUc: AuthUsecase
+    let stremioUc: StremioUsecase
     var selectedProfile: Profile?
     var pinText: String = ""
     var isLoading: Bool = false
@@ -18,8 +19,9 @@ class ProfileSelectViewModel {
     var showPinInput: Bool = false
     private let router: Router = .router
 
-    init(authUc: AuthUsecase) {
+    init(authUc: AuthUsecase, stremioUc: StremioUsecase) {
         self.authUc = authUc
+        self.stremioUc = stremioUc
     }
 
     func selectProfile(_ profile: Profile) {
@@ -72,7 +74,7 @@ class ProfileSelectViewModel {
             showPinInput = false
             let updateProfile = try await authUc.getProfile()
             // Set this is as logged in profile in userbloc
-            await UserBloc.bloc.setProfile(incomingProfile: updateProfile, authUc: authUc)
+            await UserBloc.bloc.setProfile(incomingProfile: updateProfile, stremioUc: stremioUc)
 
             router.routerState = .home
         } catch let error as HttpError {
